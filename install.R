@@ -1,2 +1,3 @@
-install.packages("arrow")
-install.packages("rmarkdown")
+install.packages("neonstore")
+install.packages("MODISTools")
+remotes::install_github("ropensci/allodb")

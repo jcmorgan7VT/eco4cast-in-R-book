@@ -113,7 +113,6 @@ ag_bg_prop <- .3
 ```
 
 ```{r}
-remotes::install_github("ropensci/allodb")
 library(allodb)
 
 tree_live_carbon <- combined_table_live_tower %>%
