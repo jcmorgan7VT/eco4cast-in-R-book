@@ -2,12 +2,14 @@ project:
   type: book
 
 book:
-  title: "eco-mode-forecasting"
-  author: "Norah Jones"
+  title: "Ecological Modeling and Forecasting"
+  author: "R. Quinn Thomas"
   date: "12/5/2023"
   chapters:
     - index.qmd
     - intro.qmd
+    - setting-the-stage.qmd
+    - process-model.qmd
     - summary.qmd
     - references.qmd
 

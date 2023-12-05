@@ -10,13 +10,13 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-    container: eco4cast/rocker-neon4cast:latest
+    container: rocker/geospatial:latest
     permissions:
       contents: write
     steps:
-    
+
       - run: git config --system --add safe.directory '*'
-      
+
       - uses: actions/checkout@v4
         with:
            fetch-depth: 0

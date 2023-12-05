@@ -1,0 +1,47 @@
+# Process model
+
+```{r}
+SSEM.orig <- function(X, params, inputs, timestep = 3600){
+
+  ne <- nrow(X)  ## ne = number of ensemble members
+
+  ##Unit Converstion: umol/m2/sec to Mg/ha/timestep
+  k <- 1e-6 * 12 * 1e-6 * 10000 * timestep #mol/umol*gC/mol*Mg/g*m2/ha*sec/timestep
+
+  ## photosynthesis
+  LAI <- X[, 1] * params$SLA * 0.1  #0.1 is conversion from Mg/ha to kg/m2
+  GPP <- pmax(0, params$alpha * (1 - exp(-0.5 * LAI)) * inputs$PAR)
+  GPP[inputs$PAR < 1e-20] = 0 ## night
+
+  ## respiration & allocation
+  NPP <- GPP * params$Ra_frac
+
+  leaf_alloc <- NPP * params$leaf_frac
+  wood_alloc <- NPP * (1 - params$leaf_frac)
+
+  Rh <- pmax(params$Rbasal * X[, 3] * params$Q10 ^ (inputs$temp / 10), 0) ## pmax ensures SOM never goes negative
+
+  ## turnover
+  litterfall <- X[, 1] * params$litterfall
+  mortality <- X[, 2] * params$mortality
+
+  ## update states
+  leaves <- pmax(rnorm(ne, X[, 1] + leaf_alloc * k - litterfall, params$sigma.leaf), 0)
+  wood <- pmax(rnorm(ne, X[, 2] + wood_alloc * k - mortality, params$sigma.stem), 0)
+  SOM <- pmax(rnorm(ne, X[, 3] + litterfall + mortality - Rh * k, params$sigma.soil), 0)
+
+  return(cbind(X1 = leaves, 
+               X2 = wood, 
+               X3 = SOM,
+               LAI = leaves * params$SLA * 0.1,
+               GPP = GPP,
+               NEP = NPP - Rh,
+               Ra = GPP - NPP,
+               NPPw = wood_alloc,
+               NPPl = leaf_alloc,
+               Rh = Rh,
+               litterfall = litterfall,
+               mortality = mortality))
+
+}
+```
