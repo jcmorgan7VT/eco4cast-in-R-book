@@ -8,8 +8,32 @@ book:
   chapters:
     - index.qmd
     - intro.qmd
-    - setting-the-stage.qmd
-    - process-model.qmd
+    - background-skills.qmd
+    - part: setting-the-stage.qmd
+      chapters:
+        - intro-ecoforecast.qmd
+        - first-forecast.qmd
+        - understand-uncertainty.qmd
+        - second-forecast.qmd
+        - using-data.qmd
+        - third-forecast.qmd
+        - decision-making.qmd
+        - visualizing.qmd
+    - part: project1.qmd
+      chapters:
+        - modeling-approaches.qmd
+        - submitting-forecasts.qmd
+    - part: advanced-forecasting.qmd
+      chapters:
+        - process-model.qmd
+        - prop-uncertainty.qmd
+        - neon-data.qmd
+        - parameter-calibration.qmd
+        - particle-filter.qmd
+        - pulling-together.qmd
+    - part: project2.qmd
+      chapters:
+        - project2-details.qmd
     - summary.qmd
     - references.qmd
 

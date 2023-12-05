@@ -1,0 +1,24 @@
+# Advanced forecasting
+
+introduction to the ecosystem and data
+
+terrestrial flux data
+
+{{< video https://www.youtube.com/watch?v=CR4Anc8Mkas >}}
+
+```{r}
+library(tidyverse)
+```
+
+
+```{r}
+url <- "https://sdsc.osn.xsede.org/bio230014-bucket01/challenges/targets/project_id=neon4cast/duration=P1D/terrestrial_daily-targets.csv.gz"
+flux <- read_csv(url, show_col_types = FALSE) |> 
+  filter(site_id == "ORNL", 
+         variable == "nee")
+
+flux |> 
+  #filter(datetime > as_date("2023-01-01"),
+  #       datetime < as_date("2023-06-05")) |> 
+ggplot(aes(x = datetime, y = observation)) + geom_point()
+```
