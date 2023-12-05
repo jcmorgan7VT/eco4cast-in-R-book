@@ -11,12 +11,12 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     container: eco4cast/rocker-neon4cast:latest
-    steps:
-      - run: git config --system --add safe.directory '*'
-
     permissions:
       contents: write
     steps:
+    
+      - run: git config --system --add safe.directory '*'
+      
       - uses: actions/checkout@v4
         with:
            fetch-depth: 0
@@ -26,15 +26,15 @@ jobs:
       #  shell: Rscript {0}
       #  run: source('install.R')
 
-     - uses: quarto-dev/quarto-actions/setup@v2
+      - uses: quarto-dev/quarto-actions/setup@v2
         with:
           version: 1.4.146
 
-    - name: Render
+      - name: Render
         run: |
           quarto render
 
-   - name: Publish
+      - name: Publish
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
