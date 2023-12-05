@@ -8,25 +8,38 @@ name: Quarto Publish
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    container: eco4cast/rocker-neon4cast:latest
+    steps:
+      - run: git config --system --add safe.directory '*'
+
     permissions:
       contents: write
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-
-      - name: Set up Quarto
-        uses: quarto-dev/quarto-actions/setup@v2
-
-      - name: Install R
-        uses: r-lib/actions/setup-r@v2
+      - uses: actions/checkout@v3
+        with:
+           fetch-depth: 0
+           set-safe-directory: '*'
 
       - name: Install packages
         shell: Rscript {0}
         run: source('install.R')
 
-      - name: Render and Publish
-        uses: quarto-dev/quarto-actions/publish@v2
+     - uses: quarto-dev/quarto-actions/setup@v2
         with:
-          target: gh-pages
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          version: 1.4.146
+
+    - name: Render
+        run: |
+          quarto render
+
+   - name: Publish
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git checkout gh-pages
+          cp -r _book/* .
+          git add .
+          git commit -a -m "update pages" || echo "nothing to commit"
+          git push https://${GITHUB_PAT}:${GITHUB_PAT}@github.com/${GITHUB_REPOSITORY}
