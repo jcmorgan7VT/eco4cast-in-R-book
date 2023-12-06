@@ -1,9 +1,8 @@
 # Visualizing and evaluating forecasts
 
+https://github.com/OlssonF/NEON-forecast-challenge-workshop/blob/main/Analyse_scores/Get_scores_tutorial.Rmd
 
 ## Scoring Metric: RMSE
-
-
 
 ## Scoring Metric: Continuous Ranked Probability Score
 
@@ -13,8 +12,9 @@ We will generate a combined score for all locations and forecast horizons. Forec
 
 Importantly, we use the convention for CRPS where zero is lowest and best possible score, therefore teams want to achieve the lowest score. CPRS can be also expressed as a negative number with zero as highest and best possible score (Gneiting & Raftery 2007). The `scoringRules` package that we use follows the 0 or greater convention.
 
-```{r setup, include=FALSE}
+```{r}
 library(scoringRules)
+library(tidyverse)
 ```
 
 ### Example of a CRPS calculation from an ensemble forecast
@@ -173,13 +173,13 @@ coef(lm(optimal_sd[sample_mean > 0] ~ sample_mean[sample_mean > 0]))
 
 ## Appendix: CRPS tutorial
 
-This provide a tutorial for the Continuous Ranked Probability Score (CRPS), a proper scoring rule used to evaluate probabilistic forecasts.  
+This provide a tutorial for the Continuous Ranked Probability Score (CRPS), a proper scoring rule used to evaluate probabilistic forecasts.
 
-At its core, CRPS presents the difference between a cumulative probability distribution generated from the forecast and the data.  
+At its core, CRPS presents the difference between a cumulative probability distribution generated from the forecast and the data.
 
 ### Set up data
 
-We will start with the calculation of CRPS for a single forecast and observation pair.  
+We will start with the calculation of CRPS for a single forecast and observation pair.
 
 ```{r}
 obs <- 0
@@ -216,6 +216,7 @@ df <- bind_rows(df,
 ```{r}
 ggplot(df, aes(x = y, y = cdf, color = variable)) + geom_line()
 ```
+
 ```{r}
 error <- (forecast_cdf - obs_cdf)^2
 ```
@@ -225,6 +226,7 @@ tibble(y = y,
        error = error) |> 
   ggplot(aes(x = y, y = error)) + geom_line()
 ```
+
 ```{r}
 cdf_diff_area <- error * dy
 ```
@@ -234,10 +236,10 @@ tibble(y = y,
        area = cdf_diff_area) |> 
   ggplot(aes(x = y, y = area)) + geom_line()
 ```
+
 ```{r}
 crps <- sum(cdf_diff_area)
 ```
-
 
 ### Comparing forecasts
 
@@ -288,7 +290,6 @@ df <- bind_rows(df,
 ```{r}
 ggplot(df, aes(x = y1, y = cdf, color = variable)) + geom_line()
 ```
-
 
 ```{r}
 c(scoringRules::crps_sample(y = obs, dat = forecast1),scoringRules::logs_sample(y = obs, dat = forecast1)) 

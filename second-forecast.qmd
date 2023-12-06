@@ -1,1 +1,4 @@
 # Second forecast: Adding uncertainty to first forecast
+
+This module builds on <https://github.com/OlssonF/NEON-forecast-challenge-workshop>
+

@@ -1,1 +1,5 @@
 # Third forecast: automatically updating second forecast
+
+<https://github.com/OlssonF/NEON-forecast-challenge-workshop/blob/main/Automate_forecasts/automation_tutorial.Rmd>
+
+
