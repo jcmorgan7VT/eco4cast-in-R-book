@@ -1,6 +1,6 @@
 install.packages("neonstore")
 install.packages("MODISTools")
 install.packages("scoringRules")
-install.packages("vroom")
-install.packages("readr")
+#install.packages("vroom")
+#install.packages("readr")
 remotes::install_github("ropensci/allodb")
