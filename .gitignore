@@ -6,3 +6,5 @@
 /.quarto/
 /_book/
 .DS_Store
+
+data/neon_raw

@@ -19,10 +19,10 @@ You will be using the following data products
 
 First, we are going to want to define the site ID. The four letter site code for Oak Ridge is `ORNL`.
 ```{r}
-site <- "ORNL"
-elevation <- 322.845	
-latitude <- 35.96416
-longitude <- -84.28315	
+site <- "TALL"
+elevation <- 166	
+latitude <- 32.95047
+longitude <- -87.393259	
 ```
 
 ## Wood carbon
@@ -109,7 +109,7 @@ Calculate the biomass of each tree in the table. We will do this using `get_biom
 In this next section, as well as a future one where we calculate dead tree carbon, we are going to make a simplfying assumption. We will assume that the below ground biomass of a tree is some fixed proportion of its above ground biomass. In our analysis, we will assume this value is $.3$, but it is a parameter that can be changed.
 
 ```{r}
-ag_bg_prop <- .3
+ag_bg_prop <- 0.3
 ```
 
 ```{r}
@@ -444,8 +444,8 @@ lai <- MODISTools::mt_subset(product = "MCD15A2H",
                   band = c("Lai_500m", "FparLai_QC"),
                   start = as_date(paste0(min(total_carbon_simple$year),"-01-01")),
                   end = Sys.Date(),
-                  site_name = "ORNL",
-                  progress = TRUE)
+                  site_name = site,
+                  progress = FALSE)
 
 
 lai_cleaned <- lai |> 
@@ -472,10 +472,14 @@ lai_cleaned |>
 ```{r}
 url <- "https://sdsc.osn.xsede.org/bio230014-bucket01/challenges/targets/project_id=neon4cast/duration=P1D/terrestrial_daily-targets.csv.gz"
 flux <- read_csv(url, show_col_types = FALSE) |> 
-  filter(site_id == "ORNL", 
+  filter(site_id %in% c("TALL"), 
          variable == "nee") |> 
   mutate(datetime = as_date(datetime)) |> 
-  select(datetime, variable, observation)
+  select(datetime, variable, site_id, observation)
+
+flux |> 
+  filter(month(datetime) %in% c(2, 3,4,5, 6)) |> 
+ggplot(aes(x = datetime, y = observation)) + geom_line() + facet_wrap(~site_id)
 ```
 
 ## Combine together to create data contraints

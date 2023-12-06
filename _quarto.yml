@@ -28,7 +28,9 @@ book:
         - process-model.qmd
         - prop-uncertainty.qmd
         - neon-data.qmd
-        - parameter-calibration.qmd
+        - parameter-calibration1.qmd
+        - parameter-calibration2.qmd
+        - parameter-calibration3.qmd
         - particle-filter.qmd
         - pulling-together.qmd
     - part: project2.qmd
