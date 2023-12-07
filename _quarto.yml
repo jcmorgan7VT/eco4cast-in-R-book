@@ -2,7 +2,7 @@ project:
   type: book
 
 book:
-  title: "Ecological Modeling and Forecasting"
+  title: "A practical guide to ecological forecasting"
   author: "R. Quinn Thomas"
   date: "12/5/2023"
   chapters:

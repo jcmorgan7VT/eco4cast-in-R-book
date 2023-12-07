@@ -1,5 +1,210 @@
 # Parameter calibration: Applying to process model
 
+
+
+
+```{r}
+get_loglike <- function(out, obs, variables = c("LAI", "wood", "SOM", "nee"), 
+                        sds = c(0.5, 20, 20, 0.1)){
+  
+  log_likelihood <- out |> 
+    select(datetime, variables) |>  
+    pivot_longer(-datetime, names_to = "variable", values_to = "prediction") |>
+    left_join(obs, by = c("datetime", "variable")) |> 
+    filter(variable %in% variables) |> 
+    na.omit() |> 
+    left_join(tibble(variable = variables,
+                     sds = sds), by = "variable") |> 
+    mutate(log_like = dnorm(observation, prediction, sds, log = TRUE)) |> 
+    summarise(ll = sum(log_like)) |> 
+    pull(ll)
+  
+  return(log_likelihood)
+}
+```
+
+
 ```{r}
 library(tidyverse)
+library(patchwork)
+
+#Set MCMC Configuration
+num_iter <- 1000
+num_pars <- 2
+jump <- c(0.01, 0.001)
+
+
+log_likelihood_prior_current <- -10000000000
+accept <- 0
+
+dates <- seq(as_date("2020-09-30"), as_date("2023-12-01"), by = "1 day")
+inputs <- inputs |> 
+  filter(datetime %in% dates)
+
+#Initialize chain
+pars <- array(NA, dim = c(num_pars, num_iter))
+pars[1, 1] <- params$alpha
+pars[2, 1] <- params$litterfall
+
+
+X_init <- list()
+
+X_init$leaf <- obs |> 
+  filter(variable == "LAI",
+         datetime %in% dates) |> 
+  na.omit() |> 
+  slice(1) |> 
+  mutate(observation = observation / (params$SLA * 0.1)) |> 
+  pull(observation)
+X_init$wood <- obs |> 
+  filter(variable == "wood",
+         datetime %in% dates) |> 
+  na.omit() |> 
+  slice(1) |> 
+  pull(observation)
+
+X_init$SOM <- obs |> 
+  filter(variable == "SOM",
+         datetime %in% dates) |> 
+  na.omit() |>  
+  slice(1) |> 
+  pull(observation)
+
+X_init <- as.data.frame(X_init)
+
+SSEM <- compiler::cmpfun(SSEM.orig)
+
+for(iter in 2:num_iter){
+  
+  #Loop through parameter value
+  
+  for(j in 1:num_pars){
+    
+    #print(c(iter, j))
+    #Randomly select new parameter values
+    proposed_pars <- pars[, iter - 1]
+    proposed_pars[j] <- rnorm(1, mean = pars[j, iter - 1], sd = jump[j])
+    
+    ##########################
+    # PRIORS
+    #########################
+    #(remember that you multiply probabilities which mean you can add log(probability))
+    log_prior <- dunif(proposed_pars[1], min = 0, max = 1, log = TRUE) + 
+      dunif(proposed_pars[2], min = 0, max = 1, log = TRUE)
+    
+    #Likelihood.  
+    #You could use:
+    # pred <- process_model(x, pars = proposed_pars)
+    # log_likelihood <- sum(dnorm(new_data, mean = pred, sd = sd_data, log = TRUE)
+    # but we are looping here because it transitions well to the next section of the course
+    
+    params$alpha  <- proposed_pars[1]
+    params$litterfall  <- proposed_pars[2]
+    
+    X <- array(NA, dim = c(length(dates), 12))
+    X[1, 1:3] <- unlist(X_init)
+    
+    bench::bench_time(
+      for(i in 2:length(dates)){
+        X[i, ]  <- SSEM(X = matrix(X[i-1,1:3], ncol = 3), params = params, inputs = inputs[i, ])
+      }
+    )
+    
+    out <- as.data.frame(X)
+    names(out) <- c("leaves","wood","SOM", "LAI", "GPP", "nee", "Ra", "NPPw", "NPPl", "Rh", "litterfall","mortality")
+    
+    out <- bind_cols(tibble(datetime = dates), out) 
+    
+    #Remember that you multiply probabilities which mean you can add log(probability)
+    #Hence the use of sum
+    log_likelihood <- get_loglike(out, obs)
+    
+    
+    get_loglike_2
+    
+    ############################
+    ###  PRIOR x LIKELIHOOD
+    ############################
+    #Combine the prior and likelihood
+    #remember that you multiply probabilities which means you can add log(probability)
+    log_likelihood_prior_proposed <- log_prior + log_likelihood
+    
+    #We want the ratio of new / old but since it is in log space we first
+    #take the difference of the logs: log(new/old) = log(new) - log(old) 
+    # and then take out of log space exp(log(new) - log(old))
+    z <- exp(log_likelihood_prior_proposed - log_likelihood_prior_current)
+    
+    #Now pick a random number between 0 and 1
+    r <- runif(1, min = 0, max = 1)
+    #If z > r then accept the new parameters
+    #Note: this will always happen if the new parameters are more likely than
+    #the old parameters z > 1 means than z is always > r no matter what value of
+    #r is chosen.  However it will accept worse parameter sets (P_new is less
+    #likely then P_old - i.e., z < 1) in proportion to how much worse it is
+    #For example: if z = 0.9 and then any random number drawn by runif that is
+    #less than 0.90 will result in accepting the worse values (i.e., the slightly
+    #worse values will be accepted a lot of the time).  In contrast, if z = 0.01
+    #(i.e., the new parameters are much much worse), then they can still be accepted
+    #but much more rarely because random r values of < 0.1 occur more rarely
+    
+    #print(c(z, r))
+    if(z >  r){
+      pars[j, iter] <- proposed_pars[j]
+      log_likelihood_prior_current <- log_likelihood_prior_proposed
+      accept <- accept + 1
+    }else{
+      pars[j, iter] <- pars[j, iter - 1]
+      log_likelihood_prior_current <- log_likelihood_prior_current #this calculation isn't necessary but is here to show you the logic
+    }
+  }
+}
+
+accept / (num_iter * num_pars)
+
+```
+
+```{r}
+nburn <- 500
+d <- tibble(iter = nburn:num_iter,
+            par1 = pars[1, nburn:num_iter],
+            par2 = pars[2, nburn:num_iter]) %>%
+  pivot_longer(-iter, values_to = "value", names_to = "parameter")
+
+p1 <- ggplot(d, aes(x = iter, y = value)) +
+  geom_line() +
+  facet_wrap(~parameter, scales = "free")
+
+p2 <- ggplot(d, aes(x = value)) +
+  geom_histogram() +
+  facet_wrap(~parameter, scales = "free")
+
+p1 / p2
+```
+
+```{r}
+params$alpha  <- mean(pars[1,500:num_iter])
+params$litterfall  <- mean(pars[2,500:num_iter ])
+
+X <- array(NA, dim = c(length(dates), 12))
+X[1, 1:3] <- unlist(X_init)
+
+for(i in 2:length(dates)){
+  X[i, ]  <- SSEM.orig(X = matrix(X[i-1,1:3], ncol = 3), params = params, inputs = inputs[i, ])
+}
+
+out <- as.data.frame(X)
+names(out) <- c("leaves","wood","SOM", "LAI", "GPP", "NEE", "Ra", "NPPw", "NPPl", "Rh", "litterfall","mortality")
+
+out <- bind_cols(tibble(datetime = dates), out) 
+
+out |> 
+  select(datetime,LAI, wood, SOM, NEE) |>  
+  rename(nee = NEE) |> 
+  pivot_longer(-datetime, names_to = "variable", values_to = "prediction") |>
+  left_join(obs, by = c("datetime", "variable")) |> 
+  filter(variable %in% c("LAI", "wood", "SOM", "nee")) |> 
+  ggplot(aes(x = datetime)) +
+  geom_point(aes(y = prediction)) +
+  geom_point(aes(y = observation, color = "red")) + 
+  facet_wrap(~variable, scale = "free")
 ```
