@@ -72,7 +72,9 @@ The particle filter is quite simple
   ## calculate likelihood (weight) for one state with an observation at that time-step
   ## The dimensiosn of x
   wt <- dnorm(y[t], mean = x[t, ], sd = sd_data)
-    
+  
+  wt <- wt / sum(wt)
+  
   ## resample ensemble members in proportion to their weight.  
   ## Since the total number of samples = the number of particles then you will preserve the 
   ## Same number of particles
@@ -151,6 +153,8 @@ for(t in 2:nt){
       ## calculate Likelihood (weights)
       wt <- dnorm(y[t], mean = x[t, ], sd = sd_obs)    ## calculate likelihood (weight)
       
+      wt <- wt / sum(wt)
+      
       ## resample ensemble members in proportion to their weight
       resample_index <- sample(1:num_particles, num_particles, replace = TRUE, prob = wt) 
       
@@ -214,6 +218,8 @@ for(t in 2:nt){
 
       ## calculate Likelihood (weights)
       wt <- dnorm(y[t], mean = x[t, ], sd = sd_obs)    ## calculate likelihood (weight)
+      
+      wt <- wt / sum(wt)
       
       ## resample ensemble members in proportion to their weight
       resample_index <- sample(1:num_particles, num_particles, replace = TRUE, prob = wt) 
@@ -357,6 +363,8 @@ for(t in 2:nt){
     ## calculate Likelihood (weights)
     wt <- dnorm(y[t], mean = x[t, ], sd = sd_obs)    ## calculate likelihood (weight)
     
+    wt <- wt / sum(wt)
+    
     ## resample ensemble members in proportion to their weight
     resample_index <- sample(1:num_particles, num_particles, replace = TRUE, prob = wt) 
 
@@ -441,6 +449,8 @@ bootstrap_pf <- function(num_particles, sd_add = 0.2, sd_obs = 0.2){
       
       ## calulate Likelihood (weights)
       wt <- dnorm(y[t], mean = x[t, ], sd = sd_obs)    ## calculate likelihood (weight)
+      
+      wt <- wt / sum(wt)
       
       ## resample ensemble members in proportion to their weight
       resample_index <- sample(1:num_particles, num_particles, replace = TRUE, prob = wt) 

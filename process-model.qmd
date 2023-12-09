@@ -1,69 +1,77 @@
 # Process model
 
-timestep: 1 day
-currency: MgC/ha
-dimension: 0-D
+```{r}
+#| echo: FALSE
+source("R/helpers.R")
+```
+
+timestep: 1 day currency: MgC/ha dimension: 0-D
+
 
 ```{r}
-SSEM.orig <- function(X, params, inputs, timestep = 86400){
-
-  ##Unit Converstion: umol/m2/sec to Mg/ha/timestep
-  k <- 1e-6 * 12 * 1e-6 * 10000 * timestep #mol/umol*gC/mol*Mg/g*m2/ha*sec/timestep
+forest_model <- function(t, states, parms, inputs){
+  
+  ens_members <- nrow(states)
+  
+  inputs_temp <- inputs[, 1]
+  inputs_PAR <- inputs[, 2]
+  
+  ##Unit Conversion: umol/m2/sec to Mg/ha/timestep
+  k <- 1e-6 * 12 * 1e-6 * 10000 * 86400 #mol/umol*gC/mol*Mg/g*m2/ha*sec/timestep
 
   ## photosynthesis
-  LAI <- X[1] * params$SLA * 0.1  #0.1 is conversion from Mg/ha to kg/m2
-  GPP <- pmax(0, k * params$alpha * (1 - exp(-0.5 * LAI)) * inputs$PAR)
-  GPP[inputs$PAR < 1e-20] = 0 ## night
+  lai <- states[, 1] * parms$SLA * 0.1  #0.1 is conversion from Mg/ha to kg/m2
+  gpp <- pmax(0, k * parms$alpha * (1 - exp(-0.5 * lai)) * inputs_PAR)
+  gpp[inputs_PAR < 1e-20] <- 0 ## night
 
   ## respiration & allocation
-  Ra <- GPP * params$Ra_frac
-  NPP <- GPP - Ra
+  ra <- gpp * parms$Ra_frac
+  npp <- gpp - ra
+  
+ 
 
-  leaf_alloc <- NPP * params$leaf_frac
-  wood_alloc <- NPP * (1 - params$leaf_frac)
+  leaf_alloc <- npp * parms$leaf_frac
+  wood_alloc <- npp * (1 - parms$leaf_frac)
 
-  Rh <- pmax(k * params$Rbasal * X[3] * params$Q10 ^ (inputs$temp / 10), 0) ## pmax ensures SOM never goes negative
+  rh <- pmax(k * parms$Rbasal * states[, 3] * parms$Q10 ^ (inputs_temp / 10), 0) ## pmax ensures SOM never goes negative
 
   ## turnover
-  litterfall <- X[1] * params$litterfall
-  mortality <- X[2] * params$mortality
-
+  litterfall <- states[ , 1] * parms$litterfall
+  mortality <- states[ , 2] * parms$mortality
+  
+  #Change in states
+  dleaves_dt <- leaf_alloc  - litterfall
+  dwood_dt <- wood_alloc  - mortality
+  dSOM_dt <- litterfall + mortality - rh
+  
+  #
+  states[, 1] <- states[, 1] + dleaves_dt
+  states[, 2] <- states[, 2] + dwood_dt
+  states[, 3] <- states[, 3] + dSOM_dt
+  
   ## update states
-  leaves <- pmax(rnorm(1, X[1] + leaf_alloc  - litterfall, params$sigma.leaf), 0)
-  LAI <- leaves * params$SLA * 0.1
-  wood <- pmax(rnorm(1, X[2] + wood_alloc  - mortality, params$sigma.stem), 0)
-  SOM <- pmax(rnorm(1, X[3] + litterfall + mortality - Rh , params$sigma.soil), 0)
-
-  return(cbind(X1 = leaves, 
-               X2 = wood, 
-               X3 = SOM,
-               LAI = LAI,
-               GPP = GPP ,
-               NEE = -(GPP - Ra - Rh),
-               Ra =  Ra,
-               NPPw = wood_alloc,
-               NPPl = leaf_alloc,
-               Rh = Rh,
+  states[, 1] <- pmax(rnorm(ens_members, states[, 1] , parms$sigma.leaf), 0)
+  states[, 2] <- pmax(rnorm(ens_members, states[, 2], parms$sigma.stem), 0)
+  states[, 3] <- pmax(rnorm(ens_members, states[, 3], parms$sigma.soil), 0)
+  
+  #Extra variables
+  lai <- states[, 1]  * parms$SLA * 0.1
+  nee <- -(gpp - ra - rh)
+  
+  return(cbind(state1 = states[, 1],
+              state2 = states[, 2],
+              state3 = states[, 3],
+              lai = lai,
+               gpp = gpp ,
+               nee = nee,
+               ra =  ra,
+               npp_w = wood_alloc,
+               npp_l = leaf_alloc,
+               rh = rh,
                litterfall = litterfall,
                mortality = mortality))
 
 }
-```
-
-```{r}
-params <- list()
-params$alpha <- 0.02
-params$SLA <- 4.74
-params$leaf_frac <- 0.315
-params$Ra_frac <- 0.5
-params$Rbasal <- 0.002
-params$Q10 <- 2.1
-params$litterfall <- 1/(365*2) #Two year leaf lifespan
-params$mortality <- 0.00015 #Wood lives about 18 years on average (all trees, branches, roots, course roots)
-params$sigma.leaf <- 0.0 #0.01 
-params$sigma.stem <- 0.0 #0.01 ## wood biomass
-params$sigma.soil <- 0.0# 0.01
-params <- as.data.frame(params)
 ```
 
 ```{r}
@@ -72,58 +80,76 @@ site <- "TALL"
 met_s3 <- arrow::s3_bucket(paste0("bio230014-bucket01/neon4cast-drivers/noaa/gefs-v12/stage3/site_id=", site),
                            endpoint_override = "sdsc.osn.xsede.org",
                            anonymous = TRUE)
-inputs <- arrow::open_dataset(met_s3) |> 
+
+inputs_all <- arrow::open_dataset(met_s3) |> 
   filter(variable %in% c("air_temperature", "surface_downwelling_shortwave_flux_in_air")) |> 
   mutate(datetime = as_date(datetime)) |> 
-  summarise(prediction = mean(prediction,  na.rm = TRUE), .by =c("variable", "datetime")) |>
-  collect() |> 
-  pivot_wider(names_from = variable, values_from = prediction) |> 
-  rename(temp = air_temperature,
-        SW = surface_downwelling_shortwave_flux_in_air) |> 
-  mutate(PAR = SW/0.486,
-         temp = temp - 273.15) |> 
-  select(-SW)
+  mutate(prediction = ifelse(variable == "surface_downwelling_shortwave_flux_in_air", prediction/0.486, prediction),
+         variable = ifelse(variable == "surface_downwelling_shortwave_flux_in_air", "PAR", variable),
+         prediction = ifelse(variable == "air_temperature", prediction- 273.15, prediction),
+         variable = ifelse(variable == "air_temperature", "temp", variable)) |> 
+  summarise(prediction = mean(prediction, na.rm = TRUE), .by = c("datetime", "variable", "parameter")) |> 
+  collect()
+```
+
+
+```{r}
+sim_dates <- seq(as_date("2020-09-30"), as_date("2023-12-01"), by = "1 day")
+sim_dates <- seq(as_date("2023-08-01"), as_date("2023-10-31"), by = "1 day")
 
 ```
 
 ```{r}
-X <- list()
-X$leaf <- 10
-X$wood <- 140
-X$SOM <- 140
-X_init <- as.data.frame(X)
+#Set parametere
+ens_members <- 1
+params <- list()
+params$alpha <- rep(0.02, ens_members)
+params$SLA <- rep(4.74, ens_members)
+params$leaf_frac <- rep(0.315, ens_members)
+params$Ra_frac <- rep(0.5, ens_members)
+params$Rbasal <- rep(0.002, ens_members)
+params$Q10 <- rep(2.1, ens_members)
+params$litterfall <- rep(1/(365*2), ens_members) #Two year leaf lifespan
+params$mortality <- rep(0.00015, ens_members) #Wood lives about 18 years on average (all trees, branches, roots, course roots)
+params$sigma.leaf <- rep(0.0, ens_members) #0.01 
+params$sigma.stem <- rep(0.0, ens_members) #0.01 ## wood biomass
+params$sigma.soil <- rep(0.0, ens_members)# 0.01
+params <- as.data.frame(params)
+```
+
+# Set drivers
+```{r}
+inputs <- inputs_all |> 
+    filter(datetime %in% as_date(sim_dates))
+inputs_ensemble <- assign_met_ensembles(inputs, ens_members)
 ```
 
 ```{r}
-dates <- seq(as_date("2020-09-30"), as_date("2023-12-01"), by = "1 day")
-
-inputs <- inputs |> 
-    filter(datetime %in% dates)
-
-X <- array(NA, dim = c(length(dates), 12))
-
-X[1, 1:3] <- unlist(X_init)
-
-
-for(i in 2:length(dates)){
-  X[i, ]  <- SSEM.orig(X[i-1, 1:3], params = params, inputs = inputs[i, ])
+output <- array(NA, dim = c(length(sim_dates), ens_members, 12)) #12 is the number of outputs
+output[1, , 1] <- 5
+output[1, , 2] <- 140
+output[1, , 3] <- 140
+```
+## Run model
+```{r}
+for(t in 2:length(sim_dates)){
+  output[t, , ]  <- forest_model(t, 
+                               states = matrix(output[t-1 , , 1:3], nrow = ens_members) , 
+                               parms = params, 
+                               inputs = matrix(inputs_ensemble[t ,, ], nrow = ens_members))
 }
+```
 
-out <- as.data.frame(X)
-names(out) <- c("leaves","wood","SOM", "LAI", "GPP", "NEE", "Ra", "NPPw", "NPPl", "Rh", "litterfall","mortality")
+```{r}
+output_df <- output_to_df(output, sim_dates, sim_name = "baseline")
+```
 
-out <- bind_cols(tibble(datetime = dates), out) 
-
-out |> 
-  select(datetime,LAI, wood, SOM, NEE) |>  
-  rename(nee = NEE) |> 
-  pivot_longer(-datetime, names_to = "variable", values_to = "prediction") |>
+```{r}
+output_df |> 
   left_join(obs, by = c("datetime", "variable")) |> 
-  filter(variable %in% c("LAI", "wood", "SOM", "nee")) |> 
+  filter(variable %in% c("lai", "wood", "som", "nee")) |> 
   ggplot(aes(x = datetime)) +
-  geom_point(aes(y = prediction)) +
+  geom_point(aes(y = prediction, group = ensemble)) +
   geom_point(aes(y = observation, color = "red")) + 
   facet_wrap(~variable, scale = "free")
-
-
 ```

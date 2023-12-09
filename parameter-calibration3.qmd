@@ -1,78 +1,74 @@
 # Parameter calibration: Applying to process model
 
-
-
-
 ```{r}
-get_loglike <- function(out, obs, variables = c("LAI", "wood", "SOM", "nee"), 
-                        sds = c(0.5, 20, 20, 0.1)){
-  
-  log_likelihood <- out |> 
-    select(datetime, variables) |>  
-    pivot_longer(-datetime, names_to = "variable", values_to = "prediction") |>
-    left_join(obs, by = c("datetime", "variable")) |> 
-    filter(variable %in% variables) |> 
-    na.omit() |> 
-    left_join(tibble(variable = variables,
-                     sds = sds), by = "variable") |> 
-    mutate(log_like = dnorm(observation, prediction, sds, log = TRUE)) |> 
-    summarise(ll = sum(log_like)) |> 
-    pull(ll)
-  
-  return(log_likelihood)
-}
+#| echo: FALSE
+source("R/helpers.R")
 ```
 
 
 ```{r}
 library(tidyverse)
 library(patchwork)
+set.seed(100)
 
 #Set MCMC Configuration
 num_iter <- 1000
 num_pars <- 2
-jump <- c(0.01, 0.001)
-
+jump_params <- c(0.005, 0.001)
+ens_members <- 1
 
 log_likelihood_prior_current <- -10000000000
 accept <- 0
 
-dates <- seq(as_date("2020-09-30"), as_date("2023-12-01"), by = "1 day")
-inputs <- inputs |> 
-  filter(datetime %in% dates)
+sim_dates <- seq(as_date("2023-01-01"), as_date("2023-12-01"), by = "1 day")
+
+
+params <- list()
+params$alpha <- rep(0.02, ens_members)
+params$SLA <- rep(4.74, ens_members)
+params$leaf_frac <- rep(0.315, ens_members)
+params$Ra_frac <- rep(0.5, ens_members)
+params$Rbasal <- rep(0.002, ens_members)
+params$Q10 <- rep(2.1, ens_members)
+params$litterfall <- rep(1/(365*2), ens_members) #Two year leaf lifespan
+params$mortality <- rep(0.00015, ens_members) #Wood lives about 18 years on average (all trees, branches, roots, course roots)
+params$sigma.leaf <- rep(0.0, ens_members) #0.01 
+params$sigma.stem <- rep(0.0, ens_members) #0.01 ## wood biomass
+params$sigma.soil <- rep(0.0, ens_members)# 0.01
+params <- as.data.frame(params)
 
 #Initialize chain
-pars <- array(NA, dim = c(num_pars, num_iter))
-pars[1, 1] <- params$alpha
-pars[2, 1] <- params$litterfall
+fit_params <- array(NA, dim = c(num_pars, num_iter))
+fit_params[1, 1] <- params$alpha
+fit_params[2, 1] <- params$litterfall
 
 
-X_init <- list()
+state_init <- rep(NA, 3)
 
-X_init$leaf <- obs |> 
-  filter(variable == "LAI",
-         datetime %in% dates) |> 
+state_init[1] <- obs |> 
+  filter(datetime %in% sim_dates,
+         variable == "lai") |> 
+  na.omit() |> 
+  summarise(observation = mean(observation, na.rm = TRUE)) |> 
+  mutate(observation = observation / (mean(params$SLA) * 0.1)) |> 
+  pull(observation)
+
+state_init[2] <- obs |> 
+  filter(variable == "wood") |> 
   na.omit() |> 
   slice(1) |> 
-  mutate(observation = observation / (params$SLA * 0.1)) |> 
   pull(observation)
-X_init$wood <- obs |> 
-  filter(variable == "wood",
-         datetime %in% dates) |> 
+
+state_init[3] <- obs |> 
+  filter(variable == "som") |> 
   na.omit() |> 
   slice(1) |> 
   pull(observation)
 
-X_init$SOM <- obs |> 
-  filter(variable == "SOM",
-         datetime %in% dates) |> 
-  na.omit() |>  
-  slice(1) |> 
-  pull(observation)
+inputs <- inputs_all |> 
+    filter(datetime %in% sim_dates)
+inputs_ensemble <- assign_met_ensembles(inputs, ens_members = 1)
 
-X_init <- as.data.frame(X_init)
-
-SSEM <- compiler::cmpfun(SSEM.orig)
 
 for(iter in 2:num_iter){
   
@@ -80,80 +76,51 @@ for(iter in 2:num_iter){
   
   for(j in 1:num_pars){
     
-    #print(c(iter, j))
-    #Randomly select new parameter values
-    proposed_pars <- pars[, iter - 1]
-    proposed_pars[j] <- rnorm(1, mean = pars[j, iter - 1], sd = jump[j])
+    proposed_pars <- fit_params[, iter - 1]
+    proposed_pars[j] <- rnorm(1, mean = fit_params[j, iter - 1], sd = jump[j])
     
-    ##########################
-    # PRIORS
-    #########################
-    #(remember that you multiply probabilities which mean you can add log(probability))
     log_prior <- dunif(proposed_pars[1], min = 0, max = 1, log = TRUE) + 
       dunif(proposed_pars[2], min = 0, max = 1, log = TRUE)
-    
-    #Likelihood.  
-    #You could use:
-    # pred <- process_model(x, pars = proposed_pars)
-    # log_likelihood <- sum(dnorm(new_data, mean = pred, sd = sd_data, log = TRUE)
-    # but we are looping here because it transitions well to the next section of the course
     
     params$alpha  <- proposed_pars[1]
     params$litterfall  <- proposed_pars[2]
     
-    X <- array(NA, dim = c(length(dates), 12))
-    X[1, 1:3] <- unlist(X_init)
+    #Set initial conditions
+    output <- array(NA, dim = c(length(sim_dates), ens_members, 12)) #12 is the number of outputs
+    output[1, , 1] <- state_init[1]
+    output[1, , 2] <- state_init[2]
+    output[1, , 3] <- state_init[3]
     
-    bench::bench_time(
-      for(i in 2:length(dates)){
-        X[i, ]  <- SSEM(X = matrix(X[i-1,1:3], ncol = 3), params = params, inputs = inputs[i, ])
-      }
-    )
+    for(t in 2:length(sim_dates)){
+      output[t, , ]  <- forest_model(t, 
+                                     states = matrix(output[t-1 , , 1:3], nrow = ens_members) , 
+                                     parms = params, 
+                                     inputs = matrix(inputs_ensemble[t ,, ], nrow = ens_members))
+    }
     
-    out <- as.data.frame(X)
-    names(out) <- c("leaves","wood","SOM", "LAI", "GPP", "nee", "Ra", "NPPw", "NPPl", "Rh", "litterfall","mortality")
+    output_df <- output_to_df(output, sim_dates, sim_name = "fitting")
     
-    out <- bind_cols(tibble(datetime = dates), out) 
+    combined_output_obs <- combine_model_obs(output_df, 
+                                             obs,
+                                             variables = c("lai", "wood", "som", "nee"), 
+                                             sds = c(0.5, 20, 20, 0.1))
     
-    #Remember that you multiply probabilities which mean you can add log(probability)
-    #Hence the use of sum
-    log_likelihood <- get_loglike(out, obs)
+    log_likelihood <- sum(dnorm(x =  combined_output_obs$observation, 
+                                mean = combined_output_obs$prediction, 
+                                sd = combined_output_obs$sds, log = TRUE))
     
-    
-    get_loglike_2
-    
-    ############################
-    ###  PRIOR x LIKELIHOOD
-    ############################
-    #Combine the prior and likelihood
-    #remember that you multiply probabilities which means you can add log(probability)
     log_likelihood_prior_proposed <- log_prior + log_likelihood
     
-    #We want the ratio of new / old but since it is in log space we first
-    #take the difference of the logs: log(new/old) = log(new) - log(old) 
-    # and then take out of log space exp(log(new) - log(old))
     z <- exp(log_likelihood_prior_proposed - log_likelihood_prior_current)
     
-    #Now pick a random number between 0 and 1
     r <- runif(1, min = 0, max = 1)
-    #If z > r then accept the new parameters
-    #Note: this will always happen if the new parameters are more likely than
-    #the old parameters z > 1 means than z is always > r no matter what value of
-    #r is chosen.  However it will accept worse parameter sets (P_new is less
-    #likely then P_old - i.e., z < 1) in proportion to how much worse it is
-    #For example: if z = 0.9 and then any random number drawn by runif that is
-    #less than 0.90 will result in accepting the worse values (i.e., the slightly
-    #worse values will be accepted a lot of the time).  In contrast, if z = 0.01
-    #(i.e., the new parameters are much much worse), then they can still be accepted
-    #but much more rarely because random r values of < 0.1 occur more rarely
     
-    #print(c(z, r))
     if(z >  r){
-      pars[j, iter] <- proposed_pars[j]
+      fit_params[j, iter] <- proposed_pars[j]
       log_likelihood_prior_current <- log_likelihood_prior_proposed
       accept <- accept + 1
     }else{
-      pars[j, iter] <- pars[j, iter - 1]
+      fit_params[j, iter] <- fit_params[j, iter - 1]
       log_likelihood_prior_current <- log_likelihood_prior_current #this calculation isn't necessary but is here to show you the logic
     }
   }
@@ -166,8 +133,8 @@ accept / (num_iter * num_pars)
 ```{r}
 nburn <- 500
 d <- tibble(iter = nburn:num_iter,
-            par1 = pars[1, nburn:num_iter],
-            par2 = pars[2, nburn:num_iter]) %>%
+            par1 = fit_params[1, nburn:num_iter],
+            par2 = fit_params[2, nburn:num_iter]) %>%
   pivot_longer(-iter, values_to = "value", names_to = "parameter")
 
 p1 <- ggplot(d, aes(x = iter, y = value)) +
@@ -182,29 +149,138 @@ p1 / p2
 ```
 
 ```{r}
-params$alpha  <- mean(pars[1,500:num_iter])
-params$litterfall  <- mean(pars[2,500:num_iter ])
+ens_members <- 1
+#Set initial conditions
+output <- array(NA, dim = c(length(sim_dates), ens_members, 12)) #12 is the number of outputs
+output[1, , 1] <- state_init[1]
+output[1, , 2] <- state_init[2]
+output[1, , 3] <- state_init[3]
 
-X <- array(NA, dim = c(length(dates), 12))
-X[1, 1:3] <- unlist(X_init)
 
-for(i in 2:length(dates)){
-  X[i, ]  <- SSEM.orig(X = matrix(X[i-1,1:3], ncol = 3), params = params, inputs = inputs[i, ])
+params <- list()
+params$alpha <- rep(0.02, ens_members)
+params$SLA <- rep(4.74, ens_members)
+params$leaf_frac <- rep(0.315, ens_members)
+params$Ra_frac <- rep(0.5, ens_members)
+params$Rbasal <- rep(0.002, ens_members)
+params$Q10 <- rep(2.1, ens_members)
+params$litterfall <- rep(1/(365*2), ens_members) #Two year leaf lifespan
+params$mortality <- rep(0.00015, ens_members) #Wood lives about 18 years on average (all trees, branches, roots, course roots)
+params$sigma.leaf <- rep(0.0, ens_members) #0.01 
+params$sigma.stem <- rep(0.0, ens_members) #0.01 ## wood biomass
+params$sigma.soil <- rep(0.0, ens_members)# 0.01
+params <- as.data.frame(params)
+
+params$alpha <- rep(mean(fit_params[1, nburn:num_iter]), ens_members)
+params$litterfall <- rep(mean(fit_params[2, nburn:num_iter]), ens_members)
+
+#params$alpha <- sample(fit_params[1, nburn:num_iter], ens_members, replace = TRUE)
+#params$litterfall <- sample(fit_params[2, nburn:num_iter], ens_members, replace = TRUE)
+
+for(t in 2:length(sim_dates)){
+  
+  output[t, , ]  <- forest_model(t, 
+                                 states = matrix(output[t-1 , , 1:3], nrow = ens_members) , 
+                                 parms = params, 
+                                 inputs = matrix(inputs_ensemble[t ,, ], nrow = ens_members))
 }
 
-out <- as.data.frame(X)
-names(out) <- c("leaves","wood","SOM", "LAI", "GPP", "NEE", "Ra", "NPPw", "NPPl", "Rh", "litterfall","mortality")
+output_df_optim <- output_to_df(output, sim_dates, sim_name = "optimized_mean")
 
-out <- bind_cols(tibble(datetime = dates), out) 
+```
 
-out |> 
-  select(datetime,LAI, wood, SOM, NEE) |>  
-  rename(nee = NEE) |> 
-  pivot_longer(-datetime, names_to = "variable", values_to = "prediction") |>
-  left_join(obs, by = c("datetime", "variable")) |> 
-  filter(variable %in% c("LAI", "wood", "SOM", "nee")) |> 
+
+```{r}
+ens_members <- 100
+
+#Set initial conditions
+output <- array(NA, dim = c(length(sim_dates), ens_members, 12)) #12 is the number of outputs
+output[1, , 1] <- state_init[1]
+output[1, , 2] <- state_init[2]
+output[1, , 3] <- state_init[3]
+
+params <- list()
+params$alpha <- rep(0.02, ens_members)
+params$SLA <- rep(4.74, ens_members)
+params$leaf_frac <- rep(0.315, ens_members)
+params$Ra_frac <- rep(0.5, ens_members)
+params$Rbasal <- rep(0.002, ens_members)
+params$Q10 <- rep(2.1, ens_members)
+params$litterfall <- rep(1/(365*2), ens_members) #Two year leaf lifespan
+params$mortality <- rep(0.00015, ens_members) #Wood lives about 18 years on average (all trees, branches, roots, course roots)
+params$sigma.leaf <- rep(0.0, ens_members) #0.01 
+params$sigma.stem <- rep(0.0, ens_members) #0.01 ## wood biomass
+params$sigma.soil <- rep(0.0, ens_members)# 0.01
+params <- as.data.frame(params)
+
+for(t in 2:length(sim_dates)){
+  
+  output[t, , ]  <- forest_model(t, 
+                                 states = matrix(output[t-1 , , 1:3], nrow = ens_members) , 
+                                 parms = params, 
+                                 inputs = matrix(inputs_ensemble[t ,, ], nrow = ens_members))
+}
+
+output_df_no_optim <- output_to_df(output, sim_dates, sim_name = "no_optim")
+```
+
+
+```{r}
+bind_rows(output_df_no_optim, output_df_optim) |> 
+  filter(variable %in% c("lai", "wood", "som", "nee")) |> 
+  mutate(ensemble = paste0(ensemble,"_",type)) |> 
   ggplot(aes(x = datetime)) +
-  geom_point(aes(y = prediction)) +
-  geom_point(aes(y = observation, color = "red")) + 
+  geom_line(aes(y = prediction, group = ensemble, color = type), alpha = 0.5) +
+  #geom_point(data = obs, aes(x = datetime, y = observation), color = "red", alpha = 0.5) +
+  facet_wrap(~variable, scale = "free")
+```
+
+```{r}
+
+#Set initial conditions
+output <- array(NA, dim = c(length(sim_dates), ens_members, 12)) #12 is the number of outputs
+output[1, , 1] <- state_init[1]
+output[1, , 2] <- state_init[2]
+output[1, , 3] <- state_init[3]
+
+params <- list()
+params$alpha <- rep(0.02, ens_members)
+params$SLA <- rep(4.74, ens_members)
+params$leaf_frac <- rep(0.315, ens_members)
+params$Ra_frac <- rep(0.5, ens_members)
+params$Rbasal <- rep(0.002, ens_members)
+params$Q10 <- rep(2.1, ens_members)
+params$litterfall <- rep(1/(365*2), ens_members) #Two year leaf lifespan
+params$mortality <- rep(0.00015, ens_members) #Wood lives about 18 years on average (all trees, branches, roots, course roots)
+params$sigma.leaf <- rep(0.0, ens_members) #0.01 
+params$sigma.stem <- rep(0.0, ens_members) #0.01 ## wood biomass
+params$sigma.soil <- rep(0.0, ens_members)# 0.01
+params <- as.data.frame(params)
+
+#params$alpha <- rep(mean(fit_params[1, nburn:num_iter]), ens_members)
+#params$litterfall <- rep(mean(fit_params[2, nburn:num_iter]), ens_members)
+
+params$alpha <- sample(fit_params[1, nburn:num_iter], ens_members, replace = TRUE)
+params$litterfall <- sample(fit_params[2, nburn:num_iter], ens_members, replace = TRUE)
+
+for(t in 2:length(sim_dates)){
+  
+  output[t, , ]  <- forest_model(t, 
+                                 states = matrix(output[t-1 , , 1:3], nrow = ens_members) , 
+                                 parms = params, 
+                                 inputs = matrix(inputs_ensemble[t ,, ], nrow = ens_members))
+}
+
+output_df_optim <- output_to_df(output, sim_dates, sim_name = "optimized")
+
+```
+
+```{r}
+bind_rows(output_df_no_optim, output_df_optim) |> 
+  filter(variable %in% c("lai", "wood", "som", "nee")) |> 
+  mutate(ensemble = paste0(ensemble,"_",type)) |> 
+  ggplot(aes(x = datetime)) +
+  geom_line(aes(y = prediction, group = ensemble, color = type), alpha = 0.5) +
+  #geom_point(data = obs, aes(x = datetime, y = observation), color = "red", alpha = 0.5) +
   facet_wrap(~variable, scale = "free")
 ```

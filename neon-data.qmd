@@ -393,7 +393,10 @@ ggplot(horizon_combined, map = aes(-biogeoTopDepth,horizon_C_kg_per_m2)) +
 ## Combine together
 
 ```{r}
-total_carbon_components <- unlist(c(site_live_carbon$mean_kgCperm2[1],site_dead_carbon$mean_kgCperm2[1],mean(site_cwd_carbon$mean_kgCperm2),site_soil_carbon)) 
+total_carbon_components <- unlist(c(site_live_carbon$mean_kgCperm2[1],
+                                    site_dead_carbon$mean_kgCperm2[1],
+                                    mean(site_cwd_carbon$mean_kgCperm2),
+                                    site_soil_carbon)) 
 
 site_live_carbon <- site_live_carbon |> 
   mutate(variable = "live_tree") |> 
@@ -425,8 +428,8 @@ total_carbon_components |>
 total_carbon_simple <- total_carbon_components |> 
   pivot_wider(names_from = variable, values_from = mean_kgCperm2) |> 
   mutate(wood = live_tree + mean(fine_roots, na.rm = TRUE),
-         SOM = mean(dead_trees, na.rm = TRUE) + mean(down_wood, na.rm = TRUE) + mean(soil_carbon, na.rm = TRUE)) |> 
-  select(year, live, SOM) |> 
+         som = mean(dead_trees, na.rm = TRUE) + mean(down_wood, na.rm = TRUE) + mean(soil_carbon, na.rm = TRUE)) |> 
+  select(year, wood, som) |> 
   pivot_longer(-year, names_to = "variable", values_to = "observation")
 ```
 
@@ -452,7 +455,7 @@ lai_cleaned <- lai |>
   pivot_wider(names_from = band, values_from = value) |> 
   filter(FparLai_QC == 0) |> 
   rename(observation = Lai_500m) |> 
-  mutate(variable = "LAI") |> 
+  mutate(variable = "lai") |> 
   select(datetime, variable, observation)
 ```
 
@@ -485,7 +488,7 @@ obs <- total_carbon_simple |>
   bind_rows(lai_cleaned, flux) |> 
   mutate(site_id = site) |> 
   select(-year) |> 
-  mutate(observation = ifelse(variable %in% c("wood", "SOM") , observation * 10, observation),
+  mutate(observation = ifelse(variable %in% c("wood", "som") , observation * 10, observation),
          observation = ifelse(variable %in% c("nee") , observation * 0.01, observation))
 
 ```
