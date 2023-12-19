@@ -6,15 +6,13 @@ library(lubridate)
 library(neonstore)
 ```
 
-In this document, we will be creating a carbon budget for ORNL using data from `NEON`, and the tools `neonstore` and `allodb`.
+In this document, we will be creating a carbon budget for a NEON site.  It was developed in collobration with John Smith at Montana State University.
 
 NEON data is organized by data product ID in the NEON Date Portal: <https://data.neonscience.org/static/browse.html>
 
-You will be using the following data products - DP1.10098.001 (Woody plant vegetation structure) - DP1.00096.001 (Soil physical properties (Megapit)) - DP1.00097.001 (Soil chemical properties (Megapit))
-
 ## Download data
 
-First, we are going to want to define the site ID. The four letter site code for Oak Ridge is `ORNL`.
+First, we are going to want to define the site ID. The four letter site code denotes NEON site.  You can learn more about NEON sites here: <https://www.neonscience.org/field-sites/explore-field-sites>
 
 ```{r}
 site <- "TALL"
@@ -207,6 +205,7 @@ ggplot(plot_dead_carbon, aes(x = year, y = plot_kgCm2, color = plotID)) +
   geom_point() +
   geom_line()
 ```
+
 ```{r}
 ggplot(site_dead_carbon, aes(x = year, y = mean_kgCperm2)) + 
   geom_point() +
@@ -325,8 +324,6 @@ site_roots <- rootmass %>%
   select(year, mean_kgCperm2)
   
 ```
-
-
 
 ## Calculate carbon in soils
 

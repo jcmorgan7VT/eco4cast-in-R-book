@@ -48,7 +48,9 @@ for(t in 1:length_of_time_series){
     
     Compare particle to data (likelihood or other technique)
 
-    Adjust particles based on the comparsion to the data
+    Weight particles based on the comparsion to the data
+    
+    Adjust particles based on weights
 
 }
 ```
@@ -73,12 +75,13 @@ The particle filter is quite simple
   ## The dimensiosn of x
   wt <- dnorm(y[t], mean = x[t, ], sd = sd_data)
   
-  wt <- wt / sum(wt)
+  # Normalize the weights
+  wt_norm <- wt / sum(wt)
   
   ## resample ensemble members in proportion to their weight.  
   ## Since the total number of samples = the number of particles then you will preserve the 
   ## Same number of particles
-  resample_index <- sample(1:num_particles, num_particles, replace = TRUE, prob = wt) 
+  resample_index <- sample(1:num_particles, num_particles, replace = TRUE, prob = wt_norm) 
   
   ##Use the index to resample
   x[t, ] <- x[t, resample_index]
@@ -98,6 +101,7 @@ First load in data. We are only going to focus on the first 15 weeks of the data
 
 ```{r}
 library(tidyverse)
+set.seed(100)
 gflu <- read_csv("data/gflu_data.txt", skip = 11) %>% 
   select(Date, Virginia)
 gflu$Date <- as.Date(gflu$Date)
@@ -153,10 +157,10 @@ for(t in 2:nt){
       ## calculate Likelihood (weights)
       wt <- dnorm(y[t], mean = x[t, ], sd = sd_obs)    ## calculate likelihood (weight)
       
-      wt <- wt / sum(wt)
+      wt_norm <- wt / sum(wt)
       
       ## resample ensemble members in proportion to their weight
-      resample_index <- sample(1:num_particles, num_particles, replace = TRUE, prob = wt) 
+      resample_index <- sample(1:num_particles, num_particles, replace = TRUE, prob = wt_norm) 
       
       x[t, ] <- x[t, resample_index]  ## update state
     }
@@ -219,10 +223,10 @@ for(t in 2:nt){
       ## calculate Likelihood (weights)
       wt <- dnorm(y[t], mean = x[t, ], sd = sd_obs)    ## calculate likelihood (weight)
       
-      wt <- wt / sum(wt)
+      wt_norm <- wt / sum(wt)
       
       ## resample ensemble members in proportion to their weight
-      resample_index <- sample(1:num_particles, num_particles, replace = TRUE, prob = wt) 
+      resample_index <- sample(1:num_particles, num_particles, replace = TRUE, prob = wt_norm) 
       
       x[t, ] <- x[t, resample_index]  ## update state
     }
@@ -363,10 +367,10 @@ for(t in 2:nt){
     ## calculate Likelihood (weights)
     wt <- dnorm(y[t], mean = x[t, ], sd = sd_obs)    ## calculate likelihood (weight)
     
-    wt <- wt / sum(wt)
+    wt_norm <- wt / sum(wt)
     
     ## resample ensemble members in proportion to their weight
-    resample_index <- sample(1:num_particles, num_particles, replace = TRUE, prob = wt) 
+    resample_index <- sample(1:num_particles, num_particles, replace = TRUE, prob = wt_norm) 
 
     x[t, ] <- x[t, resample_index]  ## update state
     b1[t, ] <- b1[t, resample_index] ## Parameter update
@@ -450,10 +454,10 @@ bootstrap_pf <- function(num_particles, sd_add = 0.2, sd_obs = 0.2){
       ## calulate Likelihood (weights)
       wt <- dnorm(y[t], mean = x[t, ], sd = sd_obs)    ## calculate likelihood (weight)
       
-      wt <- wt / sum(wt)
+      wt_norm <- wt / sum(wt)
       
       ## resample ensemble members in proportion to their weight
-      resample_index <- sample(1:num_particles, num_particles, replace = TRUE, prob = wt) 
+      resample_index <- sample(1:num_particles, num_particles, replace = TRUE, prob = wt_norm) 
       
       x[t, ] <- x[t, resample_index]  ## update state
       b1[t, ] <- b1[t, resample_index] ## Parameter update

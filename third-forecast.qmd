@@ -1,5 +1,8 @@
 # Third forecast: automatically updating second forecast
 
+The third forecast generation assignment will challenge you to automate the submission of your forecast.  By running your forecast code each day, you will be updating your model with the latest data, which is a simple form of data assimilation.
+
 <https://github.com/OlssonF/NEON-forecast-challenge-workshop/blob/main/Automate_forecasts/automation_tutorial.Rmd>
 
+You will submit the assignment as an updated GitHub repository that is successfully submitting automated forecasts.
 

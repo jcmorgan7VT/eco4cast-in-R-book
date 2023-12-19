@@ -1,4 +1,3 @@
 # Second forecast: Adding uncertainty to first forecast
 
-This module builds on <https://github.com/OlssonF/NEON-forecast-challenge-workshop>
-
+This module builds @sec-first-forecast by challenging you to update the code in your GitHub so that the forecast you are submitting has driver, parameter, and process uncertainty.  You will submit the assignment as an updated GitHub repository with the code and plot of your forecast with all uncertainty sources included.

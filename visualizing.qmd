@@ -1,10 +1,14 @@
 # Visualizing and evaluating forecasts
 
+The fourth forecast generation assignment will challenge analyze the automated forecasts that you submitted as part of @sec-third-forecast.  The assign uses the module in Freya Olsson's tutorial that provides code to access the automatically scored forecasts.  You will add code to your respository that generates plots.  
+
 https://github.com/OlssonF/NEON-forecast-challenge-workshop/blob/main/Analyse_scores/Get_scores_tutorial.Rmd
 
-## Scoring Metric: RMSE
+## Information on scoring metrics
 
-## Scoring Metric: Continuous Ranked Probability Score
+## RMSE
+
+## Continuous Ranked Probability Score
 
 Forecasts will be scored using the continuous ranked probability score (CRPS), a proper scoring rule for evaluating forecasts presented as distributions or ensembles (Gneiting & Raftery 2007). The CRPS compares the forecast probability distribution to that of the validation observation and assigns a score based on both the accuracy and precision of the forecast. We will use the 'crps_sample' function from the `scoringRules` package in R to calculate the CRPS for each forecast.
 

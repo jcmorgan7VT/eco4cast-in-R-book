@@ -2,15 +2,19 @@
 
 ```{r}
 #| echo: FALSE
+library(tidyverse)
+library(lubridate)
 source("R/helpers.R")
+source("R/forest_model.R")
 ```
+
 
 ```{r}
 sim_dates <- seq(as_date("2023-11-15"),length.out  = 34, by = "1 day")
 ```
 
 ```{r}
-library(tidyverse)
+
 site <- "TALL"
 met_s3 <- arrow::s3_bucket(paste0("bio230014-bucket01/neon4cast-drivers/noaa/gefs-v12/stage2/reference_datetime=",sim_dates[1],"/site_id=",site),
                            endpoint_override = "sdsc.osn.xsede.org",
@@ -26,8 +30,6 @@ inputs_all <- arrow::open_dataset(met_s3) |>
   summarise(prediction = mean(prediction, na.rm = TRUE), .by = c("datetime", "variable", "parameter")) |> 
   collect()
 ```
-
-
 
 Build function with the process model
 
@@ -84,14 +86,11 @@ output_df |>
   facet_wrap(~variable, scale = "free")
 ```
 
-
 ## Process uncertainty
 
 ## Initial condition uncertainty
 
 ## Driver uncertainty
-
-
 
 ## Combined uncertainty
 

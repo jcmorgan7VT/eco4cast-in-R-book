@@ -2,13 +2,11 @@
 
 ## R skills
 
-R, Rstudio, Tidyverse (`read_csv`, `write_csv`, `mutate`, `filter`, `group_by`, `summarize`, `ggplot`, `select`, pipes (`|>` or `%>`), `pivot_wider`, `pivot_longer`, `arrange`, `left_join`)
+The book uses R as the focal programming language and generate uses the Tidyverse approach when working with and visualizing data. The following functions are commonly used: `read_csv`, `write_csv`, `mutate`, `filter`, `group_by`, `summarize`, `ggplot`, `select`, pipes (`|>` or `%>`), `pivot_wider`, `pivot_longer`, `arrange`, `left_join`). If you are new R and Tidyverse there are many great materials on the internet. The Data Carpentry "Data Analysis and Visualization in R for Ecologists" is an excellent starting point for learning. The [R for Data Science book](https://r4ds.hadley.nz%5D) is an especially useful reference for learning the Tidyverse commands. Finally, I have created an [introductory to tidyverse module](https://github.com/frec-3044/tidyvere-intro-template) for my undergraduate Environmental Data Science class. You can use the module as a "test" of your Tidyverse skills
 
-<https://r4ds.hadley.nz](https://r4ds.hadley.nz>
+## Git Skills {#sec-github}
 
-<https://github.com/frec-3044/tidyvere-intro-template/blob/main/assignment/tidyverse-intro.qmd>
-
-## Git Skills
+You will be required to use Git and GitHub to complete the assignments in the book.  In particular, Git and GitHub are uses for the generation and submission of forecasts to the NEON Ecological Forecasting Challenge.  Below are instructions for setting up Git and GitHub on your computer.
 
 1.  Create a GitHub user account at <https://github.com>, if you don't already have one. [Here is advice about choosing a user name](https://happygitwithr.com/github-acct.html#username-advice), because choosing a good user name is critical.
 
@@ -39,7 +37,7 @@ If you get an error at this step it is likely due to your computer not having Gi
 
 9.  Your project will load. Then go to File -\> New -\> New File -\> Quarto Document
 
-10. In the prompt use Title = "Assignment 1" and Author = [Your name]
+10. In the prompt use Title = "Assignment 1" and Author = \[Your name\]
 
 11. Save file as "assignment1.qmd" in the **assignment subdirectory** of the Project.
 
@@ -74,23 +72,25 @@ If you are having issues (i.e., your computer does not seem to have Git installe
 
 ## Docker Skills
 
-Go to [https://docs.docker.com/get-docker/](https://docs.docker.com/get-docker/) to install the relevant install for your platform (available for PC, Mac and Linux). Also see [https://docs.docker.com/desktop/](https://docs.docker.com/desktop/).
+Docker is tool that the activities in the book use for improving the reproduciblity and automation of data analysis and forecasting workflows.  Below are the instructions for setting up and interacting with a Docker container (instructions are from Freya Olsson's workshop)
 
-NOTE: 
-* If you're running Windows, you will need WSL (Windows Subsystem for Linux)
-* If you're running a Linux distribution, you may have to enable Viritualization on your computer (see [here](https://stackoverflow.com/questions/76646465/unable-to-launch-docker-desktop-on-ubuntu/76655270#76655270))
+Go to <https://docs.docker.com/get-docker/> to install the relevant install for your platform (available for PC, Mac and Linux). Also see <https://docs.docker.com/desktop/>.
+
+NOTE: \* If you're running Windows, you will need WSL (Windows Subsystem for Linux) \* If you're running a Linux distribution, you may have to enable Viritualization on your computer (see [here](https://stackoverflow.com/questions/76646465/unable-to-launch-docker-desktop-on-ubuntu/76655270#76655270))
 
 ## Running a docker container
 
-1. Launch Docker Desktop (either from the Command Line or by starting the GUI) 
-2. At the command line run the following command which tells docker to `run` the container with the name `eco4cast/rocker-neon4cast` that has all the packages and libraries installed already. The `PASSWORD=yourpassword` sets a simple password that you will use to open the container. The `-ti` option starts both a terminal and an interactive session. 
-```
+1.  Launch Docker Desktop (either from the Command Line or by starting the GUI)
+2.  At the command line run the following command which tells docker to `run` the container with the name `eco4cast/rocker-neon4cast` that has all the packages and libraries installed already. The `PASSWORD=yourpassword` sets a simple password that you will use to open the container. The `-ti` option starts both a terminal and an interactive session.
+
+```         
 docker run --rm -ti -e PASSWORD=yourpassword -p 8787:8787 eco4cast/rocker-neon4cast
 ```
-This can take a few minutes to download and install. It will be quicker the next time you launch it.  
 
-3. Open up a web browser and navigate to `http://localhost:8787/`
-4. Enter the username: `rstudio` and password: `yourpassword`
-5. You should see a R Studio interface with all the packages etc. pre-installed and ready to go.
+This can take a few minutes to download and install. It will be quicker the next time you launch it.
+
+3.  Open up a web browser and navigate to `http://localhost:8787/`
+4.  Enter the username: `rstudio` and password: `yourpassword`
+5.  You should see a R Studio interface with all the packages etc. pre-installed and ready to go.
 
 You can close this localhost window (and then come back to it) but if you close the container from Docker (turn off your computer etc.) any changes will be lost unless you push them to Github or exported to your local environment.
