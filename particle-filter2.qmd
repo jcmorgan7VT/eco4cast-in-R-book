@@ -8,7 +8,7 @@ source("R/forest_model.R")
 
 ```{r}
 ens_members <- 100
-sim_dates <- seq(Sys.Date() - 30, Sys.Date() - 1, by = "1 day")
+sim_dates <- seq(Sys.Date() - 90, Sys.Date() - 1, by = "1 day")
 ```
 
 ```{r}
@@ -99,7 +99,7 @@ fit_params[1, , 2] <- fit_params_table$Rbasal[samples]
 for(t in 2:length(sim_dates)){
   
       fit_params[t, , 1] <- rnorm(ens_members, fit_params[t-1, ,1], sd = 0.0005)
-      fit_params[t, , 2] <- rnorm(ens_members, fit_params[t-1, ,2], sd = 0.0005)
+      fit_params[t, , 2] <- rnorm(ens_members, fit_params[t-1, ,2], sd = 0.00005)
 
     params$alpha  <- fit_params[t, , 1]
     params$Rbasal  <- fit_params[t, , 2]
@@ -125,18 +125,18 @@ for(t in 2:length(sim_dates)){
                                              variables = c("lai", "wood", "som", "nee"), 
                                              sds = c(0.5, 20, 20, 0.005))
      
-    likhood <- rep(0, ens_members)
+    likelihood <- rep(0, ens_members)
     for(ens in 1:ens_members){
       
       curr_ens <- combined_output_obs |> 
         filter(ensemble == ens)
       
-      likhood[ens] <- exp(sum(dnorm(x =  curr_ens$observation, 
+      likelihood[ens] <- exp(sum(dnorm(x =  curr_ens$observation, 
                                     mean = curr_ens$prediction, 
                                     sd = curr_ens$sds, log = TRUE)))
     }
     
-    wt[t, ] <- likhood * wt[t-1, ]
+    wt[t, ] <- likelihood * wt[t-1, ]
     
     wt_norm <-  wt[t, ]/sum(wt[t, ])
     Neff = 1/sum(wt_norm^2)
@@ -156,12 +156,13 @@ for(t in 2:length(sim_dates)){
 forecast_weighted <- array(NA, dim = c(length(sim_dates), ens_members, 12))
 params_weighted <- array(NA, dim = c(length(sim_dates) ,ens_members , num_pars))
 for(t in 1:length(sim_dates)){
+      wt_norm <-  wt[t, ]/sum(wt[t, ])
       resample_index <- sample(1:ens_members, ens_members, replace = TRUE, prob = wt_norm ) 
       forecast_weighted[t, , ] <- forecast[t, resample_index, 1:12] 
-      params_weighted[t, , ] <- fit_params[t,resample_index , ] 
+      params_weighted[t, , ] <- fit_params[t,resample_index, ] 
 }
 output_df <- output_to_df(forecast_weighted, sim_dates, sim_name = "parameter_unc")
-parameter_df <- parameters_to_df(params_weighted, sim_dates, sim_name = "parameter_unc", param_names = "alpha")
+parameter_df <- parameters_to_df(params_weighted, sim_dates, sim_name = "parameter_unc", param_names = c("alpha","Rbasal"))
 ```
 
 ```{r}
@@ -170,10 +171,14 @@ obs_dates <- obs |>
   pull(datetime)
 
 output_df |> 
+    summarise(median = median(prediction),
+            upper = quantile(prediction, 0.95, na.rm = TRUE),
+            lower = quantile(prediction, 0.05, na.rm = TRUE), .by = c("datetime", "variable")) |> 
   left_join(obs, by = c("datetime", "variable")) |> 
   filter(variable %in% c("nee","wood","som","lai")) |> 
   ggplot(aes(x = datetime)) +
-  geom_line(aes(y = prediction, group = ensemble)) +
+  geom_ribbon(aes(ymin = upper, ymax = lower), alpha = 0.7) +
+  geom_line(aes(y = median)) +
   geom_point(aes(y = observation), color = "red") +
   #geom_vline(xintercept = obs_dates) + 
   facet_wrap(~variable, scale = "free")
@@ -181,5 +186,12 @@ output_df |>
 
 ```{r}
 parameter_df |> 
-  ggplot(aes(datetime, prediction, group = ensemble)) + geom_line()
+  summarise(median = median(prediction),
+            upper = quantile(prediction, 0.95, na.rm = TRUE),
+            lower = quantile(prediction, 0.05, na.rm = TRUE), .by = c("datetime", "variable")) |> 
+  left_join(obs, by = c("datetime", "variable")) |> 
+  ggplot(aes(x = datetime)) +
+  geom_ribbon(aes(ymin = upper, ymax = lower), alpha = 0.7) +
+  geom_line(aes(y = median)) +
+  facet_wrap(~variable, scale = "free")
 ```

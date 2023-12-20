@@ -6,13 +6,13 @@ library(lubridate)
 library(neonstore)
 ```
 
-In this document, we will be creating a carbon budget for a NEON site.  It was developed in collobration with John Smith at Montana State University.
+In this document, we will be creating a carbon budget for a NEON site. It was developed in collobration with John Smith at Montana State University.
 
 NEON data is organized by data product ID in the NEON Date Portal: <https://data.neonscience.org/static/browse.html>
 
 ## Download data
 
-First, we are going to want to define the site ID. The four letter site code denotes NEON site.  You can learn more about NEON sites here: <https://www.neonscience.org/field-sites/explore-field-sites>
+First, we are going to want to define the site ID. The four letter site code denotes NEON site. You can learn more about NEON sites here: <https://www.neonscience.org/field-sites/explore-field-sites>
 
 ```{r}
 site <- "TALL"
