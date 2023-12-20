@@ -1,3 +1,32 @@
 # Putting it together: forecast - analysis cycle
 
+## Example of the forecast and analysis cycle
+
+
+### Step 1: Set initial conditions and parameter distributions
+
+
+### Step 2: Generate forecaset
+
+
+### Step 3: Save forecast and data assimiliation output
+
+
+### Step 4: Use yesterday's forecast of today for initial conditions and parameter distributions
+
+### Step 5: Assimilate new data
+
+### Step 6: Generate forecast
+
+
+### Step 7: Save forecast and data assimiliation output
+
+### Step 8: Repeat
+
+
+## Code example of forecast analysis cycle implimented in a more complex forest model
+
+<https://github.com/mdietze/FluxCourseForecast>
+
+
 
