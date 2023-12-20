@@ -1,5 +1,0 @@
-# Modeling approaches
-
-## Intro to Tidymodels
-
-## Intro to Fable Models

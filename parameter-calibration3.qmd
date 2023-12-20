@@ -53,7 +53,9 @@ params$leaf_frac <- rep(0.315, ens_members)
 params$Ra_frac <- rep(0.5, ens_members)
 params$Rbasal <- rep(0.002, ens_members)
 params$Q10 <- rep(2.1, ens_members)
-params$litterfall <- rep(1/(365*2), ens_members) #Two year leaf lifespan
+params$litterfall_rate <- rep(1/(2.0*365), ens_members) #Two year leaf lifespan
+params$litterfall_start <- rep(200, ens_members)
+params$litterfall_length<- rep(70, ens_members)
 params$mortality <- rep(0.00015, ens_members) #Wood lives about 18 years on average (all trees, branches, roots, course roots)
 params$sigma.leaf <- rep(0.0, ens_members) #0.01 
 params$sigma.stem <- rep(0.0, ens_members) #0.01 ## wood biomass
@@ -75,7 +77,7 @@ state_init[1] <- obs |>
   filter(datetime %in% sim_dates,
          variable == "lai") |> 
   na.omit() |> 
-  summarise(observation = mean(observation, na.rm = TRUE)) |> 
+  slice(1) |> 
   mutate(observation = observation / (mean(params$SLA) * 0.1)) |> 
   pull(observation)
 
@@ -92,8 +94,9 @@ state_init[3] <- obs |>
   pull(observation)
 
 inputs <- inputs_all |> 
-    filter(datetime %in% sim_dates)
-inputs_ensemble <- assign_met_ensembles(inputs, ens_members = 1)
+    filter(datetime %in% as_date(sim_dates)) |> 
+    mutate(doy = yday(datetime))
+inputs_ensemble <- assign_met_ensembles(inputs, ens_members)
 
 
 for(iter in 2:num_iter){
@@ -195,7 +198,9 @@ params$leaf_frac <- rep(0.315, ens_members)
 params$Ra_frac <- rep(0.5, ens_members)
 params$Rbasal <- rnorm(ens_members, mean = prior_mean[2], sd = prior_sd[2])
 params$Q10 <- rep(2.1, ens_members)
-params$litterfall <- rep(1/(365*2), ens_members) #Two year leaf lifespan
+params$litterfall_rate <- rep(1/(2.0*365), ens_members) #Two year leaf lifespan
+params$litterfall_start <- rep(200, ens_members)
+params$litterfall_length<- rep(70, ens_members)
 params$mortality <- rep(0.00015, ens_members) #Wood lives about 18 years on average (all trees, branches, roots, course roots)
 params$sigma.leaf <- rep(0.0, ens_members) #0.01 
 params$sigma.stem <- rep(0.0, ens_members) #0.01 ## wood biomass
@@ -228,7 +233,9 @@ params$leaf_frac <- rep(0.315, ens_members)
 params$Ra_frac <- rep(0.5, ens_members)
 params$Rbasal <- rep(0.002, ens_members)
 params$Q10 <- rep(2.1, ens_members)
-params$litterfall <- rep(1/(365*2), ens_members) #Two year leaf lifespan
+params$litterfall_rate <- rep(1/(2.0*365), ens_members) #Two year leaf lifespan
+params$litterfall_start <- rep(200, ens_members)
+params$litterfall_length<- rep(70, ens_members)
 params$mortality <- rep(0.00015, ens_members) #Wood lives about 18 years on average (all trees, branches, roots, course roots)
 params$sigma.leaf <- rep(0.0, ens_members) #0.01 
 params$sigma.stem <- rep(0.0, ens_members) #0.01 ## wood biomass
@@ -270,6 +277,4 @@ tibble(iter = nburn:num_iter,
        Rbasal = fit_params[2, nburn:num_iter]) |> 
   pivot_longer(-iter, values_to = "value", names_to = "parameter") |> 
   write_csv("data/saved_parameter_chain.csv")
-  
-
 ```

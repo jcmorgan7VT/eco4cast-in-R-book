@@ -19,25 +19,27 @@ book:
         - third-forecast.qmd
         - decision-making.qmd
         - visualizing.qmd
-    - part: project1.qmd
+    - part: "Project 1"
       chapters:
-        - modeling-approaches.qmd
+        - project1.qmd
         - submitting-forecasts.qmd
     - part: advanced-forecasting.qmd
       chapters:
         - process-model.qmd
         - prop-uncertainty.qmd
-        - neon-data.qmd
         - parameter-calibration1.qmd
         - parameter-calibration2.qmd
         - parameter-calibration3.qmd
         - particle-filter.qmd
         - pulling-together.qmd
-    - part: project2.qmd
+    - part: "Project 2"
       chapters:
         - project2-details.qmd
     - summary.qmd
     - references.qmd
+    - part: "Appendix"
+      chapters:
+      - neon-data.qmd
 
 bibliography: references.bib
 

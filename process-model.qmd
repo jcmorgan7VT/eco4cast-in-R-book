@@ -14,6 +14,7 @@ forest_model <- function(t, states, parms, inputs){
   
   inputs_temp <- inputs[, 1]
   inputs_PAR <- inputs[, 2]
+  inputs_doy <- inputs[, 3]
   
   ##Unit Conversion: umol/m2/sec to Mg/ha/timestep
   k <- 1e-6 * 12 * 1e-6 * 10000 * 86400 #mol/umol*gC/mol*Mg/g*m2/ha*sec/timestep
@@ -35,7 +36,11 @@ forest_model <- function(t, states, parms, inputs){
   rh <- pmax(k * parms$Rbasal * states[, 3] * parms$Q10 ^ (inputs_temp / 10), 0) ## pmax ensures SOM never goes negative
 
   ## turnover
-  litterfall <- states[ , 1] * parms$litterfall
+  
+  
+  litterfall <- states[ , 1] * (parms$litterfall_rate * (365/ (params$litterfall_length)))
+  litterfall[!(inputs_doy > params$litterfall_start & inputs_doy[1] < (params$litterfall_start + params$litterfall_length))] <- 0.0
+
   mortality <- states[ , 2] * parms$mortality
   
   #Change in states
@@ -106,7 +111,9 @@ params$leaf_frac <- rep(0.315, ens_members)
 params$Ra_frac <- rep(0.5, ens_members)
 params$Rbasal <- rep(0.002, ens_members)
 params$Q10 <- rep(2.1, ens_members)
-params$litterfall <- rep(1/(365*2), ens_members) #Two year leaf lifespan
+params$litterfall_rate <- rep(1/(2.0*365), ens_members) #Two year leaf lifespan
+params$litterfall_start <- rep(200, ens_members)
+params$litterfall_length<- rep(70, ens_members)
 params$mortality <- rep(0.00015, ens_members) #Wood lives about 18 years on average (all trees, branches, roots, course roots)
 params$sigma.leaf <- rep(0.0, ens_members) #0.01 
 params$sigma.stem <- rep(0.0, ens_members) #0.01 ## wood biomass
@@ -118,7 +125,8 @@ params <- as.data.frame(params)
 
 ```{r}
 inputs <- inputs_all |> 
-    filter(datetime %in% as_date(sim_dates))
+    filter(datetime %in% as_date(sim_dates)) |> 
+    mutate(doy = yday(datetime))
 inputs_ensemble <- assign_met_ensembles(inputs, ens_members)
 ```
 

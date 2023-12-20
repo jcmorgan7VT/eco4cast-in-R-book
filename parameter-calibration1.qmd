@@ -1,6 +1,7 @@
-# Parameter calibration: Intro to probablity and likelihood
+# Parameter calibration: Intro to probability and likelihood
 
 ```{r}
+#| echo = FALSE
 library(tidyverse)
 ```
 
@@ -491,6 +492,12 @@ Likelihood approach shown here gives us the *likelihood of the particular set of
 
 ## Problem set
 
+Copy the text and code below into an .Rmd or .qmd document and complete the assignment. You will be asked submit (via Canvas) your rendered (or knitted) html document
+
+```{r}
+library(tidyverse)
+```
+
 ### Part 1
 
 Load dataset
@@ -603,19 +610,23 @@ bart_2020 <- d  %>%
 
 **Answer 12:**
 
-### Part 2 (worth 8 points)
+### Part 2
 
-Download the following data from Files/Exercises folder Canvas
+Using the following data
 
-"soil_respiration_module_data.csv"
+```{r}
+df <- read_csv("data/soil_respiration_module_data.csv", show_col_types = FALSE)
+```
 
 It is a dataset that reports soil respiration, soil temperature, and soil moisture over a year at the University of Michigan Biological Station (from Nave, L.E., N. Bader, and J.L. Klug)
 
 The columns correspond to the following
 
-doy = Day of Year soil_resp: Soil respiration (micromoles CO2 per m2 per second) soil_temp: Soil Temp (deg C) soil_moisture: Soil Moisture (%)
+-   doy = Day of Year\
+-   soil_resp: Soil respiration (micromoles CO2 per m2 per second)\
+-   soil_temp: Soil Temp (deg C) soil_moisture: Soil Moisture (%)\
 
-Model the relationship between soil temperature and soil respiration using the Q10 function below
+Use maximium likelihood to estimate the parameters in the model that predicts the relationship between soil temperature and soil respiration using the Q10 function below
 
 $$\theta_1 * \theta_2 ^{{(T - 20)}\over{10}}$$
 

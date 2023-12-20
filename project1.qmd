@@ -1,5 +1,19 @@
 # Project 1: Create model and submit
 
+Project is challenges you to build a new model the forecasts NEON water temperature using the foundations that have been taught thus far in the book.  You will be automatically submitting forecasts to the NEON Ecological Forecasting Challenge.  
+
+Here is information about generating and submitting forecasts: <https://projects.ecoforecast.org/neon4cast-ci/>
+
+You are welcome to use any modeling or statistical framework.  Some great resources for R packages that open the doors to many modeling frameworks are below.  
+
 ## Intro to Tidymodels
 
+<https://github.com/frec-3044/machine-learning-template>
+
 ## Intro to Fable Models
+
+<https://otexts.com/fpp3/>
+
+## How to submit a forecast
+
+<https://projects.ecoforecast.org/neon4cast-ci/instructions.html>

@@ -8,7 +8,7 @@ source("R/forest_model.R")
 
 ```{r}
 ens_members <- 100
-sim_dates <- seq(Sys.Date() - 90, Sys.Date() - 1, by = "1 day")
+sim_dates <- seq(Sys.Date() - 500, Sys.Date() - 1, by = "1 day")
 ```
 
 ```{r}
@@ -37,11 +37,13 @@ params$leaf_frac <- rep(0.315, ens_members)
 params$Ra_frac <- rep(0.5, ens_members)
 params$Rbasal <- rep(0.002, ens_members)
 params$Q10 <- rep(2.1, ens_members)
-params$litterfall <- rep(1/(365*2), ens_members) #Two year leaf lifespan
+params$litterfall_rate <- rep(1/(2.0*365), ens_members) #Two year leaf lifespan
+params$litterfall_start <- rep(200, ens_members)
+params$litterfall_length<- rep(70, ens_members)
 params$mortality <- rep(0.00015, ens_members) #Wood lives about 18 years on average (all trees, branches, roots, course roots)
-params$sigma.leaf <- rep(0.01, ens_members) #0.01 
-params$sigma.stem <- rep(0.01, ens_members) #0.01 ## wood biomass
-params$sigma.soil <- rep(0.01, ens_members)# 0.01
+params$sigma.leaf <- rep(0.1, ens_members) #0.01 
+params$sigma.stem <- rep(0.1, ens_members) #0.01 ## wood biomass
+params$sigma.soil <- rep(0.1, ens_members)# 0.01
 params <- as.data.frame(params)
 ```
 
@@ -53,7 +55,7 @@ state_init[1] <- obs |>
   filter(variable == "lai",
          datetime %in% sim_dates) |> 
   na.omit() |> 
-  summarise(observation = mean(observation, na.rm = TRUE)) |> 
+  slice(1) |> 
   mutate(observation = observation / (mean(params$SLA) * 0.1)) |> 
   pull(observation)
 
@@ -80,8 +82,9 @@ forecast[1, , 3] <- state_init[3]
 wt <- array(1, dim = c(length(sim_dates), ens_members))
 
 inputs <- inputs_all |> 
-  filter(datetime %in% sim_dates)
-inputs_ensemble <- assign_met_ensembles(inputs, ens_members, var_order = c("temp","PAR"))
+    filter(datetime %in% as_date(sim_dates)) |> 
+    mutate(doy = yday(datetime))
+inputs_ensemble <- assign_met_ensembles(inputs, ens_members)
 ```
 
 ```{r}
@@ -95,36 +98,34 @@ fit_params[1, , 1] <- fit_params_table$alpha[samples]
 fit_params[1, , 2] <- fit_params_table$Rbasal[samples]
 
 
- 
+
 for(t in 2:length(sim_dates)){
   
-      fit_params[t, , 1] <- rnorm(ens_members, fit_params[t-1, ,1], sd = 0.0005)
-      fit_params[t, , 2] <- rnorm(ens_members, fit_params[t-1, ,2], sd = 0.00005)
-
-    params$alpha  <- fit_params[t, , 1]
-    params$Rbasal  <- fit_params[t, , 2]
-
+  fit_params[t, , 1] <- rnorm(ens_members, fit_params[t-1, ,1], sd = 0.0005)
+  fit_params[t, , 2] <- rnorm(ens_members, fit_params[t-1, ,2], sd = 0.00005)
   
+  params$alpha  <- fit_params[t, , 1]
+  params$Rbasal  <- fit_params[t, , 2]
   
   forecast[t, , ]  <- forest_model(t, 
-                           states = matrix(forecast[t-1 , , 1:3], nrow = ens_members) , 
-                           parms = params, 
-                           inputs = matrix(inputs_ensemble[t , , ], nrow = ens_members))
+                                   states = matrix(forecast[t-1 , , 1:3], nrow = ens_members) , 
+                                   parms = params, 
+                                   inputs = matrix(inputs_ensemble[t , , ], nrow = ens_members))
   
   curr_obs <- obs |> 
     filter(datetime == sim_dates[t],
-           variable %in% c("nee"))
+           variable %in% c("nee","lai"))
   
   if(nrow(curr_obs) > 0){
     
-    forecast_df <- output_to_df(forecast[t, , ], sim_dates[t], sim_name = "parameter_unc")
-
+    forecast_df <- output_to_df(forecast[t, , ], sim_dates[t], sim_name = "particle_filter")
+    
     
     combined_output_obs <- combine_model_obs(forecast_df, 
                                              obs = curr_obs,
                                              variables = c("lai", "wood", "som", "nee"), 
-                                             sds = c(0.5, 20, 20, 0.005))
-     
+                                             sds = c(0.1, 20, 20, 0.005))
+    
     likelihood <- rep(0, ens_members)
     for(ens in 1:ens_members){
       
@@ -132,15 +133,15 @@ for(t in 2:length(sim_dates)){
         filter(ensemble == ens)
       
       likelihood[ens] <- exp(sum(dnorm(x =  curr_ens$observation, 
-                                    mean = curr_ens$prediction, 
-                                    sd = curr_ens$sds, log = TRUE)))
+                                       mean = curr_ens$prediction, 
+                                       sd = curr_ens$sds, log = TRUE)))
     }
     
     wt[t, ] <- likelihood * wt[t-1, ]
     
     wt_norm <-  wt[t, ]/sum(wt[t, ])
     Neff = 1/sum(wt_norm^2)
-
+    
     if(Neff < ens_members/2){
       ## resample ensemble members in proportion to their weight
       resample_index <- sample(1:ens_members, ens_members, replace = TRUE, prob = wt_norm ) 
@@ -156,10 +157,10 @@ for(t in 2:length(sim_dates)){
 forecast_weighted <- array(NA, dim = c(length(sim_dates), ens_members, 12))
 params_weighted <- array(NA, dim = c(length(sim_dates) ,ens_members , num_pars))
 for(t in 1:length(sim_dates)){
-      wt_norm <-  wt[t, ]/sum(wt[t, ])
-      resample_index <- sample(1:ens_members, ens_members, replace = TRUE, prob = wt_norm ) 
-      forecast_weighted[t, , ] <- forecast[t, resample_index, 1:12] 
-      params_weighted[t, , ] <- fit_params[t,resample_index, ] 
+  wt_norm <-  wt[t, ]/sum(wt[t, ])
+  resample_index <- sample(1:ens_members, ens_members, replace = TRUE, prob = wt_norm ) 
+  forecast_weighted[t, , ] <- forecast[t, resample_index, 1:12] 
+  params_weighted[t, , ] <- fit_params[t,resample_index, ] 
 }
 output_df <- output_to_df(forecast_weighted, sim_dates, sim_name = "parameter_unc")
 parameter_df <- parameters_to_df(params_weighted, sim_dates, sim_name = "parameter_unc", param_names = c("alpha","Rbasal"))
@@ -167,11 +168,11 @@ parameter_df <- parameters_to_df(params_weighted, sim_dates, sim_name = "paramet
 
 ```{r}
 obs_dates <- obs |> 
-  filter(variable == "nee") |> 
+  filter(variable == c("nee","lai")) |> 
   pull(datetime)
 
 output_df |> 
-    summarise(median = median(prediction),
+  summarise(median = median(prediction),
             upper = quantile(prediction, 0.95, na.rm = TRUE),
             lower = quantile(prediction, 0.05, na.rm = TRUE), .by = c("datetime", "variable")) |> 
   left_join(obs, by = c("datetime", "variable")) |> 

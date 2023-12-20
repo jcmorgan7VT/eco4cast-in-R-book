@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-    container: rocker/geospatial:4.2
+    container: rocker/geospatial:latest
     permissions:
       contents: write
     steps:

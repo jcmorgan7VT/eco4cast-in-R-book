@@ -7,7 +7,7 @@ library(patchwork)
 
 ## Starting with likelihood
 
-Here we start where we left off with the likelihood lecture. Imagine the following dataset with five data points drawn from a normal distribution.
+Here we start where we left off with the likelihood chapter. Imagine the following dataset with five data points drawn from a normal distribution.
 
 ```{r}
 num_data_points <- 5
@@ -277,7 +277,7 @@ ggplot(d, aes(x = x, y = prediction, col = distribution)) +
   labs(y = "M-M model prediction (process model)")
 ```
 
-## Solving a bayesian model
+## Solving a Bayesian model
 
 The example above is designed to build an intuition for how a Bayesian analysis works but is not how the parameters in a Bayesian model are estimated in practice. For one thing, if there are multiple parameters being estimated it is very hard to estimate the area under the curve. Second, the area is very very same if there are many data points (so small that the computer can't hold it well)
 

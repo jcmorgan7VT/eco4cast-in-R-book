@@ -1,4 +1,4 @@
-# NEON data
+# NEON data {.appendix}
 
 ```{r}
 library(tidyverse)

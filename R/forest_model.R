@@ -4,6 +4,7 @@ forest_model <- function(t, states, parms, inputs){
 
   inputs_temp <- inputs[, 1]
   inputs_PAR <- inputs[, 2]
+  inputs_doy <- inputs[, 3]
 
   ##Unit Conversion: umol/m2/sec to Mg/ha/timestep
   k <- 1e-6 * 12 * 1e-6 * 10000 * 86400 #mol/umol*gC/mol*Mg/g*m2/ha*sec/timestep
@@ -25,7 +26,11 @@ forest_model <- function(t, states, parms, inputs){
   rh <- pmax(k * parms$Rbasal * states[, 3] * parms$Q10 ^ (inputs_temp / 10), 0) ## pmax ensures SOM never goes negative
 
   ## turnover
-  litterfall <- states[ , 1] * parms$litterfall
+
+
+  litterfall <- states[ , 1] * (parms$litterfall_rate * (365/ (params$litterfall_length)))
+  litterfall[!(inputs_doy > params$litterfall_start & inputs_doy[1] < (params$litterfall_start + params$litterfall_length))] <- 0.0
+
   mortality <- states[ , 2] * parms$mortality
 
   #Change in states

@@ -52,7 +52,7 @@ combine_model_obs <- function(out, obs, variables, sds){
   return(combined)
 }
 
-assign_met_ensembles <- function(inputs, ens_members, var_order = c("temp", "PAR")){
+assign_met_ensembles <- function(inputs, ens_members, var_order = c("temp", "PAR", "doy")){
 
   met_ensembles <- unique(inputs$parameter)
 

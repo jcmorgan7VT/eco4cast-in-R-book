@@ -1,6 +1,6 @@
 # Visualizing and evaluating forecasts
 
-The fourth forecast generation assignment will challenge analyze the automated forecasts that you submitted as part of @sec-third-forecast.  The assign uses the module in Freya Olsson's tutorial that provides code to access the automatically scored forecasts.  You will add code to your respository that generates plots.  
+The fourth forecast generation assignment will challenge analyze the automated forecasts that you submitted as part of @sec-third-forecast. The assign uses the module in Freya Olsson's tutorial that provides code to access the automatically scored forecasts. You will add code to your respository that generates plots.
 
 https://github.com/OlssonF/NEON-forecast-challenge-workshop/blob/main/Analyse_scores/Get_scores_tutorial.Rmd
 
@@ -24,8 +24,6 @@ library(tidyverse)
 ### Example of a CRPS calculation from an ensemble forecast
 
 The following uses Equation 2 in Jordan, Kruger, and Lerch 2018
-
-![Equation 1 from Jordan, Kruger, and Lerch 2018.](images/equation_2.png)
 
 First, create a random sample from a probability distribution. This is the "forecast" for a particular point in time. For simplicity, we will use a normal distribution with a mean of 8 and standard deviation of 1
 
