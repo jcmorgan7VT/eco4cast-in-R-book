@@ -22,7 +22,6 @@ book:
     - part: "Project 1"
       chapters:
         - project1.qmd
-        - submitting-forecasts.qmd
     - part: advanced-forecasting.qmd
       chapters:
         - process-model.qmd
@@ -34,7 +33,7 @@ book:
         - pulling-together.qmd
     - part: "Project 2"
       chapters:
-        - project2-details.qmd
+        - project2.qmd
     - summary.qmd
     - references.qmd
     - part: "Appendix"
