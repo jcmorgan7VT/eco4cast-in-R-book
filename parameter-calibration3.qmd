@@ -90,7 +90,7 @@ fit_params <- array(NA, dim = c(num_pars, num_iter))
 fit_params[1, 1] <- params$alpha
 fit_params[2, 1] <- params$Rbasal
 fit_params[3, 1] <- params$litterfall_start
-prior_mean <- c(0.029, 0.002, 250)
+prior_mean <- c(0.029, 0.002, 200)
 prior_sd <- c(0.005, 0.0005, 10)
 ```
 
