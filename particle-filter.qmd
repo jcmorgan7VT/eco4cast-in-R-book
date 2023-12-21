@@ -1,5 +1,12 @@
 # Data assimilation: particle filter
 
+```{r}
+#|echo = FALSE
+#|message = FALSE
+library(tidyverse)
+set.seed(100)
+```
+
 ## Review of Batch vs Sequential Methods
 
 Before beginning the introduction of the particle filter it is important to revisit the MCMC-MH approach that we used to estimate the parameters of a Bayesian model. Here is the general algorithm again:
@@ -100,12 +107,14 @@ Here is an example of the particle filter applied to the google flu data
 First load in data. We are only going to focus on the first 15 weeks of the data so that you can see the particles more easily
 
 ```{r}
-library(tidyverse)
-set.seed(100)
-gflu <- read_csv("data/gflu_data.txt", skip = 11) %>% 
-  select(Date, Virginia)
-gflu$Date <- as.Date(gflu$Date)
+
+gflu <- read_csv("data/gflu_data.txt", skip = 11, show_col_types = FALSE) %>% 
+  select(Date, Virginia) |> 
+  mutate(Date = as.Date(Date))
+         
+         
 gflu <- gflu[1:15, ]
+
 ggplot(data = gflu, aes(x = Date, y = log(Virginia))) +
   geom_line() +
   geom_point() +
@@ -293,9 +302,10 @@ The estimate of parameters using PF is also straightforward. Here we will estima
 First, create the observed data that includes the minimum temperature. (same as above and using the `daymetr` package from the previous exercise)
 
 ```{r}
-gflu <- read_csv("data/gflu_data.txt", skip = 11)  %>% 
-  select(Date, Virginia)
-gflu$Date <- as.Date(gflu$Date)
+gflu <- read_csv("data/gflu_data.txt", skip = 11, show_col_types = FALSE)  %>% 
+  select(Date, Virginia) |> 
+  mutate(Date = as.Date(Date))
+
 
 df <- daymetr::download_daymet(site = "Blacksburg",
                                lat = 37.22,
@@ -303,6 +313,7 @@ df <- daymetr::download_daymet(site = "Blacksburg",
                                start = 2003,
                                end = 2016,
                                internal = TRUE)$data
+
 df$date <- as.Date(paste(df$year,df$yday,sep = "-"),"%Y-%j")
 Tmean <- mean(df$tmin..deg.c.)
 gflu$Tmin = df$tmin..deg.c.[match(gflu$Date,df$date)] - Tmean
@@ -556,7 +567,9 @@ bind_rows(pf_low, pf_high) %>%
 ## Problem set
 
 You will need the following packages
+
 ```{r}
+#message = FALSE
 library(tidyverse)
 library(lubridate)
 ```
@@ -590,15 +603,16 @@ This step is already done for you.
 Here is the data for ages 1 through 50 for the plot (starting in 1950-01-01). It was measured every 5 years.
 
 ```{r}
-plot_data <- read_csv("data/PF_data1.csv")
+plot_data <- read_csv("data/PF_data1.csv", show_col_types = FALSE)
+
 ggplot(plot_data, aes(x = datetime, y = biomass)) +
   geom_point() +
   labs(x = "age", y = "aboveground biomass (gC/m2)")
 ```
 
-The following model was used to estimate the posterior distributions of the parameters using a Bayesian framework. 
+The following model was used to estimate the posterior distributions of the parameters using a Bayesian framework.
 
-```
+```         
 sim_dates <- seq(as_date("1950-01-01"), length.out = 50, by = "1 year)
 biomass[1, ] <- 0
 
@@ -616,7 +630,7 @@ for(t in 2:length(sim_dates)){
 The MCMC chain has posterior distributions for the parameters (`g`, `u`, `sd_add`) and biomass at age 50 (`age50_biomass`)
 
 ```{r}
-df <- read_csv("data/PF_MCMC.csv")
+df <- read_csv("data/PF_MCMC.csv", show_col_types = FALSE)
 ```
 
 ### Part 2: Forecast using PF
@@ -629,7 +643,7 @@ Using the lecture material create a particle filter that uses the forest growth 
 
 Following the code in the PF lecture set up the particle filter.
 
-Instead of using data from a file you will use the following for your data: `obs <- NULL` 
+Instead of using data from a file you will use the following for your data: `obs <- NULL`
 
 Be sure to:
 
@@ -670,7 +684,7 @@ use this code to save your PF output as the object `initial_forecast`
 Now we have new data!
 
 ```{r}
-new_data <- read_csv("data/PF_data2.csv")
+new_data <- read_csv("data/PF_data2.csv", show_col_types = FALSE)
 
 ggplot(new_data, aes(x = datetime, y = biomass)) +
   geom_point() +
@@ -704,7 +718,7 @@ Generate a plot that visualizes the output of the PF (see examples from the lect
 #### Step 4: Save output
 
 ```{r}
-assimilated_forecast <- x
+
 ```
 
 ### Part 4:

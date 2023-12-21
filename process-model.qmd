@@ -1,11 +1,16 @@
 # Process model
 
 ```{r}
-#| echo: FALSE
+#| message = FALSE
+#| 
 source("R/helpers.R")
+library(tidyverse)
+library(lubridate)
 ```
 
-timestep: 1 day currency: MgC/ha dimension: 0-D
+- timestep: 1 day
+- currency: MgC/ha 
+- dimension: 0-D
 
 ```{r}
 forest_model <- function(t, states, parms, inputs){
@@ -78,32 +83,31 @@ forest_model <- function(t, states, parms, inputs){
 }
 ```
 
+## Set up model run
+
+### Time frame, site id, and number of ensembles
+
+We are doing a determinstic simulation (no uncertainty) so we only have one ensemble member
+
 ```{r}
-library(tidyverse)
 site <- "TALL"
-met_s3 <- arrow::s3_bucket(paste0("bio230014-bucket01/neon4cast-drivers/noaa/gefs-v12/stage3/site_id=", site),
-                           endpoint_override = "sdsc.osn.xsede.org",
-                           anonymous = TRUE)
-
-inputs_all <- arrow::open_dataset(met_s3) |> 
-  filter(variable %in% c("air_temperature", "surface_downwelling_shortwave_flux_in_air")) |> 
-  mutate(datetime = as_date(datetime)) |> 
-  mutate(prediction = ifelse(variable == "surface_downwelling_shortwave_flux_in_air", prediction/0.486, prediction),
-         variable = ifelse(variable == "surface_downwelling_shortwave_flux_in_air", "PAR", variable),
-         prediction = ifelse(variable == "air_temperature", prediction- 273.15, prediction),
-         variable = ifelse(variable == "air_temperature", "temp", variable)) |> 
-  summarise(prediction = mean(prediction, na.rm = TRUE), .by = c("datetime", "variable", "parameter")) |> 
-  collect()
+ens_members <- 1
+sim_dates <- seq(as_date("2020-09-30"), Sys.Date() - lubridate::days(1), by = "1 day")
 ```
+
+### Set drivers
+
+There is a custom function to access the weater drivers.  You can learn more about the function in the appendix (add link)
 
 ```{r}
-sim_dates <- seq(as_date("2020-09-30"), Sys.Date() - lubridate::days(1), by = "1 day")
-
+inputs <- get_historical_met(site = site, sim_dates, use_mean = TRUE)
+inputs_ensemble <- assign_met_ensembles(inputs, ens_members)
 ```
+
+### Set parameters
 
 ```{r}
 #Set parameters
-ens_members <- 1
 params <- list()
 params$alpha <- rep(0.02, ens_members)
 params$SLA <- rep(4.74, ens_members)
@@ -113,7 +117,7 @@ params$Rbasal <- rep(0.002, ens_members)
 params$Q10 <- rep(2.1, ens_members)
 params$litterfall_rate <- rep(1/(2.0*365), ens_members) #Two year leaf lifespan
 params$litterfall_start <- rep(200, ens_members)
-params$litterfall_length<- rep(70, ens_members)
+params$litterfall_length<- rep(60, ens_members)
 params$mortality <- rep(0.00015, ens_members) #Wood lives about 18 years on average (all trees, branches, roots, course roots)
 params$sigma.leaf <- rep(0.0, ens_members) #0.01 
 params$sigma.stem <- rep(0.0, ens_members) #0.01 ## wood biomass
@@ -121,14 +125,9 @@ params$sigma.soil <- rep(0.0, ens_members)# 0.01
 params <- as.data.frame(params)
 ```
 
-# Set drivers
+### Set inital condition
 
-```{r}
-inputs <- inputs_all |> 
-    filter(datetime %in% as_date(sim_dates)) |> 
-    mutate(doy = yday(datetime))
-inputs_ensemble <- assign_met_ensembles(inputs, ens_members)
-```
+Set the starting point of the simulation.  All states need a starting point.
 
 ```{r}
 output <- array(NA, dim = c(length(sim_dates), ens_members, 12)) #12 is the number of outputs
@@ -148,9 +147,15 @@ for(t in 2:length(sim_dates)){
 }
 ```
 
+## Plot output
+
+The `output_to_df` converts the output into a data frame.
+
 ```{r}
 output_df <- output_to_df(output, sim_dates, sim_name = "baseline")
 ```
+
+Plot the data frame.
 
 ```{r}
 output_df |> 

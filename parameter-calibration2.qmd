@@ -1,6 +1,8 @@
 # Parameter calibration: Intro to Bayesian statistics
 
 ```{r}
+#| echo = FALSE
+#| echo = message
 library(tidyverse)
 library(patchwork)
 ```

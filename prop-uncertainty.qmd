@@ -16,6 +16,8 @@ sim_dates <- seq(as_date("2023-11-15"),length.out  = 34, by = "1 day")
 site <- "TALL"
 ```
 
+## Baseline parameteres
+
 ```{r}
 ens_members <- 100
 params <- list()
@@ -35,7 +37,7 @@ params$sigma.soil <- rep(0.0, ens_members)# 0.01
 params <- as.data.frame(params)
 ```
 
-## Parameter uncertainity
+## Baseline initial conditions
 
 ```{r}
 #Set initial conditions
@@ -45,10 +47,17 @@ output[1, , 2] <- 140
 output[1, , 3] <- 140
 ```
 
+
+## Baseline drivers
+
 ```{r}
-inputs <- get_forecast_met(site = site, sim_dates, use_mean = TRUE)
+inputs <- get_forecast_met(site = site, sim_dates, use_mean = FALSE)
 inputs_ensemble <- assign_met_ensembles(inputs, ens_members)
 ```
+
+## Parameter uncertainity
+
+Update parameters to include uncertainty
 
 ```{r}
 new_params <- params
@@ -83,17 +92,13 @@ parameter_df |>
 
 ## Process uncertainty
 
-```{r}
-#Set initial conditions
-output <- array(NA, dim = c(length(sim_dates), ens_members, 12)) #12 is the number of outputs
-output[1, , 1] <- 5
-output[1, , 2] <- 140
-output[1, , 3] <- 140
-```
+Change process uncertainty parameters from being zero to a positive value
 
 ```{r}
-inputs <- get_forecast_met(site = site, sim_dates, use_mean = TRUE)
-inputs_ensemble <- assign_met_ensembles(inputs, ens_members)
+new_params <- params
+new_params$sigma.leaf <- rep(0.1, ens_members)
+new_params$sigma.stem <- rep(1, ens_members) #0.01 ## wood biomass
+new_params$sigma.soil <- rep(1, ens_members)# 0.01
 ```
 
 ```{r}
@@ -102,7 +107,7 @@ for(t in 2:length(sim_dates)){
 
   output[t, , ]  <- forest_model(t, 
                                states = matrix(output[t-1 , , 1:3], nrow = ens_members) , 
-                               parms = params, 
+                               parms = new_params, 
                                inputs = matrix(inputs_ensemble[t ,, ], nrow = ens_members))
 }
 
@@ -125,29 +130,26 @@ process_df |>
 
 ## Initial condition uncertainty
 
-```{r}
-#Set initial conditions
-output <- array(NA, dim = c(length(sim_dates), ens_members, 12)) #12 is the number of outputs
-output[1, , 1] <- rnorm(ens_members, 5, 0.5)
-output[1, , 2] <- rnorm(ens_members, 140, 10)
-output[1, , 3] <- rnorm(ens_members, 140, 20)
-```
+Update the initial starting point 
 
 ```{r}
-inputs <- get_forecast_met(site = site, sim_dates, use_mean = TRUE)
-inputs_ensemble <- assign_met_ensembles(inputs, ens_members)
+#Set initial conditions
+new_output <- array(NA, dim = c(length(sim_dates), ens_members, 12)) #12 is the number of outputs
+new_output[1, , 1] <- rnorm(ens_members, 5, 0.5)
+new_output[1, , 2] <- rnorm(ens_members, 140, 10)
+new_output[1, , 3] <- rnorm(ens_members, 140, 20)
 ```
 
 ```{r}
 for(t in 2:length(sim_dates)){
 
-  output[t, , ]  <- forest_model(t, 
-                               states = matrix(output[t-1 , , 1:3], nrow = ens_members) , 
+  new_output[t, , ]  <- forest_model(t, 
+                               states = matrix(new_output[t-1 , , 1:3], nrow = ens_members) , 
                                parms = params, 
                                inputs = matrix(inputs_ensemble[t ,, ], nrow = ens_members))
 }
 
-initial_conditions_df <- output_to_df(output, sim_dates, sim_name = "initial_unc")
+initial_conditions_df <- output_to_df(new_output, sim_dates, sim_name = "initial_unc")
 
 ```
 
@@ -167,16 +169,8 @@ initial_conditions_df |>
 ## Driver uncertainty
 
 ```{r}
-#Set initial conditions
-output <- array(NA, dim = c(length(sim_dates), ens_members, 12)) #12 is the number of outputs
-output[1, , 1] <- 5
-output[1, , 2] <- 140
-output[1, , 3] <- 140
-```
-
-```{r}
-inputs <- get_forecast_met(site = site, sim_dates, use_mean = FALSE)
-inputs_ensemble <- assign_met_ensembles(inputs, ens_members)
+new_inputs <- get_forecast_met(site = site, sim_dates, use_mean = FALSE)
+new_inputs_ensemble <- assign_met_ensembles(inputs, ens_members)
 ```
 
 ```{r}
@@ -186,7 +180,7 @@ for(t in 2:length(sim_dates)){
   output[t, , ]  <- forest_model(t, 
                                states = matrix(output[t-1 , , 1:3], nrow = ens_members) , 
                                parms = params, 
-                               inputs = matrix(inputs_ensemble[t ,, ], nrow = ens_members))
+                               inputs = matrix(new_inputs_ensemble[t ,, ], nrow = ens_members))
 }
 
 drivers_df <- output_to_df(output, sim_dates, sim_name = "driver_unc")
