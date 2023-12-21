@@ -13,26 +13,8 @@ sim_dates <- seq(as_date("2023-11-15"),length.out  = 34, by = "1 day")
 ```
 
 ```{r}
-
 site <- "TALL"
-met_s3 <- arrow::s3_bucket(paste0("bio230014-bucket01/neon4cast-drivers/noaa/gefs-v12/stage2/reference_datetime=",sim_dates[1],"/site_id=",site),
-                           endpoint_override = "sdsc.osn.xsede.org",
-                           anonymous = TRUE)
-
-inputs_all <- arrow::open_dataset(met_s3) |> 
-  filter(variable %in% c("air_temperature", "surface_downwelling_shortwave_flux_in_air")) |> 
-  mutate(datetime = as_date(datetime)) |> 
-  mutate(prediction = ifelse(variable == "surface_downwelling_shortwave_flux_in_air", prediction/0.486, prediction),
-         variable = ifelse(variable == "surface_downwelling_shortwave_flux_in_air", "PAR", variable),
-         prediction = ifelse(variable == "air_temperature", prediction- 273.15, prediction),
-         variable = ifelse(variable == "air_temperature", "temp", variable)) |> 
-  summarise(prediction = mean(prediction, na.rm = TRUE), .by = c("datetime", "variable", "parameter")) |> 
-  collect()
 ```
-
-Build function with the process model
-
-## Parameter uncertainity
 
 ```{r}
 ens_members <- 100
@@ -53,25 +35,27 @@ params$sigma.soil <- rep(0.0, ens_members)# 0.01
 params <- as.data.frame(params)
 ```
 
+## Parameter uncertainity
+
 ```{r}
 #Set initial conditions
 output <- array(NA, dim = c(length(sim_dates), ens_members, 12)) #12 is the number of outputs
 output[1, , 1] <- 5
 output[1, , 2] <- 140
 output[1, , 3] <- 140
+```
 
-inputs <- inputs_all |> 
-    filter(datetime %in% as_date(sim_dates)) |> 
-    summarize(prediction = median(prediction, na.rm = TRUE), .by = c("datetime", "variable")) |> 
-    mutate(doy = yday(datetime),
-           parameter = 1) 
-
-  
+```{r}
+inputs <- get_forecast_met(site = site, sim_dates, use_mean = TRUE)
 inputs_ensemble <- assign_met_ensembles(inputs, ens_members)
+```
 
+```{r}
 new_params <- params
 new_params$alpha <- rnorm(ens_members, params$alpha, sd = 0.005)
+```
 
+```{r}
 for(t in 2:length(sim_dates)){
 
   output[t, , ]  <- forest_model(t, 
@@ -100,39 +84,19 @@ parameter_df |>
 ## Process uncertainty
 
 ```{r}
-ens_members <- 100
-params <- list()
-params$alpha <- rep(0.02, ens_members)
-params$SLA <- rep(4.74, ens_members)
-params$leaf_frac <- rep(0.315, ens_members)
-params$Ra_frac <- rep(0.5, ens_members)
-params$Rbasal <- rep(0.002, ens_members)
-params$Q10 <- rep(2.1, ens_members)
-params$litterfall_rate <- rep(1/(2.0*365), ens_members) #Two year leaf lifespan
-params$litterfall_start <- rep(200, ens_members)
-params$litterfall_length<- rep(70, ens_members)
-params$mortality <- rep(0.00015, ens_members) #Wood lives about 18 years on average (all trees, branches, roots, course roots)
-params$sigma.leaf <- rep(0.1, ens_members) #0.01 
-params$sigma.stem <- rep(0.1, ens_members) #0.01 ## wood biomass
-params$sigma.soil <- rep(0.1, ens_members)# 0.01
-params <- as.data.frame(params)
-```
-
-```{r}
 #Set initial conditions
 output <- array(NA, dim = c(length(sim_dates), ens_members, 12)) #12 is the number of outputs
 output[1, , 1] <- 5
 output[1, , 2] <- 140
 output[1, , 3] <- 140
+```
 
-inputs <- inputs_all |> 
-    filter(datetime %in% as_date(sim_dates)) |> 
-    summarize(prediction = median(prediction, na.rm = TRUE), .by = c("datetime", "variable")) |> 
-    mutate(doy = yday(datetime),
-           parameter = 1) 
-
+```{r}
+inputs <- get_forecast_met(site = site, sim_dates, use_mean = TRUE)
 inputs_ensemble <- assign_met_ensembles(inputs, ens_members)
+```
 
+```{r}
 
 for(t in 2:length(sim_dates)){
 
@@ -162,40 +126,19 @@ process_df |>
 ## Initial condition uncertainty
 
 ```{r}
-ens_members <- 100
-params <- list()
-params$alpha <- rep(0.02, ens_members)
-params$SLA <- rep(4.74, ens_members)
-params$leaf_frac <- rep(0.315, ens_members)
-params$Ra_frac <- rep(0.5, ens_members)
-params$Rbasal <- rep(0.002, ens_members)
-params$Q10 <- rep(2.1, ens_members)
-params$litterfall_rate <- rep(1/(2.0*365), ens_members) #Two year leaf lifespan
-params$litterfall_start <- rep(200, ens_members)
-params$litterfall_length<- rep(70, ens_members)
-params$mortality <- rep(0.00015, ens_members) #Wood lives about 18 years on average (all trees, branches, roots, course roots)
-params$sigma.leaf <- rep(0.0, ens_members) #0.01 
-params$sigma.stem <- rep(0.0, ens_members) #0.01 ## wood biomass
-params$sigma.soil <- rep(0.0, ens_members)# 0.01
-params <- as.data.frame(params)
-```
-
-```{r}
 #Set initial conditions
 output <- array(NA, dim = c(length(sim_dates), ens_members, 12)) #12 is the number of outputs
 output[1, , 1] <- rnorm(ens_members, 5, 0.5)
 output[1, , 2] <- rnorm(ens_members, 140, 10)
 output[1, , 3] <- rnorm(ens_members, 140, 20)
+```
 
-inputs <- inputs_all |> 
-    filter(datetime %in% as_date(sim_dates)) |> 
-    summarize(prediction = median(prediction, na.rm = TRUE), .by = c("datetime", "variable")) |> 
-    mutate(doy = yday(datetime),
-           parameter = 1) 
-
+```{r}
+inputs <- get_forecast_met(site = site, sim_dates, use_mean = TRUE)
 inputs_ensemble <- assign_met_ensembles(inputs, ens_members)
+```
 
-
+```{r}
 for(t in 2:length(sim_dates)){
 
   output[t, , ]  <- forest_model(t, 
@@ -224,36 +167,19 @@ initial_conditions_df |>
 ## Driver uncertainty
 
 ```{r}
-ens_members <- 100
-params <- list()
-params$alpha <- rep(0.02, ens_members)
-params$SLA <- rep(4.74, ens_members)
-params$leaf_frac <- rep(0.315, ens_members)
-params$Ra_frac <- rep(0.5, ens_members)
-params$Rbasal <- rep(0.002, ens_members)
-params$Q10 <- rep(2.1, ens_members)
-params$litterfall_rate <- rep(1/(2.0*365), ens_members) #Two year leaf lifespan
-params$litterfall_start <- rep(200, ens_members)
-params$litterfall_length<- rep(70, ens_members)
-params$mortality <- rep(0.00015, ens_members) #Wood lives about 18 years on average (all trees, branches, roots, course roots)
-params$sigma.leaf <- rep(0.0, ens_members) #0.01 
-params$sigma.stem <- rep(0.0, ens_members) #0.01 ## wood biomass
-params$sigma.soil <- rep(0.0, ens_members)# 0.01
-params <- as.data.frame(params)
-```
-
-```{r}
 #Set initial conditions
 output <- array(NA, dim = c(length(sim_dates), ens_members, 12)) #12 is the number of outputs
 output[1, , 1] <- 5
 output[1, , 2] <- 140
 output[1, , 3] <- 140
+```
 
-inputs <- inputs_all |> 
-    filter(datetime %in% as_date(sim_dates)) |> 
-    mutate(doy = yday(datetime))
+```{r}
+inputs <- get_forecast_met(site = site, sim_dates, use_mean = FALSE)
 inputs_ensemble <- assign_met_ensembles(inputs, ens_members)
+```
 
+```{r}
 
 for(t in 2:length(sim_dates)){
 
