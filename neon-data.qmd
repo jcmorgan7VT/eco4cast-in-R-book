@@ -158,16 +158,20 @@ tree_live_carbon <- combined_table_live_tower %>%
 Calculate the plot level biomass summing up the tree biomass in a plot and dividing by the area of plot.
 
 ```{r}
+
+measurement_dates <- tree_live_carbon |> 
+  summarise(measure_date = max(date), .by = eventID)
+
  plot_live_carbon <-  tree_live_carbon %>% 
-    mutate(year = as.numeric(str_sub(eventID, 10, 13))) |> 
+   left_join(measurement_dates, by = "eventID") |> 
     mutate(treeC_kgCm2 = (tree_kgC)/(totalSampledAreaTrees)) |> 
-    summarise(plot_kgCm2 = sum(treeC_kgCm2, na.rm = TRUE), .by = c("plotID", "year"))
+    summarise(plot_kgCm2 = sum(treeC_kgCm2, na.rm = TRUE), .by = c("plotID", "measure_date"))
 ```
 
 Visualize the plot level biomass
 
 ```{r}
-ggplot(plot_live_carbon, aes(x = year, y = plot_kgCm2, color = plotID)) + 
+ggplot(plot_live_carbon, aes(x = measure_date, y = plot_kgCm2, color = plotID)) + 
   geom_point() +
   geom_line()
 ```
@@ -176,15 +180,15 @@ Determine the set of plots that are measured each year (a subset, n = 5) are mea
 
 ```{r}
 last_plots <- plot_live_carbon |> 
-  filter(year == max(year)) |> 
+  filter(measure_date == max(measure_date)) |> 
   pull(plotID)
 
 site_live_carbon <- plot_live_carbon |> 
   filter(plotID %in% last_plots) |> 
   pivot_wider(names_from = plotID, values_from = plot_kgCm2) |> 
   na.omit() |> 
-  pivot_longer(-year, names_to = "plotID", values_to = "plot_kgCm2") |> 
-    group_by(year) %>%
+  pivot_longer(-measure_date, names_to = "plotID", values_to = "plot_kgCm2") |> 
+    group_by(measure_date) %>%
     summarize(mean_kgCperm2 = mean(plot_kgCm2, na.rm = TRUE),
               sd_kgCperm2 = sd(plot_kgCm2))
 ```
@@ -192,7 +196,7 @@ site_live_carbon <- plot_live_carbon |>
 Plot the site level carbon
 
 ```{r}
-ggplot(site_live_carbon, aes(x = year, y = mean_kgCperm2)) + 
+ggplot(site_live_carbon, aes(x = measure_date, y = mean_kgCperm2)) + 
   geom_point() + 
   geom_errorbar(aes(ymin=mean_kgCperm2-sd_kgCperm2, ymax=mean_kgCperm2+sd_kgCperm2), width=.2,
                  position=position_dodge(0.05))
@@ -226,17 +230,19 @@ tree_dead_carbon <- combined_table_dead_tower %>%
 Calculate the plot level carbon
 
 ```{r}
- plot_dead_carbon <-  tree_dead_carbon %>%
-    mutate(year = as.numeric(str_sub(eventID, 10, 13))) |> 
-    mutate(treeC_kgCm2 = (tree_kgC)/(totalSampledAreaTrees))  %>%
-    group_by(plotID, year) %>%
-    summarise(plot_kgCm2 = sum(treeC_kgCm2, na.rm = TRUE))
+measurement_dates <- tree_dead_carbon |> 
+  summarise(measure_date = max(date), .by = eventID)
+
+ plot_dead_carbon <-  tree_dead_carbon |> 
+   left_join(measurement_dates, by = "eventID") |> 
+    mutate(treeC_kgCm2 = (tree_kgC)/(totalSampledAreaTrees)) |> 
+    summarise(plot_kgCm2 = sum(treeC_kgCm2, na.rm = TRUE), .by = c("plotID", "measure_date"))
 ```
 
 Visualize plot level carbon 
 
 ```{r}
-ggplot(plot_dead_carbon, aes(x = year, y = plot_kgCm2, color = plotID)) + 
+ggplot(plot_dead_carbon, aes(x = measure_date, y = plot_kgCm2, color = plotID)) + 
   geom_point() +
   geom_line()
 ```
@@ -246,7 +252,7 @@ Calculate site level carbon
 ```{r}
  site_dead_carbon <- plot_dead_carbon %>%
     filter(plotID %in% last_plots) |> 
-    group_by(year) %>%
+    group_by(measure_date) %>%
     summarize(mean_kgCperm2 = mean(plot_kgCm2, na.rm = TRUE),
               sd_kgCperm2 = sd(plot_kgCm2))
 ```
@@ -254,7 +260,7 @@ Calculate site level carbon
 Visualize site level carbon 
 
 ```{r}
-ggplot(site_dead_carbon, aes(x = year, y = mean_kgCperm2)) + 
+ggplot(site_dead_carbon, aes(x = measure_date, y = mean_kgCperm2)) + 
   geom_point() +
   geom_line()
 ```
@@ -459,31 +465,32 @@ ggplot(horizon_combined, map = aes(-biogeoTopDepth,horizon_C_kg_per_m2)) +
 ## Combine together
 
 ```{r}
-total_carbon_components <- unlist(c(site_live_carbon$mean_kgCperm2[1],
-                                    site_dead_carbon$mean_kgCperm2[1],
-                                    mean(site_cwd_carbon$mean_kgCperm2),
-                                    site_soil_carbon)) 
-
 site_live_carbon <- site_live_carbon |> 
   mutate(variable = "live_tree") |> 
-  select(year, variable, mean_kgCperm2)
+  rename(datetime = measure_date) |> 
+  select(datetime, variable, mean_kgCperm2)
 
 site_dead_carbon <- site_dead_carbon |> 
   mutate(variable = "dead_trees") |> 
-  select(year, variable, mean_kgCperm2)
+  rename(datetime = measure_date) |> 
+  select(datetime, variable, mean_kgCperm2)
 
 site_cwd_carbon <- site_cwd_carbon |> 
   mutate(variable = "down_wood") |> 
-  select(year, variable, mean_kgCperm2)
+  mutate(datetime = as_date(paste(year, "01-01"))) |> 
+  select(datetime, variable, mean_kgCperm2)
 
 site_roots <- site_roots |> 
   mutate(variable = "fine_roots") |> 
-  select(year, variable, mean_kgCperm2)
+  mutate(datetime = as_date(paste(year, "01-01"))) |> 
+  select(datetime, variable, mean_kgCperm2)
 
 site_soil_carbon <- site_soil_carbon |> 
   mutate(variable = "soil_carbon") |> 
   rename(mean_kgCperm2 = soilC_gC_m2) |> 
-  select(year, variable, mean_kgCperm2)
+  mutate(datetime = as_date(paste(year, "01-01"))) |> 
+  select(datetime, variable, mean_kgCperm2)
+
 
 total_carbon_components <- bind_rows(site_live_carbon, site_dead_carbon, site_cwd_carbon, site_roots, site_soil_carbon)
 ```
@@ -493,7 +500,7 @@ Plot the different pools of carbon
 ```{r}
 
 total_carbon_components |> 
-  ggplot(aes(x = year, y = mean_kgCperm2, color = variable)) + 
+  ggplot(aes(x = datetime, y = mean_kgCperm2, color = variable)) + 
   geom_point()
 ```
 
@@ -504,8 +511,8 @@ total_carbon_simple <- total_carbon_components |>
   pivot_wider(names_from = variable, values_from = mean_kgCperm2) |> 
   mutate(wood = live_tree + mean(fine_roots, na.rm = TRUE),
          som = mean(dead_trees, na.rm = TRUE) + mean(down_wood, na.rm = TRUE) + mean(soil_carbon, na.rm = TRUE)) |> 
-  select(year, wood, som) |> 
-  pivot_longer(-year, names_to = "variable", values_to = "observation")
+  select(datetime, wood, som) |> 
+  pivot_longer(-datetime, names_to = "variable", values_to = "observation")
 ```
 
 ## MODIS LAI
@@ -517,7 +524,7 @@ lai <- MODISTools::mt_subset(product = "MCD15A2H",
                   lat = latitude,
                   lon =  longitude,
                   band = c("Lai_500m", "FparLai_QC"),
-                  start = as_date(paste0(min(total_carbon_simple$year),"-01-01")),
+                  start = as_date(min(total_carbon_simple$datetime)),
                   end = Sys.Date(),
                   site_name = site,
                   progress = FALSE)
@@ -543,7 +550,7 @@ Plot MODIS LAI
 lai_cleaned |> 
   ggplot(aes(x = datetime, y = observation)) +
   geom_point() +
-  geom_line()
+  geom_smooth(span = 0.12)
 ```
 
 ## Flux data
@@ -564,10 +571,9 @@ ggplot(aes(x = datetime, y = observation)) + geom_point()
 
 ```{r}
 obs <- total_carbon_simple |> 
-  mutate(datetime = as_date(paste(year, "01-01"))) |> 
   bind_rows(lai_cleaned, flux) |> 
   mutate(site_id = site) |> 
-  select(-year) |> 
+  #convert from kgC/m2 to MgC/ha
   mutate(observation = ifelse(variable %in% c("wood", "som") , observation * 10, observation),
          observation = ifelse(variable %in% c("nee") , observation * 0.01, observation))
 
