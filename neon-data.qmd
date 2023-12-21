@@ -6,13 +6,13 @@ library(lubridate)
 library(neonstore)
 ```
 
-In this document, we will be creating a carbon budget for a NEON site. It was developed in collobration with John Smith at Montana State University.
+In this document, we will be creating a carbon budget for a NEON site. It was developed in collaboration with John Smith at Montana State University.
 
 NEON data is organized by data product ID in the NEON Date Portal: <https://data.neonscience.org/static/browse.html>
 
 ## Download data
 
-First, we are going to want to define the site ID. The four letter site code denotes NEON site. You can learn more about NEON sites here: <https://www.neonscience.org/field-sites/explore-field-sites>
+First, we are going to want to define the site ID. The four letter site code denotes NEON site. You can learn more about NEON sites here: <https://www.neonscience.org/field-sites/explore-field-sites>.  The elevation, latitude , and longitude are needed to convert the diameter measurements to biomass.
 
 ```{r}
 site <- "TALL"
@@ -23,87 +23,85 @@ longitude <- -87.393259
 
 ## Wood carbon
 
-We will also define the data product ID that we are going to extract first (Woody plant vegetation structure).
-
-```{r}
-data_product <- "DP1.10098.001"
-```
-
-Second, we will use the `neon_download()` function from `neonstore` to create a database of files for our data product and site.
-
 ### Calculate carbon in trees
 
-In this section, we will be calculating carbon in live and dead trees at Talladega. At the end we will have a *site-level* mean carbon stock in *live trees* for each year that was sampled from the plots that are sampling the ecosystem under the flux tower (e.g., tower plots).
+In this section, we will be calculating carbon in live and dead trees at a NEON site. At the end we will have a *site-level* mean carbon stock in *live trees* for each year that was sampled from the plots that are sampling the ecosystem under the flux tower (e.g., tower plots).
 
-Read in the separate tables
+The code below read the data directly from NEON's cloud storage.  Since the columns may change between the official releases and the provisional data, they need to be read in separately before being combined.
 
 ```{r}
 
 index <-  neonstore:::neon_data(product = "DP1.10098.001",
-                                site = "TALL",
+                                site = site,
                                 type="basic")
 
-mappingandtagging <- index |>
-  filter(grepl("mappingandtagging", name)) 
+## Mapping and tagging table
 
-df1 <- mappingandtagging |> 
+df1 <-index |>
+  filter(grepl("mappingandtagging", name)) |> 
   filter(grepl("RELEASE", release)) |> 
   pull(url) |>
-  duckdbfs::open_dataset(mappingandtagging$url, format="csv", filename = TRUE) |> 
+  duckdbfs::open_dataset(format="csv", filename = TRUE) |> 
   select(individualID, scientificName) |> 
-  distinct() |> 
   collect()
 
-df2 <- mappingandtagging |> 
+df2 <- index |>
+  filter(grepl("mappingandtagging", name)) |> 
   filter(!grepl("RELEASE", release)) |> 
   pull(url) |>
-  duckdbfs::open_dataset(mappingandtagging$url, format="csv", filename = TRUE) |> 
+  duckdbfs::open_dataset(format="csv", filename = TRUE) |> 
   select(individualID, scientificName) |> 
-  distinct() |> 
   collect()
 
-map_tag_table <- bind_rows(df1,df2)
+map_tag_table <- bind_rows(df1,df2) |> 
+  group_by(individualID) |> 
+  slice(1) |> #This is needed because some individuals change species IDs
+  ungroup()
 
-apparentindividual <- index |>
-  filter(grepl("apparentindividual", name)) 
+## Individual table
 
-df1 <- apparentindividual |> 
+df1 <- index |>
+  filter(grepl("apparentindividual", name)) |> 
   filter(grepl("RELEASE", release)) |> 
   pull(url) |>
-  duckdbfs::open_dataset(apparentindividual$url, format="csv", filename = TRUE) |> 
+  duckdbfs::open_dataset(format="csv", filename = TRUE) |> 
   select(individualID, eventID, plotID, date, stemDiameter,plantStatus, measurementHeight) |> 
   collect() 
 
-df2 <- apparentindividual |> 
+df2 <- index |>
+  filter(grepl("apparentindividual", name)) |> 
   filter(!grepl("RELEASE", release)) |> 
   pull(url) |>
-  duckdbfs::open_dataset(apparentindividual$url, format="csv", filename = TRUE) |>
+  duckdbfs::open_dataset(format="csv", filename = TRUE) |>
   select(individualID, eventID, plotID, date, stemDiameter,plantStatus, measurementHeight) |> 
   collect()
 
-ind_table <- bind_rows(df1,df2)
+ind_table <- bind_rows(df1,df2) |> 
+  distinct()
 
-perplotperyear <- index |>
-  filter(grepl("perplotperyear", name)) 
+## Plot table
 
-df1 <- perplotperyear |> 
+df1 <-index |>
+  filter(grepl("perplotperyear", name)) |> 
   filter(grepl("RELEASE", release)) |> 
   pull(url) |>
-  duckdbfs::open_dataset(perplotperyear$url, format="csv", filename = TRUE) |> 
+  duckdbfs::open_dataset(format="csv", filename = TRUE) |> 
   select(plotID,totalSampledAreaTrees,plotType) |>  
-  distinct(plotID, .keep_all = TRUE) |> 
   collect() 
 
-df2 <- perplotperyear |> 
+df2 <- index |>
+  filter(grepl("perplotperyear", name)) |> 
   filter(!grepl("RELEASE", release)) |> 
   pull(url) |>
   duckdbfs::open_dataset(perplotperyear$url, format="csv", filename = TRUE) |>
     select(plotID,totalSampledAreaTrees,plotType) |>  
-  distinct(plotID, .keep_all = TRUE) |> 
   collect()
 
-plot_table <- bind_rows(df1,df2)
+plot_table <- bind_rows(df1,df2) |> 
+    distinct(plotID, .keep_all = TRUE)
 ```
+
+The species names in the mapping and tagging table need to be separated into the genus and species so that we can calculate the biomass.
 
 ```{r}
 genus_species <- unlist(str_split_fixed(map_tag_table$scientificName, " ", 3))
@@ -117,16 +115,10 @@ Select the key variables in each table and join into the individual table, makin
 
 ```{r}
 
-select_map_tag_table <- map_tag_table 
-
-select_plot_table <- plot_table
-
-select_ind_table <- ind_table 
-
-combined_table <- left_join(select_ind_table, select_map_tag_table, by = "individualID") %>% 
+combined_table <- left_join(ind_table, map_tag_table, by = "individualID") %>% 
   arrange(plotID,individualID)
 
-combined_table <- inner_join(combined_table, select_plot_table, by = c("plotID")) %>% 
+combined_table <- inner_join(combined_table, plot_table, by = c("plotID")) %>% 
   arrange(individualID)
 
 combined_table_dbh <- combined_table[which(combined_table$measurementHeight == 130),]
@@ -148,11 +140,9 @@ Calculate the biomass of each tree in the table. We will do this using `get_biom
 In this next section, as well as a future one where we calculate dead tree carbon, we are going to make a simplfying assumption. We will assume that the below ground biomass of a tree is some fixed proportion of its above ground biomass. In our analysis, we will assume this value is $.3$, but it is a parameter that can be changed.
 
 ```{r}
-ag_bg_prop <- 0.3
-```
-
-```{r}
 library(allodb)
+
+ag_bg_prop <- 0.3
 
 tree_live_carbon <- combined_table_live_tower %>%
         mutate(ag_tree_kg = get_biomass(
@@ -165,7 +155,7 @@ tree_live_carbon <- combined_table_live_tower %>%
          tree_kgC = (ag_tree_kg + bg_tree_kg) * 0.5) ## convert biomass to carbon
 ```
 
-Calculate the plot level biomass
+Calculate the plot level biomass summing up the tree biomass in a plot and dividing by the area of plot.
 
 ```{r}
  plot_live_carbon <-  tree_live_carbon %>% 
@@ -174,11 +164,15 @@ Calculate the plot level biomass
     summarise(plot_kgCm2 = sum(treeC_kgCm2, na.rm = TRUE), .by = c("plotID", "year"))
 ```
 
+Visualize the plot level biomass
+
 ```{r}
 ggplot(plot_live_carbon, aes(x = year, y = plot_kgCm2, color = plotID)) + 
   geom_point() +
   geom_line()
 ```
+
+Determine the set of plots that are measured each year (a subset, n = 5) are measured each year, while all the plots are measured every 5 years.
 
 ```{r}
 last_plots <- plot_live_carbon |> 
@@ -194,6 +188,8 @@ site_live_carbon <- plot_live_carbon |>
     summarize(mean_kgCperm2 = mean(plot_kgCm2, na.rm = TRUE),
               sd_kgCperm2 = sd(plot_kgCm2))
 ```
+
+Plot the site level carbon
 
 ```{r}
 ggplot(site_live_carbon, aes(x = year, y = mean_kgCperm2)) + 
@@ -213,7 +209,7 @@ combined_table_dead_tower <- combined_table_dbh %>%
          plotType == "tower") 
 ```
 
-Calculate the biomass of each tree in the table
+Calculate the biomass of each tree in the table.  This assumes that standing dead trees have the same carbon as a live tree (which is an incorrect assumption).
 
 ```{r}
 tree_dead_carbon <- combined_table_dead_tower %>%
@@ -227,7 +223,7 @@ tree_dead_carbon <- combined_table_dead_tower %>%
          tree_kgC = (ag_tree_kg + bg_tree_kg) * 0.5)
 ```
 
-Calculate the plot level biomass
+Calculate the plot level carbon
 
 ```{r}
  plot_dead_carbon <-  tree_dead_carbon %>%
@@ -237,6 +233,16 @@ Calculate the plot level biomass
     summarise(plot_kgCm2 = sum(treeC_kgCm2, na.rm = TRUE))
 ```
 
+Visualize plot level carbon 
+
+```{r}
+ggplot(plot_dead_carbon, aes(x = year, y = plot_kgCm2, color = plotID)) + 
+  geom_point() +
+  geom_line()
+```
+
+Calculate site level carbon
+
 ```{r}
  site_dead_carbon <- plot_dead_carbon %>%
     filter(plotID %in% last_plots) |> 
@@ -245,11 +251,7 @@ Calculate the plot level biomass
               sd_kgCperm2 = sd(plot_kgCm2))
 ```
 
-```{r}
-ggplot(plot_dead_carbon, aes(x = year, y = plot_kgCm2, color = plotID)) + 
-  geom_point() +
-  geom_line()
-```
+Visualize site level carbon 
 
 ```{r}
 ggplot(site_dead_carbon, aes(x = year, y = mean_kgCperm2)) + 
@@ -257,25 +259,40 @@ ggplot(site_dead_carbon, aes(x = year, y = mean_kgCperm2)) +
   geom_line()
 ```
 
-## Calculate soil carbon
+## Calculate carbon in trees on the ground (coarse woody debris)
+
+The data needed to calculate carbon in trees that are laying on the ground are in two NEON data products.
 
 ```{r}
-data_product1 <- "DP1.10014.001"
-neon_download(product = data_product1, site = site)
-print(unique(neon_index(product = data_product1, site = site)$table))
 
-data_product2 <- 'DP1.10010.001'
-neon_download(product = data_product2, site = site)
-print(unique(neon_index(product = data_product2, site = site)$table))
+index <-  neonstore:::neon_data(product = "DP1.10014.001",
+                                site = site,
+                                type="basic")
+
+cdw_density <- index |>
+  filter(grepl("cdw_densitydisk", name)) |> 
+  pull(url) |>
+  duckdbfs::open_dataset(format="csv", filename = TRUE) |> 
+  collect()
+
+log_table <- index |>
+  filter(grepl("cdw_densitylog", name)) |> 
+  pull(url) |>
+  duckdbfs::open_dataset(format="csv", filename = TRUE) |> 
+  collect()
+
+index <-  neonstore:::neon_data(product = "DP1.10010.001",
+                                site = site,
+                                type="basic")
+
+cdw_tally <- index |> 
+  filter(grepl("cdw_fieldtally", name)) |> 
+  pull(url) |>
+  #duckdbfs::open_dataset(format="csv", filename = TRUE) |>
+  read_csv()
 ```
 
 ```{r}
-cdw_tally <- neon_read(table = 'cdw_fieldtally-basic', site = site)
-
-cdw_density <- neon_read(table = 'cdw_densitydisk-basic', site = site)
-
-log_table <- neon_read(table = 'cdw_densitylog-basic', site = site)
-
 ## filter by tower plot for log table
 log_table_filter <- log_table %>% 
   filter(plotType == "tower",
@@ -313,20 +330,24 @@ Here we are going to calculate the carbon stored in fine roots using the root ch
 
 ```{r}
 ## root chemistry data product
-roots_DP <- 'DP1.10067.001'
-## use neon_download from neonstore to read in data
-neon_download(product = roots_DP, site = site)
-## print available datasets from product
-print(unique(neon_index(site = site, product = roots_DP)$table))
+index <-  neonstore:::neon_data(product = "DP1.10067.001",
+                                site = site,
+                                type="basic")
+
+bbc_percore <- index |>
+  filter(grepl("bbc_percore", name)) |> 
+  pull(url) |>
+  duckdbfs::open_dataset(format="csv", filename = TRUE) |> 
+  collect()
+
+rootmass <- index |>
+  filter(grepl("bbc_rootmass", name)) |> 
+  pull(url) |>
+  duckdbfs::open_dataset(format="csv", filename = TRUE) |> 
+  collect()
 ```
 
 ```{r}
-## read in bbc_percore
-bbc_percore <- neon_read('bbc_percore-basic', site = site, product = roots_DP)
-## read in rootmass data
-rootmass <- neon_read('bbc_rootmass-basic', site = site, product = roots_DP)
-## extract year
-## extract year
 rootmass$year = year(rootmass$collectDate)
 
 ## set variables for liveDryMass, deadDryMass, unkDryMass, area
@@ -376,18 +397,21 @@ site_roots <- rootmass %>%
 #Download bieogeochemistry soil data to get carbon concentration
 #data_product1 <- "DP1.00097.001"
 #Download physical soil data to get bulk density
-soil_dp <- "DP1.00096.001"
-```
+index <-  neonstore:::neon_data(product = "DP1.00096.001",
+                                site = site,
+                                type="basic")
 
-```{r}
-## use neon_download to extract data product
-neon_download(product = soil_dp, site = site)
-print(unique(neon_index(site = site)$table))
-```
+mgc_perbiogeosample <- index |>
+  filter(grepl("mgp_perbiogeosample", name)) |> 
+  pull(url) |>
+  duckdbfs::open_dataset(format="csv", filename = TRUE) |> 
+  collect()
 
-```{r}
-mgc_perbiogeosample <- neon_read('mgp_perbiogeosample', site = site)
-mgp_perbulksample <- neon_read('mgp_perbulksample', site = site)
+mgp_perbulksample <- index |>
+  filter(grepl("mgp_perbulksample", name)) |> 
+  pull(url) |>
+  duckdbfs::open_dataset(format="csv", filename = TRUE) |> 
+  collect()
 ```
 
 ```{r}
@@ -462,11 +486,20 @@ site_soil_carbon <- site_soil_carbon |>
   select(year, variable, mean_kgCperm2)
 
 total_carbon_components <- bind_rows(site_live_carbon, site_dead_carbon, site_cwd_carbon, site_roots, site_soil_carbon)
+```
+
+Plot the different pools of carbon
+
+```{r}
 
 total_carbon_components |> 
   ggplot(aes(x = year, y = mean_kgCperm2, color = variable)) + 
   geom_point()
+```
 
+Combine pools of carbon together to match the stocks used in our simple process model.  This converts it to a long data format.
+
+```{r}
 total_carbon_simple <- total_carbon_components |> 
   pivot_wider(names_from = variable, values_from = mean_kgCperm2) |> 
   mutate(wood = live_tree + mean(fine_roots, na.rm = TRUE),
@@ -476,6 +509,8 @@ total_carbon_simple <- total_carbon_components |>
 ```
 
 ## MODIS LAI
+
+Download the leaf area index 
 
 ```{r}
 lai <- MODISTools::mt_subset(product = "MCD15A2H",
@@ -500,6 +535,9 @@ lai_cleaned <- lai |>
   mutate(variable = "lai") |> 
   select(datetime, variable, observation)
 ```
+
+Plot MODIS LAI
+
 
 ```{r}
 lai_cleaned |> 

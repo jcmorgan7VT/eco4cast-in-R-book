@@ -4,6 +4,8 @@
 source("R/forest_model.R")
 source("R/helpers.R")
 source("R/particle_filter.R")
+library(tidyverse)
+library(lubridate)
 ```
 
 ## Example of the forecast and analysis cycle

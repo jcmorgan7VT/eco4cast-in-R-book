@@ -555,6 +555,12 @@ bind_rows(pf_low, pf_high) %>%
 
 ## Problem set
 
+You will need the following packages
+```{r}
+library(tidyverse)
+library(lubridate)
+```
+
 ### Overview
 
 This exercise involves the following objectives
@@ -610,7 +616,7 @@ for(t in 2:length(sim_dates)){
 The MCMC chain has posterior distributions for the parameters (`g`, `u`, `sd_add`) and biomass at age 50 (`age50_biomass`)
 
 ```{r}
-load("data/PF_MCMC.csv")
+df <- read_csv("data/PF_MCMC.csv")
 ```
 
 ### Part 2: Forecast using PF
@@ -656,7 +662,7 @@ Generate a plot that visualizes the output of the PF (see examples from the lect
 use this code to save your PF output as the object `initial_forecast`
 
 ```{r}
-initial_forecast <- forecast
+
 ```
 
 ### Part 3:
