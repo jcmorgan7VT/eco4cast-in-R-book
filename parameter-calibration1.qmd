@@ -2,7 +2,7 @@
 
 ```{r}
 #| echo = FALSE
-#| echo = message
+#| message = FALSE
 library(tidyverse)
 ```
 
