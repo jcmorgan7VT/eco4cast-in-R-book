@@ -1,7 +1,7 @@
 # Putting it together: forecast - analysis cycle
 
 ```{r}
-#|message = FALSE
+#|message: FALSE
 source("R/forest_model.R")
 source("R/helpers.R")
 source("R/particle_filter.R")

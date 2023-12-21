@@ -1,8 +1,8 @@
 # Data assimilation: particle filter
 
 ```{r}
-#|echo = FALSE
-#|message = FALSE
+#|echo: FALSE
+#|message: FALSE
 library(tidyverse)
 set.seed(100)
 ```
@@ -569,7 +569,7 @@ bind_rows(pf_low, pf_high) %>%
 You will need the following packages
 
 ```{r}
-#message = FALSE
+#|message: FALSE
 library(tidyverse)
 library(lubridate)
 ```

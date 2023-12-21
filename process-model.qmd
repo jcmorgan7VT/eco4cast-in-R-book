@@ -1,8 +1,7 @@
 # Process model
 
 ```{r}
-#| message = FALSE
-#| 
+#| message: FALSE
 source("R/helpers.R")
 library(tidyverse)
 library(lubridate)
@@ -167,8 +166,8 @@ output_df <- output_to_df(output, sim_dates, sim_name = "baseline")
 Plot the data frame.
 
 ```{r}
-#| warning = FALSE
-#| message = FALSE
+#| warning: FALSE
+#| message: FALSE
 output_df |> 
   filter(variable %in% c("lai", "wood", "som", "nee")) |> 
   ggplot(aes(x = datetime)) +
