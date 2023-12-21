@@ -39,6 +39,7 @@ book:
     - part: "Appendix"
       chapters:
       - neon-data.qmd
+      - weather-drivers.qmd
 
 bibliography: references.bib
 

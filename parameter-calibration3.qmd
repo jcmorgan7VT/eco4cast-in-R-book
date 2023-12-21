@@ -38,8 +38,8 @@ params$Ra_frac <- rep(0.5, ens_members)
 params$Rbasal <- rep(0.002, ens_members)
 params$Q10 <- rep(2.1, ens_members)
 params$litterfall_rate <- rep(1/(2.0*365), ens_members) #Two year leaf lifespan
-params$litterfall_start <- rep(200, ens_members)
-params$litterfall_length<- rep(70, ens_members)
+params$litterfall_start <- rep(250, ens_members)
+params$litterfall_length<- rep(60, ens_members)
 params$mortality <- rep(0.00015, ens_members) #Wood lives about 18 years on average (all trees, branches, roots, course roots)
 params$sigma.leaf <- rep(0.0, ens_members) #0.01 
 params$sigma.stem <- rep(0.0, ens_members) #0.01 ## wood biomass
@@ -84,13 +84,14 @@ accept <- 0
 
 
 #Initialize chain
-num_pars <- 2
-jump_params <- c(0.002, 0.0002)
+num_pars <- 3
+jump_params <- c(0.002, 0.0002, 1)
 fit_params <- array(NA, dim = c(num_pars, num_iter))
 fit_params[1, 1] <- params$alpha
 fit_params[2, 1] <- params$Rbasal
-prior_mean <- c(0.029, 0.002)
-prior_sd <- c(0.005, 0.0005)
+fit_params[3, 1] <- params$litterfall_start
+prior_mean <- c(0.029, 0.002, 250)
+prior_sd <- c(0.005, 0.0005, 10)
 ```
 
 Run MCMC
@@ -105,11 +106,13 @@ for(iter in 2:num_iter){
     proposed_pars <- fit_params[, iter - 1]
     proposed_pars[j] <- rnorm(1, mean = fit_params[j, iter - 1], sd = jump_params[j])
     
-    log_prior <- dnorm(proposed_pars[1], mean = prior_mean[1], sd = 0.005, log = TRUE) + 
-      dnorm(proposed_pars[2], mean = prior_mean[2], sd = 0.0005, log = TRUE)
+    log_prior <- dnorm(proposed_pars[1], mean = prior_mean[1], sd = prior_sd[1], log = TRUE) + 
+      dnorm(proposed_pars[2], mean = prior_mean[2], sd = prior_sd[2], log = TRUE) +
+      dnorm(proposed_pars[3], mean = prior_mean[3], sd = prior_sd[3], log = TRUE)
     
     params$alpha  <- proposed_pars[1]
     params$Rbasal  <- proposed_pars[2]
+    params$litterfall_start <- proposed_pars[3]
     
     #Set initial conditions
     output <- array(NA, dim = c(length(sim_dates), ens_members, 12)) #12 is the number of outputs
@@ -163,20 +166,21 @@ Process MCMC chain by removing the first 500 iterations and pivoting to a long f
 
 ```{r}
 nburn <- 500
-d <- tibble(iter = nburn:num_iter,
-            par1 = fit_params[1, nburn:num_iter],
-            par2 = fit_params[2, nburn:num_iter]) %>%
+parameter_MCMC <- tibble(iter = nburn:num_iter,
+            alpha = fit_params[1, nburn:num_iter],
+            Rbasal = fit_params[2, nburn:num_iter],
+            litterfall_start = fit_params[3, nburn:num_iter]) %>%
   pivot_longer(-iter, values_to = "value", names_to = "parameter")
 ```
 
 Examine chains
 
 ```{r}
-p1 <- ggplot(d, aes(x = iter, y = value)) +
+p1 <- ggplot(parameter_MCMC, aes(x = iter, y = value)) +
   geom_line() +
   facet_wrap(~parameter, scales = "free")
 
-p2 <- ggplot(d, aes(x = value)) +
+p2 <- ggplot(parameter_MCMC, aes(x = value)) +
   geom_histogram() +
   facet_wrap(~parameter, scales = "free")
 
@@ -217,6 +221,7 @@ params <- as.data.frame(params)
 #Replace parameters with prior distribution
 params$alpha <- rnorm(ens_members, mean = prior_mean[1], sd = prior_sd[1])
 params$Rbasal <- rnorm(ens_members, mean = prior_mean[2], sd = prior_sd[2])
+params$litterfall_start <- rnorm(ens_members, mean = prior_mean[3], sd = prior_sd[3])
 
 for(t in 2:length(sim_dates)){
   
@@ -243,6 +248,7 @@ output[1, , 3] <- state_init[3]
 
 params$alpha <- sample(fit_params[1, nburn:num_iter], ens_members, replace = TRUE)
 params$Rbasal <- sample(fit_params[2, nburn:num_iter], ens_members, replace = TRUE)
+params$litterfall_start <- sample(fit_params[3, nburn:num_iter], ens_members, replace = TRUE)
 
 for(t in 2:length(sim_dates)){
   
@@ -272,16 +278,12 @@ bind_rows(output_df_no_optim, output_df_optim) |>
   ggplot(aes(x = datetime)) +
   geom_ribbon(aes(ymin = lower90, ymax = upper90, fill = model_id), alpha = 0.7) +
   geom_line(aes(y = median, color = model_id)) +
-  geom_point(data = obs_filtered, aes(x = datetime, y = observation), color = "gray", alpha = 0.7) +
+  geom_point(data = obs_filtered, aes(x = datetime, y = observation), color = "blue", alpha = 0.5) +
   facet_wrap(~variable, scale = "free")
 ```
 
 ### Save posteriors for future use
 
 ```{r}
-tibble(iter = nburn:num_iter,
-       alpha = fit_params[1, nburn:num_iter],
-       Rbasal = fit_params[2, nburn:num_iter]) |> 
-  pivot_longer(-iter, values_to = "value", names_to = "parameter") |> 
-  write_csv("data/saved_parameter_chain.csv")
+  write_csv(parameter_MCMC, "data/saved_parameter_chain.csv")
 ```

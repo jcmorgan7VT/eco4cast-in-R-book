@@ -79,6 +79,8 @@ fit_params <- array(NA, dim = c(length(sim_dates) ,ens_members , num_pars))
 samples <- sample(1:nrow(fit_params_table), size = ens_members, replace = TRUE)
 fit_params[1, , 1] <- fit_params_table$alpha[samples]
 fit_params[1, , 2] <- fit_params_table$Rbasal[samples]
+params$litterfall_start <- mean(fit_params_table$litterfall_start, na.rm = TRUE)
+
 ```
 
 ```{r}
