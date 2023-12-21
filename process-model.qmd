@@ -96,7 +96,7 @@ forest_model <- function(t, states, parms, inputs){
 
 ### Time frame, site id, and number of ensembles
 
-We are doing a determinstic simulation (no uncertainty) so we only have one ensemble member
+We are doing a deterministic simulation (no uncertainty) so we only have one ensemble member
 
 ```{r}
 site <- "TALL"
