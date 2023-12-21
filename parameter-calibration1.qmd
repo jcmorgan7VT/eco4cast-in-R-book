@@ -477,6 +477,8 @@ abline(h = mle_LL_more - 2, lty = "dashed", col = "blue")
 -   There are more complete packages for doing likelihood analysis that optimize parameters, calculate AIC, estimate uncertainty, etc. For example, the `likelihood` package and `mle` function in R do these calculations for you. Here is an example using the `mle` package (note that the `mle` package assumes that you have created the objects x and y and only has parameters in the function calls...see how pred_mm and LL_fn don't have x and y as arguments)
 
 ```{r}
+#| warning: false
+
 pred_mm <- function(par1, par2){
   par1 * (x / (par2 + x))
 }
@@ -509,7 +511,7 @@ library(tidyverse)
 Load dataset
 
 ```{r}
-d <- read_csv(file = "https://data.ecoforecast.org/neon4cast-targets/phenology/phenology-targets.csv.gz")
+d <- read_csv(file = "https://data.ecoforecast.org/neon4cast-targets/phenology/phenology-targets.csv.gz", show_col_types = FALSE)
 ```
 
 Filter the dataset to only include the site_id BART (Bartlett Experimental Forest in the White Mountains of New Hampshire) and the dates between 2019-01-01 and 2019-07-01. Convert the date to Day of Year (hint: use `lubridate:: yday()` function). Remove rows with gcc_90 equal to NA or gcc_sd equal to 0.

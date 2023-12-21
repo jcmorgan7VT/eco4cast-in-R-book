@@ -1,8 +1,8 @@
 # Data assimilation: particle filter
 
 ```{r}
-#|echo: FALSE
-#|message: FALSE
+#| echo: false
+#| message: false
 library(tidyverse)
 set.seed(100)
 ```
@@ -107,7 +107,7 @@ Here is an example of the particle filter applied to the google flu data
 First load in data. We are only going to focus on the first 15 weeks of the data so that you can see the particles more easily
 
 ```{r}
-#|warning: FALSE
+#| warning: false
 gflu <- read_csv("data/gflu_data.txt", skip = 11, show_col_types = FALSE) %>% 
   select(Date, Virginia) |> 
   mutate(Date = as.Date(Date))
@@ -179,7 +179,8 @@ for(t in 2:nt){
 Now plot the particles individually
 
 ```{r}
-#|warning: FALSE
+#| warning: false
+
 tibble(time = 1:nt,
        as_tibble(x)) %>% 
   pivot_longer(cols = -time, names_to = "ensemble", values_to = "x") %>% 
@@ -246,7 +247,8 @@ for(t in 2:nt){
 Now plot the particles with the observations. You can see how the particles are adjusted when data are present.
 
 ```{r}
-#|warning: FALSE
+#| warning: false
+
 tibble(time = 1:nt,
        as_tibble(x),
        obs = y) %>% 
@@ -268,7 +270,8 @@ x_with_obs <- x
 Now we can compare the influence of data assimilation on the last 5 weeks of the time-series (think of this as a 5-week forecast)
 
 ```{r}
-#|warning: FALSE
+#| warning: false
+
 no_obs <- tibble(time = gflu$Date,
        as_tibble(x_no_obs)) %>% 
   pivot_longer(cols = -c("time"), names_to = "ensemble", values_to = "x") %>% 
@@ -304,7 +307,8 @@ The estimate of parameters using PF is also straightforward. Here we will estima
 First, create the observed data that includes the minimum temperature. (same as above and using the `daymetr` package from the previous exercise)
 
 ```{r}
-#|warning: FALSE
+#| warning: false
+
 gflu <- read_csv("data/gflu_data.txt", skip = 11, show_col_types = FALSE)  %>% 
   select(Date, Virginia) |> 
   mutate(Date = as.Date(Date))
@@ -395,7 +399,8 @@ for(t in 2:nt){
 Now visualize the states from the PF
 
 ```{r}
-#|warning: FALSE
+#| warning: false
+
 tibble(time = 1:nt,
        obs = y,
        as_tibble(x)) %>% 
@@ -413,7 +418,8 @@ And visualize the time-evolution of the parameter. There are two new concepts il
 2.  particles can have degeneracy, whereby the values of the parameters collapse down to one or a few values. This occurs because the PF does not propose new parameter values, it only selects (through resampling) parameter values from the initial set that you started with. Over the time-step the PF weeds out bad parameters and only a few ones are left. This is a major issue with a PF. Degeneracy can also occur in the states but since we are adding process uncertainty (`sd_add`) the particles are able to separate through time. There are a couple of ways to solve degeneracy - increase the number of particles so you sample more initial parameter values or propose new parameter values as part of the PF (how do to this is beyond the scope of this lecture)
 
 ```{r}
-#|warning: FALSE
+#| warning: false
+
 tibble(time = 1:nt,
        as_tibble(b1)) %>% 
   pivot_longer(cols = -c(time), names_to = "ensemble", values_to = "b1") %>% 
@@ -495,7 +501,8 @@ pf_10000 <- bootstrap_pf(10000)
 And combine to a single plot. You see the width of the 95 % confidence interval increases substantially from 10 to 1000 particles but then is similar from 1000 to 10000. This reflects what we learned from the very first exercise where you drew random samples from a distribution and found that between 1000 and 10000 random samples were required to approximate the distribution well.
 
 ```{r}
-#|warning: FALSE
+#| warning: false
+
 p10 <- tibble(time = gflu$Date,
        as_tibble(pf_10$x)) %>% 
   pivot_longer(cols = -c("time"), names_to = "ensemble", values_to = "x") %>% 
@@ -538,7 +545,7 @@ bind_rows(p10, p100, p1000, p10000) %>%
 We can also explore the sensitivity of the PF updating to our observation uncertainty. Intuitively, we should have stronger update (i.e., the particles are adjusted to be closer to the observation) when there is less uncertainty in the observations. The code below explores whether this intuition is correct.
 
 ```{r}
-#|warning: FALSE
+#| warning: false
 
 pf_low_obs <- bootstrap_pf(5000, sd_obs = 0.1)
 
@@ -610,7 +617,8 @@ This step is already done for you.
 Here is the data for ages 1 through 50 for the plot (starting in 1950-01-01). It was measured every 5 years.
 
 ```{r}
-#|warning: FALSE
+#| warning: false
+
 plot_data <- read_csv("data/PF_data1.csv", show_col_types = FALSE)
 
 ggplot(plot_data, aes(x = datetime, y = biomass)) +
@@ -692,7 +700,8 @@ use this code to save your PF output as the object `initial_forecast`
 Now we have new data!
 
 ```{r}
-#|warning: FALSE
+#| warning: false
+
 new_data <- read_csv("data/PF_data2.csv", show_col_types = FALSE)
 
 ggplot(new_data, aes(x = datetime, y = biomass)) +

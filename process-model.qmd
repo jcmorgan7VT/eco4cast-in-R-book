@@ -7,9 +7,9 @@ library(tidyverse)
 library(lubridate)
 ```
 
-- timestep: 1 day
-- currency: MgC/ha 
-- dimension: 0-D
+-   timestep: 1 day
+-   currency: MgC/ha
+-   dimension: 0-D
 
 ```{r}
 forest_model <- function(t, states, parms, inputs){
@@ -105,7 +105,7 @@ sim_dates <- seq(as_date("2020-09-30"), Sys.Date() - lubridate::days(1), by = "1
 
 ### Set drivers
 
-There is a custom function to access the weater drivers.  You can learn more about the function in the appendix (add link)
+There is a custom function to access the weater drivers. You can learn more about the function in the appendix (add link)
 
 ```{r}
 inputs <- get_historical_met(site = site, sim_dates, use_mean = TRUE)
@@ -135,7 +135,7 @@ params <- as.data.frame(params)
 
 ### Set inital condition
 
-Set the starting point of the simulation.  All states need a starting point.
+Set the starting point of the simulation. All states need a starting point.
 
 ```{r}
 output <- array(NA, dim = c(length(sim_dates), ens_members, 12)) #12 is the number of outputs

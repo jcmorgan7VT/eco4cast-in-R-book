@@ -1,7 +1,8 @@
 # Putting it together: forecast - analysis cycle
 
 ```{r}
-#|echo: FALSE
+#| echo: false
+#| message: false
 source("R/forest_model.R")
 source("R/helpers.R")
 source("R/particle_filter.R")
@@ -38,8 +39,8 @@ params$litterfall_start <- rep(200, ens_members)
 params$litterfall_length<- rep(70, ens_members)
 params$mortality <- rep(0.00015, ens_members) #Wood lives about 18 years on average (all trees, branches, roots, course roots)
 params$sigma.leaf <- rep(0.1, ens_members) #0.01 
-params$sigma.stem <- rep(0.1, ens_members) #0.01 ## wood biomass
-params$sigma.soil <- rep(0.1, ens_members)# 0.01
+params$sigma.stem <- rep(1, ens_members) #0.01 ## wood biomass
+params$sigma.soil <- rep(1, ens_members)# 0.01
 params <- as.data.frame(params)
 ```
 
@@ -129,7 +130,7 @@ parameter_df <- parameters_to_df(params_weighted, sim_dates, sim_name = "paramet
 ```
 
 ```{r}
-#|warning: FALSE
+#| warning: false
 output_df |> 
   summarise(median = median(prediction),
             upper = quantile(prediction, 0.95, na.rm = TRUE),
@@ -207,6 +208,16 @@ for(t in 2:length(sim_dates)){
 
 ### Step 3: Save forecast and data assimiliation output
 
+Convert forecast to a dataframe in the format required for the NEON Ecological Forecasting Challenge.
+
+
+```{r}
+#Add code to convert
+```
+
+
+Save the states and weights for use as initial conditions in the next forecast.
+
 ```{r}
 save(analysis, file = "data/PF_analysis.Rdata")
 ```
@@ -277,6 +288,16 @@ for(t in 1:length(sim_dates)){
 ```
 
 ### Step 7: Save forecast and data assimiliation output
+
+
+Convert forecast to a dataframe in the format required for the NEON Ecological Forecasting Challenge.
+
+
+```{r}
+#Add code to convert
+```
+
+Save the states and weights for use as initial conditions in the next forecast.
 
 ```{r}
 save(analysis, file = "data/PF_analysis.Rdata")
