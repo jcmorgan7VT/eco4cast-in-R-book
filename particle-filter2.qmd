@@ -8,25 +8,12 @@ source("R/forest_model.R")
 
 ```{r}
 ens_members <- 100
-sim_dates <- seq(Sys.Date() - 500, Sys.Date() - 1, by = "1 day")
+sim_dates <- seq(Sys.Date() - 365*2, Sys.Date() - 1, by = "1 day")
 ```
 
 ```{r}
-site <- "TALL"
-met_s3 <- arrow::s3_bucket(paste0("bio230014-bucket01/neon4cast-drivers/noaa/gefs-v12/stage3/site_id=", site),
-                           endpoint_override = "sdsc.osn.xsede.org",
-                           anonymous = TRUE)
-
-inputs_all <- arrow::open_dataset(met_s3) |> 
-  filter(variable %in% c("air_temperature", "surface_downwelling_shortwave_flux_in_air")) |> 
-  mutate(datetime = as_date(datetime)) |> 
-  mutate(prediction = ifelse(variable == "surface_downwelling_shortwave_flux_in_air", prediction/0.486, prediction),
-         variable = ifelse(variable == "surface_downwelling_shortwave_flux_in_air", "PAR", variable),
-         prediction = ifelse(variable == "air_temperature", prediction - 273.15, prediction),
-         variable = ifelse(variable == "air_temperature", "temp", variable)) |> 
-  summarise(prediction = mean(prediction, na.rm = TRUE), .by = c("datetime", "variable")) |> 
-  mutate(parameter = 1) |> 
-  collect()
+inputs <- get_historical_met(site = "TALL", sim_dates, use_mean = TRUE)
+inputs_ensemble <- assign_met_ensembles(inputs, ens_members)
 ```
 
 ```{r}
@@ -60,7 +47,8 @@ state_init[1] <- obs |>
   pull(observation)
 
 state_init[2] <- obs |> 
-  filter(variable == "wood") |> 
+  filter(variable == "wood",
+         datetime %in% sim_dates) |> 
   na.omit() |> 
   slice(1) |> 
   pull(observation)
@@ -80,11 +68,6 @@ forecast[1, , 2] <- state_init[2]
 forecast[1, , 3] <- state_init[3]
 
 wt <- array(1, dim = c(length(sim_dates), ens_members))
-
-inputs <- inputs_all |> 
-    filter(datetime %in% as_date(sim_dates)) |> 
-    mutate(doy = yday(datetime))
-inputs_ensemble <- assign_met_ensembles(inputs, ens_members)
 ```
 
 ```{r}
@@ -96,9 +79,9 @@ fit_params <- array(NA, dim = c(length(sim_dates) ,ens_members , num_pars))
 samples <- sample(1:nrow(fit_params_table), size = ens_members, replace = TRUE)
 fit_params[1, , 1] <- fit_params_table$alpha[samples]
 fit_params[1, , 2] <- fit_params_table$Rbasal[samples]
+```
 
-
-
+```{r}
 for(t in 2:length(sim_dates)){
   
   fit_params[t, , 1] <- rnorm(ens_members, fit_params[t-1, ,1], sd = 0.0005)
@@ -114,7 +97,7 @@ for(t in 2:length(sim_dates)){
   
   curr_obs <- obs |> 
     filter(datetime == sim_dates[t],
-           variable %in% c("nee","lai"))
+           variable %in% c("nee","lai","wood"))
   
   if(nrow(curr_obs) > 0){
     
@@ -124,7 +107,7 @@ for(t in 2:length(sim_dates)){
     combined_output_obs <- combine_model_obs(forecast_df, 
                                              obs = curr_obs,
                                              variables = c("lai", "wood", "som", "nee"), 
-                                             sds = c(0.1, 20, 20, 0.005))
+                                             sds = c(0.1, 1, 20, 0.005))
     
     likelihood <- rep(0, ens_members)
     for(ens in 1:ens_members){
@@ -162,13 +145,13 @@ for(t in 1:length(sim_dates)){
   forecast_weighted[t, , ] <- forecast[t, resample_index, 1:12] 
   params_weighted[t, , ] <- fit_params[t,resample_index, ] 
 }
-output_df <- output_to_df(forecast_weighted, sim_dates, sim_name = "parameter_unc")
-parameter_df <- parameters_to_df(params_weighted, sim_dates, sim_name = "parameter_unc", param_names = c("alpha","Rbasal"))
+output_df <- output_to_df(forecast_weighted, sim_dates, sim_name = "particle_filter")
+parameter_df <- parameters_to_df(params_weighted, sim_dates, sim_name = "particle_filter", param_names = c("alpha","Rbasal"))
 ```
 
 ```{r}
 obs_dates <- obs |> 
-  filter(variable == c("nee","lai")) |> 
+  filter(variable == c("nee","lai", "wood")) |> 
   pull(datetime)
 
 output_df |> 
@@ -181,7 +164,6 @@ output_df |>
   geom_ribbon(aes(ymin = upper, ymax = lower), alpha = 0.7) +
   geom_line(aes(y = median)) +
   geom_point(aes(y = observation), color = "red") +
-  #geom_vline(xintercept = obs_dates) + 
   facet_wrap(~variable, scale = "free")
 ```
 

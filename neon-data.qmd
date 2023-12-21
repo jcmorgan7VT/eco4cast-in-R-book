@@ -510,7 +510,8 @@ Combine pools of carbon together to match the stocks used in our simple process 
 total_carbon_simple <- total_carbon_components |> 
   pivot_wider(names_from = variable, values_from = mean_kgCperm2) |> 
   mutate(wood = live_tree + mean(fine_roots, na.rm = TRUE),
-         som = mean(dead_trees, na.rm = TRUE) + mean(down_wood, na.rm = TRUE) + mean(soil_carbon, na.rm = TRUE)) |> 
+         som = mean(dead_trees, na.rm = TRUE) + mean(down_wood, na.rm = TRUE) + mean(soil_carbon, na.rm = TRUE),
+         som = ifelse(datetime != min(datetime), NA, som)) |> 
   select(datetime, wood, som) |> 
   pivot_longer(-datetime, names_to = "variable", values_to = "observation")
 ```
