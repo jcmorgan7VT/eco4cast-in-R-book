@@ -1,8 +1,8 @@
 # Visualizing and evaluating forecasts
 
-The fourth forecast generation assignment will challenge analyze the automated forecasts that you submitted as part of @sec-third-forecast. The assign uses the module in Freya Olsson's tutorial that provides code to access the automatically scored forecasts. You will add code to your respository that generates plots.
+The fourth forecast generation assignment will challenge analyze the automated forecasts that you submitted as part of @third-forecast.qmd#sec-third-forecast. The assign uses the module in Freya Olsson's tutorial that provides code to access the automatically scored forecasts. You will add code to your respository that generates plots.
 
-https://github.com/OlssonF/NEON-forecast-challenge-workshop/blob/main/Analyse_scores/Get_scores_tutorial.Rmd
+<https://github.com/OlssonF/NEON-forecast-challenge-workshop/blob/main/Analyse_scores/Get_scores_tutorial.Rmd>
 
 ## Information on scoring metrics
 
@@ -17,6 +17,7 @@ We will generate a combined score for all locations and forecast horizons. Forec
 Importantly, we use the convention for CRPS where zero is lowest and best possible score, therefore teams want to achieve the lowest score. CPRS can be also expressed as a negative number with zero as highest and best possible score (Gneiting & Raftery 2007). The `scoringRules` package that we use follows the 0 or greater convention.
 
 ```{r}
+#| message: FALSE
 library(scoringRules)
 library(tidyverse)
 ```
