@@ -1,6 +1,7 @@
 # Putting it together: forecast - analysis cycle
 
 ```{r}
+#|message = FALSE
 source("R/forest_model.R")
 source("R/helpers.R")
 source("R/particle_filter.R")
@@ -10,10 +11,9 @@ library(lubridate)
 
 ## Example of the forecast and analysis cycle
 
-
 ### Step 1: Set initial conditions and parameter distributions
 
-We will start our forecast - analysis cycle by running the model with a particle filter over a period of time in the past.  This is designed to spin-up the model and set the initial states and parameters for a forecast.
+We will start our forecast - analysis cycle by running the model with a particle filter over a period of time in the past. This is designed to spin-up the model and set the initial states and parameters for a forecast.
 
 ```{r}
 ens_members <- 100
@@ -144,7 +144,7 @@ output_df |>
 
 ### Step 2: Generate forecaset
 
-Now 
+Now
 
 ```{r}
 load("data/PF_analysis.Rdata")
@@ -204,8 +204,6 @@ for(t in 2:length(sim_dates)){
 }
 ```
 
-
-
 ### Step 3: Save forecast and data assimiliation output
 
 ```{r}
@@ -213,7 +211,6 @@ save(analysis, file = "data/PF_analysis.Rdata")
 ```
 
 ### Step 4: Use yesterday's forecast of today for initial conditions and parameter distributions
-
 
 ```{r}
 load("data/PF_analysis.Rdata")
@@ -278,7 +275,6 @@ for(t in 1:length(sim_dates)){
 }
 ```
 
-
 ### Step 7: Save forecast and data assimiliation output
 
 ```{r}
@@ -287,10 +283,6 @@ save(analysis, file = "data/PF_analysis.Rdata")
 
 ### Step 8: Repeat
 
-
 ## Code example of forecast analysis cycle implimented in a more complex forest model
 
 <https://github.com/mdietze/FluxCourseForecast>
-
-
-
