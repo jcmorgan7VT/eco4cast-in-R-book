@@ -27,7 +27,7 @@ obs <- read_csv("data/site_carbon_data.csv", show_col_types = FALSE)
 Set up dates of simulation, parameters, initial conditions, and meterology inputs
 
 ```{r}
-sim_dates <- seq(as_date("2023-01-01"), Sys.Date() - 1, by = "1 day")
+sim_dates <- seq(as_date("2022-01-01"), Sys.Date() - 1, by = "1 day")
 
 ens_members <- 1
 params <- list()
@@ -78,7 +78,7 @@ Set up MCMC configuration
 
 ```{r}
 #Set MCMC Configuration
-num_iter <- 3000
+num_iter <- 1500
 log_likelihood_prior_current <- -10000000000
 accept <- 0
 
@@ -259,17 +259,20 @@ output_df_optim <- output_to_df(output, sim_dates, sim_name = "optimized")
 ### Visualize influence of optimization
 
 ```{r}
+obs_filtered <- obs |> 
+  filter(datetime > min(output_df_no_optim$datetime))
+
+
 bind_rows(output_df_no_optim, output_df_optim) |> 
    summarise(median = median(prediction, na.rm = TRUE), 
             upper90 = quantile(prediction, 0.95, na.rm = TRUE),
             lower90 = quantile(prediction, 0.05, na.rm = TRUE),
-            .by = c("datetime", "variable", "sim_name")) |> 
+            .by = c("datetime", "variable", "model_id")) |> 
   filter(variable %in% c("lai", "wood", "som", "nee")) |> 
-  mutate(ensemble = paste0(ensemble,"_",model_id)) |> 
   ggplot(aes(x = datetime)) +
-  geom_line(aes(y = prediction, group = ensemble, color = model_id), alpha = 0.2) +
-  geom_point(data = obs, aes(x = datetime, y = observation), color = "gray", alpha = 0.7) +
-  xlim(min(output_df_no_optim$datetime), max(output_df_no_optim$datetime)) + 
+  geom_ribbon(aes(ymin = lower90, ymax = upper90, fill = model_id), alpha = 0.7) +
+  geom_line(aes(y = median, color = model_id)) +
+  geom_point(data = obs_filtered, aes(x = datetime, y = observation), color = "gray", alpha = 0.7) +
   facet_wrap(~variable, scale = "free")
 ```
 
