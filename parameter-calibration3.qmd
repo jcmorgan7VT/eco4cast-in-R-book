@@ -1,6 +1,5 @@
 # Parameter calibration: Applying to process model
 
-
 ## Runing MCMC on the forest process model
 
 ```{r}
@@ -176,6 +175,8 @@ parameter_MCMC <- tibble(iter = nburn:num_iter,
 Examine chains
 
 ```{r}
+#| warning: FALSE
+
 p1 <- ggplot(parameter_MCMC, aes(x = iter, y = value)) +
   geom_line() +
   facet_wrap(~parameter, scales = "free")
@@ -234,7 +235,7 @@ for(t in 2:length(sim_dates)){
 output_df_no_optim <- output_to_df(output, sim_dates, sim_name = "no_optim")
 ```
 
-### Simulation with posterior parameter distributions 
+### Simulation with posterior parameter distributions
 
 ```{r}
 
@@ -265,6 +266,8 @@ output_df_optim <- output_to_df(output, sim_dates, sim_name = "optimized")
 ### Visualize influence of optimization
 
 ```{r}
+#| warning: FALSE
+
 obs_filtered <- obs |> 
   filter(datetime > min(output_df_no_optim$datetime))
 

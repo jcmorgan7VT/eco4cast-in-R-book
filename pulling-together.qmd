@@ -1,7 +1,7 @@
 # Putting it together: forecast - analysis cycle
 
 ```{r}
-#|message: FALSE
+#|echo: FALSE
 source("R/forest_model.R")
 source("R/helpers.R")
 source("R/particle_filter.R")
@@ -129,6 +129,7 @@ parameter_df <- parameters_to_df(params_weighted, sim_dates, sim_name = "paramet
 ```
 
 ```{r}
+#|warning: FALSE
 output_df |> 
   summarise(median = median(prediction),
             upper = quantile(prediction, 0.95, na.rm = TRUE),

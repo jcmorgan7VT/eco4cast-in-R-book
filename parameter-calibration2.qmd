@@ -386,6 +386,7 @@ for(i in 2:num_iter){
 The `pars` variable is our MCMC chain estimating the posterior distribution . We can visualize it in two ways. The first is with iteration number on the axis. The second is as a histogram. A chain is that ready for analysis will have a constant mean and variance. The variance is important because it is the exploration of the posterior distribution. The histogram shows the posterior distribution.
 
 ```{r}
+#| warning: FALSE
 d <- tibble(iter = 1:num_iter,
        par1 = pars)
 
@@ -401,6 +402,8 @@ p1 | p2
 You should notice that the chain starts at 2 before moving to a mean of 3. The starting value of 2 was arbitrary. Since it was far from 3, the proposed new parameter values often resulted in improvements and accepting values that were more likely. As a result the chain moves to the part with a mean of 3 and constant variance (i.e., where the chain has converged). This transition from the starting value to the point where the chain has converged should be discard. We call this the "burn-in". Here are the same plots with the burn-in removed
 
 ```{r}
+#| warning: FALSE
+
 nburn <- 100
 d_burn <- tibble(iter = nburn:num_iter,
        par1 = pars[nburn:num_iter])
@@ -483,6 +486,8 @@ ggplot(d, aes(x = x)) +
 Using the following as a guide
 
 ```{r}
+#| warning: FALSE
+
 library(tidyverse)
 library(patchwork)
 
@@ -495,7 +500,9 @@ x <- runif(num_data_points, 0, 10)
 y_true <- par_true[1] * (x / (x + par_true[2]))
 y <- rnorm(length(y_true), mean = y_true, sd = sd_data)
 plot(x, y, ylim = c(0, par_true[1] + 2))
+```
 
+```{r}
 #Set MCMC Configuration
 num_iter <- 2000
 num_pars <- 2
@@ -577,6 +584,11 @@ for(i in 2:num_iter){
     }
   }
 }
+
+```
+
+```{r}
+#| warning: FALSE
 
 d <- tibble(iter = 1:num_iter,
             par1 = pars[1, ],

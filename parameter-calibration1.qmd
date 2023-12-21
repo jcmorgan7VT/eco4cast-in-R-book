@@ -181,6 +181,7 @@ LL_fn <- function(y, par){
 And put it in an optimization function that finds the minimum (don't worry about the details)
 
 ```{r}
+#| warning: FALSE
 #@par are the starting values for the search
 #@fn is the function that is minimized (find parameters that yield the lowest -log(LL)) 
 #@ anything else like x are arguments needed by the LL_fn
@@ -242,6 +243,7 @@ dnorm(y[1], mean = pred_linear(x[1], c(0.2, 1.4)), sd = 1, log = TRUE) + dnorm(y
 Now use `optim` to solve
 
 ```{r}
+#| warning: FALSE
 pred_linear <- function(x, par){
   y <- par[1] + par[2] * x
 }
@@ -299,6 +301,7 @@ Fitting the sd is not necessarily clear. Think about it this way: if the sd is t
 How we can estimate all three parameters
 
 ```{r}
+#| warning: FALSE
 fit <- optim(par = c(0.2, 1.5, 2), fn = LL_fn, method = "BFGS", x = x, y = y)
 ```
 
@@ -355,6 +358,7 @@ LL_fn <- function(par, x, y){
 We can now fit it
 
 ```{r}
+#| warning: FALSE
 fit <- optim(par = c(0.2, 1.5, 1), fn = LL_fn, method = "BFGS", x = x, y = y)
 fit$par
 ```
@@ -394,6 +398,7 @@ LL_fn <- function(par, x, y){
 And we fit it
 
 ```{r}
+#| warning: FALSE
 fit <- optim(par = c(0.2, 1.5, 1), fn = LL_fn, method = "BFGS", x = x, y = y)
 ```
 
