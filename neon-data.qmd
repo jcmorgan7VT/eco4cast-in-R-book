@@ -31,12 +31,6 @@ data_product <- "DP1.10098.001"
 
 Second, we will use the `neon_download()` function from `neonstore` to create a database of files for our data product and site.
 
-```{r}
-neon_download(product = data_product, site = site)
-
-print(unique(neon_index(site = site)$table))
-```
-
 ### Calculate carbon in trees
 
 In this section, we will be calculating carbon in live and dead trees at Talladega. At the end we will have a *site-level* mean carbon stock in *live trees* for each year that was sampled from the plots that are sampling the ecosystem under the flux tower (e.g., tower plots).
@@ -44,18 +38,74 @@ In this section, we will be calculating carbon in live and dead trees at Tallade
 Read in the separate tables
 
 ```{r}
-## use neon_read to extract the desired data
-ind_table <- neon_read('vst_apparentindividual', site = site)
 
-map_tag_table <- neon_read('vst_mappingandtagging', site = site)
+index <-  neonstore:::neon_data(product = "DP1.10098.001",
+                                site = "TALL",
+                                type="basic")
 
-plot_table <- neon_read('vst_perplotperyear', site = site)
+mappingandtagging <- index |>
+  filter(grepl("mappingandtagging", name)) 
 
-#allometrics <- read_csv("Allometrics.csv") %>% 
-#  mutate(SPECIES = ifelse(SPECIES == "spp.", "sp.", SPECIES))
+df1 <- mappingandtagging |> 
+  filter(grepl("RELEASE", release)) |> 
+  pull(url) |>
+  duckdbfs::open_dataset(mappingandtagging$url, format="csv", filename = TRUE) |> 
+  select(individualID, scientificName) |> 
+  distinct() |> 
+  collect()
 
-## link allodb
+df2 <- mappingandtagging |> 
+  filter(!grepl("RELEASE", release)) |> 
+  pull(url) |>
+  duckdbfs::open_dataset(mappingandtagging$url, format="csv", filename = TRUE) |> 
+  select(individualID, scientificName) |> 
+  distinct() |> 
+  collect()
 
+map_tag_table <- bind_rows(df1,df2)
+
+apparentindividual <- index |>
+  filter(grepl("apparentindividual", name)) 
+
+df1 <- apparentindividual |> 
+  filter(grepl("RELEASE", release)) |> 
+  pull(url) |>
+  duckdbfs::open_dataset(apparentindividual$url, format="csv", filename = TRUE) |> 
+  select(individualID, eventID, plotID, date, stemDiameter,plantStatus, measurementHeight) |> 
+  collect() 
+
+df2 <- apparentindividual |> 
+  filter(!grepl("RELEASE", release)) |> 
+  pull(url) |>
+  duckdbfs::open_dataset(apparentindividual$url, format="csv", filename = TRUE) |>
+  select(individualID, eventID, plotID, date, stemDiameter,plantStatus, measurementHeight) |> 
+  collect()
+
+ind_table <- bind_rows(df1,df2)
+
+perplotperyear <- index |>
+  filter(grepl("perplotperyear", name)) 
+
+df1 <- perplotperyear |> 
+  filter(grepl("RELEASE", release)) |> 
+  pull(url) |>
+  duckdbfs::open_dataset(perplotperyear$url, format="csv", filename = TRUE) |> 
+  select(plotID,totalSampledAreaTrees,plotType) |>  
+  distinct(plotID, .keep_all = TRUE) |> 
+  collect() 
+
+df2 <- perplotperyear |> 
+  filter(!grepl("RELEASE", release)) |> 
+  pull(url) |>
+  duckdbfs::open_dataset(perplotperyear$url, format="csv", filename = TRUE) |>
+    select(plotID,totalSampledAreaTrees,plotType) |>  
+  distinct(plotID, .keep_all = TRUE) |> 
+  collect()
+
+plot_table <- bind_rows(df1,df2)
+```
+
+```{r}
 genus_species <- unlist(str_split_fixed(map_tag_table$scientificName, " ", 3))
 
 map_tag_table <- map_tag_table %>% 
@@ -67,16 +117,11 @@ Select the key variables in each table and join into the individual table, makin
 
 ```{r}
 
-select_map_tag_table <- map_tag_table %>% 
-  select(individualID, scientificName, GENUS, SPECIES) |> 
-  distinct()
+select_map_tag_table <- map_tag_table 
 
-select_plot_table <- plot_table %>% 
-  select(plotID,totalSampledAreaTrees,plotType) %>% 
-  distinct(plotID, .keep_all = TRUE)
+select_plot_table <- plot_table
 
-select_ind_table <- ind_table %>% 
-  select(individualID, eventID, plotID, date, stemDiameter,plantStatus, measurementHeight) 
+select_ind_table <- ind_table 
 
 combined_table <- left_join(select_ind_table, select_map_tag_table, by = "individualID") %>% 
   arrange(plotID,individualID)

@@ -38,5 +38,5 @@ particle_filter <- function(forecast, obs, sim_dates, wt, fit_params){
       wt[t, ] <- rep(1, ens_members)
     }
   }
-  return(list(forecast = forecast, fit_params = fit_params, wt = wt))
+  return(list(forecast = forecast, fit_params = fit_params, wt = wt, sim_dates = sim_dates))
 }

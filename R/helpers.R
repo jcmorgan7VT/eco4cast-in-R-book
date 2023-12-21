@@ -78,4 +78,67 @@ assign_met_ensembles <- function(inputs, ens_members, var_order = c("temp", "PAR
   return(inputs_ensemble)
 }
 
+get_historical_met <- function(site, sim_dates, use_mean = TRUE){
+
+  if(use_mean){
+    groups <- c("datetime", "variable")
+  }else{
+    groups <- c("datetime", "variable","parameter")
+  }
+  site <- "TALL"
+  met_s3 <- arrow::s3_bucket(paste0("bio230014-bucket01/neon4cast-drivers/noaa/gefs-v12/stage3/site_id=", site),
+                             endpoint_override = "sdsc.osn.xsede.org",
+                             anonymous = TRUE)
+
+  inputs_all <- arrow::open_dataset(met_s3) |>
+    filter(variable %in% c("air_temperature", "surface_downwelling_shortwave_flux_in_air")) |>
+    mutate(datetime = as_date(datetime)) |>
+    mutate(prediction = ifelse(variable == "surface_downwelling_shortwave_flux_in_air", prediction/0.486, prediction),
+           variable = ifelse(variable == "surface_downwelling_shortwave_flux_in_air", "PAR", variable),
+           prediction = ifelse(variable == "air_temperature", prediction - 273.15, prediction),
+           variable = ifelse(variable == "air_temperature", "temp", variable)) |>
+    summarise(prediction = mean(prediction, na.rm = TRUE), .by =  all_of(groups)) |>
+    mutate(doy = yday(datetime)) |>
+    filter(datetime %in% sim_dates) |>
+    collect()
+
+  if(use_mean){
+    inputs_all <- inputs_all |>
+      mutate(parameter = "mean")
+  }
+
+  return(inputs_all)
+}
+
+get_forecast_met <- function(site, sim_dates, use_mean = TRUE){
+
+  if(use_mean){
+    groups <- c("datetime", "variable")
+  }else{
+    groups <- c("datetime", "variable","parameter")
+  }
+
+  met_s3 <- arrow::s3_bucket(paste0("bio230014-bucket01/neon4cast-drivers/noaa/gefs-v12/stage2/reference_datetime=",sim_dates[1],"/site_id=",site),
+                             endpoint_override = "sdsc.osn.xsede.org",
+                             anonymous = TRUE)
+
+  inputs_all <- arrow::open_dataset(met_s3) |>
+    filter(variable %in% c("air_temperature", "surface_downwelling_shortwave_flux_in_air")) |>
+    mutate(datetime = as_date(datetime)) |>
+    mutate(prediction = ifelse(variable == "surface_downwelling_shortwave_flux_in_air", prediction/0.486, prediction),
+           variable = ifelse(variable == "surface_downwelling_shortwave_flux_in_air", "PAR", variable),
+           prediction = ifelse(variable == "air_temperature", prediction- 273.15, prediction),
+           variable = ifelse(variable == "air_temperature", "temp", variable)) |>
+    summarise(prediction = mean(prediction, na.rm = TRUE), .by = all_of(groups)) |>
+    mutate(doy = yday(datetime)) |>
+    filter(datetime %in% sim_dates) |>
+    collect()
+
+  if(use_mean){
+    inputs_all <- inputs_all |>
+      mutate(parameter = "mean")
+  }
+
+  return(inputs_all)
+}
 

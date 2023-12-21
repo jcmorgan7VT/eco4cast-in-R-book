@@ -581,51 +581,41 @@ The constant growth is the parameter `g` below (in units of gC/m2/yr) and mortal
 
 This step is already done for you.
 
-Here is the data for ages 1 through 50 for the plot. It was measured every 5 years.
+Here is the data for ages 1 through 50 for the plot (starting in 1950-01-01). It was measured every 5 years.
 
 ```{r}
 plot_data <- read_csv("data/PF_data1.csv")
-ggplot(plot_data, aes(x = age, y = biomass)) +
+ggplot(plot_data, aes(x = datetime, y = biomass)) +
   geom_point() +
   labs(x = "age", y = "aboveground biomass (gC/m2)")
 ```
 
-The following model was used to estimate the posterior distributions of the parameters using a Bayesian state-space framework. `sd_data` is defined in the constants
+The following model was used to estimate the posterior distributions of the parameters using a Bayesian framework. 
 
-```         
-state_space <- nimbleCode({
-  
-  #Priors
-  g ~ dunif(300, 1000)
-  u ~ dunif(0, 1)
-  sd_add ~ dunif(0, 800)
-  
-  biomass_latent[1] <- biomass_init
-  y[1] ~ dnorm(biomass_latent[1], sd = sd_data)  
-  
-  for(i in 2:n){
-    pred[i] <- biomass_latent[i - 1] + g - u * biomass_latent[i - 1]
-    biomass_latent[i] ~ dnorm(pred[i], sd = sd_add)        ## process model
-    y[i]  ~ dnorm(biomass_latent[i], sd = sd_data)       ## data model
+```
+sim_dates <- seq(as_date("1950-01-01"), length.out = 50, by = "1 year)
+biomass[1, ] <- 0
+
+for(t in 2:length(sim_dates)){
+
+  for(i in 1:num_particles){
+
+    biomass_predicted <- biomass[t+1, i] + param$g - param$u
+
+    biomass[t, i] <- rnorm(1, mean = biomass_predicted , sd = param$sd_add)
   }
-})
-
-constants <- list(n = length(plot_data$biomass),
-                  biomass_init = plot_data$biomass[1],
-                  sd_data = 200)
+}
 ```
 
-The NIMBLE run produces an MCMC object. The MCMC output with the burn-in removed is in the following R data.
-
-The MCMC chain (`nimble_burn`) has posterior distributions for the parameters (`g`, `u`, `sd_add`) and latent states (`biomass_latent`)
+The MCMC chain has posterior distributions for the parameters (`g`, `u`, `sd_add`) and biomass at age 50 (`age50_biomass`)
 
 ```{r}
-load("data/PF_MCMC.Rdata")
+load("data/PF_MCMC.csv")
 ```
 
 ### Part 2: Forecast using PF
 
-Now you will use the `nimble_burn` MCMC to determine the mean parameter values and the initial condition at age 50 for the particle filter.
+Now you will use the MCMC chain to determine the mean parameter values and the initial condition at age 50 for the particle filter.
 
 Using the lecture material create a particle filter that uses the forest growth model to simulate the aboveground biomass of the forest for age 50 through 70.
 
@@ -633,16 +623,15 @@ Using the lecture material create a particle filter that uses the forest growth 
 
 Following the code in the PF lecture set up the particle filter.
 
-Instead of using data from a file you will use the following for your data: `y <- rep(NA, 21)`
+Instead of using data from a file you will use the following for your data: `obs <- NULL` 
 
 Be sure to:
 
 -   use the mean values for `g`, `u`, and `sd_add` from the MCMC chain as the parameter values
--   use the distribution of the latent state from age 50 in the MCMC chain as your initial state for the PF
+-   use the distribution of the biomass at age 50 in the MCMC chain as your initial state for the PF
+-   The standard deviation for the obseravtions (`sd_data`) is 200.
 
 ```{r}
-y <- rep(NA, 21) #number of years from age 50 to 70
-sd_data <- 200
 #ADD CODE TO SET UP PF HERE
 ```
 
@@ -667,7 +656,7 @@ Generate a plot that visualizes the output of the PF (see examples from the lect
 use this code to save your PF output as the object `initial_forecast`
 
 ```{r}
-initial_forecast <- x
+initial_forecast <- forecast
 ```
 
 ### Part 3:
@@ -676,24 +665,23 @@ Now we have new data!
 
 ```{r}
 new_data <- read_csv("data/PF_data2.csv")
-ggplot(new_data, aes(x = age, y = biomass)) +
+
+ggplot(new_data, aes(x = datetime, y = biomass)) +
   geom_point() +
   labs(x = "age", y = "aboveground biomass (gC/m2)")
 ```
 
 #### Step 1: Repeat the PF setup
 
-Using the new data as y, repeat the PF set up in Part 2 Step 1. You will be starting at age 50 just like above.
+Using the new data, repeat the PF set up in Part 2 Step 1. You will be starting at age 50 just like above.
 
 ```{r}
-y <- new_data$biomass
-sd_data <- 200
 #ADD CODE TO SET UP PF HERE
 ```
 
 #### Step 2: Run particle filter using the new data
 
-Using the new data as y, run the the PF again. This will be the same code as in Part 2 Step 2 (just copy and paste)
+Using the new data, run the the PF again. This will be the same code as in Part 2 Step 2 (just copy and paste)
 
 ```{r}
 #COPY AND PASTE PF CODE FROM ABOVE
@@ -715,7 +703,7 @@ assimilated_forecast <- x
 
 ### Part 4:
 
-Combine the two PF forecast and evaluate how data assimilation influence the forecast of the last 10 years (age 60 to 70). Produce a plot with the mean and 95% CI for the initial_forecast and assimilated_forecast on the same plot. Include the observations from the new data set.
+Combine the two PF forecast and evaluate how data assimilation influence the forecast of the last 10 years (age 60 to 70). Produce a plot with the mean and 90% CI for the initial_forecast and assimilated_forecast on the same plot. Include the observations from the new data set.
 
 ```{r}
 #ADD CODE TO COMPARE THE TWO PF OUTPUTS
