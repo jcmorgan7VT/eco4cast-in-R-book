@@ -188,7 +188,7 @@ for(t in 2:nt){
 ```{r}
 #| warning: false
 #| fig-cap: Results of the particle filter with each particle shown
-#| label: fig-sim-prior-post
+#| label: fig-parts-alone
 
 tibble(time = 1:nt,
        as_tibble(x)) %>% 
@@ -340,9 +340,6 @@ Tmean <- mean(df$tmin..deg.c.)
 gflu$Tmin = df$tmin..deg.c.[match(gflu$Date,df$date)] - Tmean
 
 gflu <- gflu[1:15, ]
-ggplot(data = gflu, aes(x = Date, y = log(Virginia))) +
-  geom_line() +
-  theme_bw()
 ```
 
 Now modify the PF with the DLM model instead of the random walk. This should be familiar to you.
@@ -588,7 +585,7 @@ pf_high <- tibble(time = gflu$Date,
 gflu$obs_in_fit <- exp(y)
 ```
 
-Does @fig-pf-obs-sens match your intuition? 
+Does @fig-pf-obs-sens match your intuition?
 
 ```{r}
 #|warning: false

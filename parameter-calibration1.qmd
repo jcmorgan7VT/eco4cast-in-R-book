@@ -32,7 +32,7 @@ For our random variable, if is is governed by the distribution above, a single s
 
 Imagine that we are measuring the same thing with the same sensor but the sensor has error that is normally distributed. We think that the measurement should be zero (mean = 0) but with the sensor uncertainty (sd = 1).
 
-The question is "What is the probability that X = y_i given a normal distribution with mean = 0 and sd = 1?".  In @fig-simple-rnorm-obs, the red line is a hypothetical observation (y_i).
+The question is "What is the probability that X = y_i given a normal distribution with mean = 0 and sd = 1?". In @fig-simple-rnorm-obs, the red line is a hypothetical observation (y_i).
 
 ```{r}
 #| fig-cap: Normal distribution with mean = 0 and sd = 1. The red line is an 'observation'
@@ -410,7 +410,6 @@ The fake data are shown in @fig-fake-data3.
 plot(x, y)
 ```
 
-
 We certainly can't fit a linear regression to these data (will we could be it would not fit well). Fortunately, fitting it using likelihood is as simple as changing the *process* model
 
 ```{r}
@@ -505,7 +504,6 @@ for(i in 1:length(mean_values)){
 mle_LL_small <- LL_small[which.max(LL_small)]
 mle_LL_more <- LL_more[which.max(LL_more)]
 ```
-
 
 ```{r}
 #| echo: false
@@ -671,7 +669,7 @@ bart_2020 <- d  %>%
 Using the following data
 
 ```{r}
-df <- read_csv("data/soil_respiration_module_data.csv", show_col_types = FALSE)
+df <- read_csv("https://raw.githubusercontent.com/frec-5174/frec-5174-docs/main/data/soil_respiration_module_data.csv", show_col_types = FALSE)
 ```
 
 It is a dataset that reports soil respiration, soil temperature, and soil moisture over a year at the University of Michigan Biological Station (from Nave, L.E., N. Bader, and J.L. Klug)

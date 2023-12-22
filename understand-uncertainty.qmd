@@ -4,6 +4,6 @@ Ecological forecasting is a tool that can be used for understanding and predicti
 
 [**Background presentation**](https://cdn.serc.carleton.edu/files/eddie/teaching_materials/modules/instructor_powerpoint_module6.pptx)
 
-[Rmarkdown (includes assignment):](https://github.com/MacrosystemsEDDIE/module6_R)
+[**Rmarkdown (includes assignment)**](https://github.com/MacrosystemsEDDIE/module6_R)
 
 This module was developed by Moore, T. N., Lofton, M.E., Carey, C.C. and Thomas, R. Q. 24 July 2023. Macrosystems EDDIE: Understanding Uncertainty in Ecological Forecasts. Macrosystems EDDIE Module 6, Version 2. http://module6.macrosystemseddie.org. Module development was supported by NSF grants DEB-1926050 and DBI-1933016.

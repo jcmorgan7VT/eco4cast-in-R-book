@@ -2,7 +2,7 @@ project:
   type: book
 
 book:
-  title: "A practical guide to ecological forecasting in R"
+  title: "A Practical Guide to Ecological Forecasting in R"
   author:
     - name: "R. Quinn Thomas"
       orcid: 0000-0003-1282-7825

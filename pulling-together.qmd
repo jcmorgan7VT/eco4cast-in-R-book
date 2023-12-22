@@ -23,7 +23,7 @@ ens_members <- dim(analysis$forecast)[2]
 
 ## Step 2: Get latest data
 
-The latest data is avialable by running [Chapter -@sec-neon] and reading in the csv.  You will need to re-run the code in [Chapter -@sec-neon] if you want to update the observations outside the automatic build of this book.
+The latest data is avialable by running [Chapter -@sec-neon] and reading in the csv. You will need to re-run the code in [Chapter -@sec-neon] if you want to update the observations outside the automatic build of this book.
 
 ```{r}
 obs <- read_csv("data/site_carbon_data.csv", show_col_types = FALSE)
@@ -72,6 +72,7 @@ The combined weather drivers look like the following. The vertical line is where
 ```
 
 Get the constant `params` from the analysis (so that we are sure to use the same parameters that were used in the previous analysis) and initialize the parameters that are being fit by the particle filter with the values from the analysis.
+
 ```{r}
 params <- analysis$params
 
@@ -196,8 +197,6 @@ Wait for a day to pass and then use yesterday's analysis today for initial condi
 load("data/PF_analysis_1.Rdata")
 ```
 
-## Code example of forecast analysis cycle implimented in a more complex forest model
+## Additional example
 
-I recommend looking at a [tutorial](https://github.com/mdietze/FluxCourseForecast) created by Mike Dietze that has many of the particle filter concepts used here.  It is a similar process model that runs at the 30-minute time-step.  The tutorial is more advanced in its use of priors on the parameters and shows how to forecast across multiple sites.  
-
-
+I recommend looking at a [tutorial](https://github.com/mdietze/FluxCourseForecast) created by Mike Dietze that has many of the particle filter concepts used here. It is a similar process model that runs at the 30-minute time-step. The tutorial is more advanced in its use of priors on the parameters and shows how to forecast across multiple sites.
