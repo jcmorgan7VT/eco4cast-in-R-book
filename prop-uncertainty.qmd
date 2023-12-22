@@ -221,7 +221,7 @@ initial_conditions_df |>
 
 ```{r}
 new_inputs <- get_forecast_met(site = site, sim_dates, use_mean = FALSE)
-new_inputs_ensemble <- assign_met_ensembles(inputs, ens_members)
+new_inputs_ensemble <- assign_met_ensembles(new_inputs, ens_members)
 ```
 
 Uncertainty in the weather forecasts 

@@ -193,7 +193,7 @@ p2 <- explore_senstivity(num_data_points = 5,
                         sd_data = 2,
                         mean_prior = 0,
                         sd_prior = 0.1,
-                        title = "Increase confidence in prior")
+                        title = "Increase confidence\nin prior")
 
 #Increase number of data points
 p3 <- explore_senstivity(num_data_points = 50,
@@ -209,8 +209,8 @@ p4 <- explore_senstivity(num_data_points = 5,
                         sd_data = 2,
                         mean_prior = 0,
                         sd_prior = 1.0,
-                        title = "Make likelihood mean closer to prior")
-(p1 / p2) | (p3 / p4) 
+                        title = "Make likelihood mean\ncloser to prior")
+(p1 + p3) / (p2 + p4) + plot_layout(guides = "collect")  
 
 
 ```

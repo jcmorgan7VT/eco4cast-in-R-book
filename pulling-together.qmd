@@ -129,12 +129,13 @@ Convert forecast to a dataframe.
 output_df <- output_to_df(forecast, sim_dates, sim_name = "simple_forest_model")
 ```
 
-Visualize forecast. The vertical line is where the look back period transitions to the future.
+@fig-step4 is a Visualization of the forecast. The vertical line is where the look back period transitions to the future.
 
 ```{r}
 #| echo: false
 #| warning: false
 #| fig-cap: Forecast median and 90% CI.  The look-back and forecast periods are included with the transition denoted with a vertical line.
+#| label: fig-step4
 
 output_df |> 
   summarise(median = median(prediction),
