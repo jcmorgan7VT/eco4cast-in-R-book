@@ -132,7 +132,7 @@ prior_times_likelihood <- density_prior * density_likelihood
 
 ```{r}
 #| fig-cap: 
-#| label: @fig-post-unscaled
+#| label: fig-post-unscaled
 d <- tibble(x = x,
             prior_times_likelihood = prior_times_likelihood)
 ggplot(d, aes(x = x, y = prior_times_likelihood)) +
