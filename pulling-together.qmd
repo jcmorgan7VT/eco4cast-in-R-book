@@ -170,8 +170,8 @@ index <- which(analysis$sim_dates == sim_dates[1])
 The use of the loop back requires combining the "historial" weather and future weather into a single input data frame.
 
 ```{r}
-inputs_past <- get_historical_met(site = "TALL", sim_dates[1:(look_back-1)], use_mean = FALSE)
-inputs_future <- get_forecast_met(site = "TALL", sim_dates[look_back:length(sim_dates)], use_mean = FALSE)
+inputs_past <- get_historical_met(site = "TALL", sim_dates[1:(look_back-2)], use_mean = FALSE)
+inputs_future <- get_forecast_met(site = "TALL", sim_dates[(look_back-1):length(sim_dates)], use_mean = FALSE)
 inputs <- bind_rows(inputs_past, inputs_future)
 ```
 
