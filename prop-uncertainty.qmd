@@ -85,7 +85,7 @@ This results in `alpha` having the following distribution @fig-alpha:
 ```{r}
 #| echo: false
 #| fig-cap: Histogram showing the distribution of the parameter alpha
-#| fig-link: fig-alpha
+#| label: fig-alpha
 hist(new_params$alpha, main = "", xlab = "alpha")
 ```
 Use the `new_params` as the parameters in the simulation.
@@ -108,7 +108,7 @@ parameter_df <- output_to_df(output, sim_dates, sim_name = "parameter_unc")
 ```{r}
 #| warning: FALSE
 #| fig-cap: Forecast with parameter uncertainty
-#| fig-link: fig-parameter-unc
+#| label: fig-parameter-unc
 parameter_df |> 
   filter(variable %in% c("lai", "wood", "som", "nee")) |> 
   summarise(median = median(prediction, na.rm = TRUE), 
@@ -140,7 +140,7 @@ As an example @fig-process-unc shows the distribution in the noise that is added
 ```{r}
 #| echo: false
 #| fig-cap: Histogram of the distribution of process uncertainty added to leaf carbon
-#| fig-link: fig-process-unc
+#| label: fig-process-unc
 hist(rnorm(ens_members, mean = output[1, , 1], sd = new_params$sigma.leaf), main = " ", xlab = "leaf carbon (Mg/ha)")
 ```
 
@@ -163,7 +163,7 @@ process_df <- output_to_df(output, sim_dates, sim_name = "process_unc")
 ```{r}
 #| warning: FALSE
 #| fig-cap: Forecast with process uncertainty
-#| fig-link: fig-process-unc2
+#| label: fig-process-unc2
 process_df |> 
   filter(variable %in% c("lai", "wood", "som", "nee")) |> 
   summarise(median = median(prediction, na.rm = TRUE), 
@@ -192,7 +192,7 @@ As an example @fig-init-unc shows the distribution in the noise that is added th
 
 ```{r}
 #| echo: false
-#| fig-link: fig-init-unc
+#| label: fig-init-unc
 #| fig-cap: Distribution of intial condition uncertainty for leaf carbon (Mg/ha)
 hist(new_output[1, , 1], main = " ", xlab = "leaf carbon initial condition (Mg/ha)")
 ```
@@ -216,7 +216,7 @@ initial_conditions_df <- output_to_df(new_output, sim_dates, sim_name = "initial
 ```{r}
 #| warning: FALSE
 #| fig-cap: Forecast with initial condition uncertainty
-#| fig-link: fig-init-unc2
+#| label: fig-init-unc2
 initial_conditions_df |> 
   filter(variable %in% c("lai", "wood", "som", "nee")) |> 
   summarise(median = median(prediction, na.rm = TRUE), 
@@ -244,7 +244,7 @@ As an example @fig-driver-unc shows 31 ensemble members from single 35-day forec
 
 ```{r}
 #| echo: false
-#| fig-link: fig-driver-unc
+#| label: fig-driver-unc
 #| fig-cap: 35-day ahead forecasts from NOAA GEFS  of the two variables using by the process model. 
 ggplot(new_inputs, aes(x = datetime, y = prediction, group = parameter)) +
   geom_line() +
@@ -271,7 +271,7 @@ drivers_df <- output_to_df(output, sim_dates, sim_name = "driver_unc")
 ```{r}
 #| warning: FALSE
 #| fig-cap: Forecast with driver uncertainty
-#| fig-link: fig-driver-unc2
+#| label: fig-driver-unc2
 drivers_df |> 
   filter(variable %in% c("lai", "wood", "som", "nee")) |> 
   summarise(median = median(prediction, na.rm = TRUE), 

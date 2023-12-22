@@ -172,10 +172,12 @@ parameter_MCMC <- tibble(iter = nburn:num_iter,
   pivot_longer(-iter, values_to = "value", names_to = "parameter")
 ```
 
-Examine chains
+@fig-chains
 
 ```{r}
 #| warning: FALSE
+#| fig-cap: The MCMC chains and posterior distributions for the calibrated parameters
+#| label: fig-chains 
 
 p1 <- ggplot(parameter_MCMC, aes(x = iter, y = value)) +
   geom_line() +
@@ -267,8 +269,12 @@ output_df_optim <- output_to_df(output, sim_dates, sim_name = "optimized")
 
 ### Visualize influence of optimization
 
+@fig-sim-prior-post shows a simulation that use the prior distribution and a simulation that uses the posterior distribution.  This highlights the constraint provided by the data on the model predictions.
+
 ```{r}
 #| warning: FALSE
+#| fig-cap: Predictions using the priors and posterior distribution of parameters
+#| label: fig-sim-prior-post
 
 obs_filtered <- obs |> 
   filter(datetime > min(output_df_no_optim$datetime))
@@ -289,6 +295,8 @@ bind_rows(output_df_no_optim, output_df_optim) |>
 ```
 
 ### Save posteriors for future use
+
+The calibrated parameter chains will be used in later chapters.  
 
 ```{r}
   write_csv(parameter_MCMC, "data/saved_parameter_chain.csv")

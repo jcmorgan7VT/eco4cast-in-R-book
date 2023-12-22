@@ -20,27 +20,33 @@ A random number is associated with a probability of it taking that value
 
 P(X = y_i) = p_i
 
-p_i is defined from a probability distribution (P). We may have an idea of the shape (i.e., normally distributed), but not the specific distribution (i.e. a normal with a mean = 0, and sd = 1). For example, the following is a normal distribution with a mean = 0 and sd = 1. (I created it by randomly drawing 10000 samples from a normal distribution using the `rnorm` function)
+p_i is defined from a probability distribution (P). We may have an idea of the shape (i.e., normally distributed), but not the specific distribution (i.e. a normal with a mean = 0, and sd = 1). For example, @fig-simple-rnorm is a normal distribution with a mean = 0 and sd = 1. (I created it by randomly drawing 10000 samples from a normal distribution using the `rnorm` function)
 
 ```{r}
-plot(density(rnorm(10000, mean = 0, sd = 1)), xlab = "y")
+#| fig-cap: Normal distribution with mean = 0 and sd = 1
+#| label: fig-simple-rnorm
+plot(density(rnorm(10000, mean = 0, sd = 1)), xlab = "y", main = "mean = 0, sd = 1")
 ```
 
 For our random variable, if is is governed by the distribution above, a single sample (i.e., a measurement of X) will likely be close to 0 but sometimes it will be further away.
 
 Imagine that we are measuring the same thing with the same sensor but the sensor has error that is normally distributed. We think that the measurement should be zero (mean = 0) but with the sensor uncertainty (sd = 1).
 
-The question is "What is the probability that X = y_i given a normal distribution with mean = 0 and sd = 1?"
+The question is "What is the probability that X = y_i given a normal distribution with mean = 0 and sd = 1?".  In @fig-simple-rnorm-obs, the red line is a hypothetical observation (y_i).
 
 ```{r}
-plot(density(rnorm(10000, mean = 0, sd = 1)), xlab = "y")
+#|fig-cap: Normal distribution with mean = 0 and sd = 1. The red line is an 'observation'
+#|label: fig-simple-rnorm-obs
+plot(density(rnorm(10000, mean = 0, sd = 1)), xlab = "y", main = "mean = 0, sd = 1")
 abline(v = y_i, col = "red")
 ```
 
-We could also ask "What is the probability that X = y_i given a normal distribution with mean = 2 and sd = 1?"
+We could also ask "What is the probability that X = y_i given a normal distribution with mean = 2 and sd = 1?" In @fig-simple-rnorm-obs2 you can see that the observation is at a lower probability in the distribution.
 
 ```{r}
-plot(density(rnorm(10000, mean = 2, sd = 1)), xlab = "y")
+#|fig-cap: Normal distribution with mean = 2 and sd = 1. The red line is an 'observation'
+#|label: fig-simple-rnorm-obs2
+plot(density(rnorm(10000, mean = 2, sd = 1)), xlab = "y", main = "mean = 2, sd = 1")
 abline(v = y_i, col = "red")
 ```
 
@@ -65,7 +71,7 @@ y[2] <- -2.662035
 
 What is the probability of both events occurring given the mean of 0? They are independent so we can multiply them.
 
-IMPORTANT: If two random events are independent, then the probability that they both occur is the multiplication of the two individual probabilities. For example the probability of getting two heads in two coin flips is 0.5 \* 0.5 = 0.25. If the events are not independent then we can't just multiply (we will get to this later)
+**IMPORTANT:** If two random events are independent, then the probability that they both occur is the multiplication of the two individual probabilities. For example the probability of getting two heads in two coin flips is 0.5 \* 0.5 = 0.25. If the events are not independent then we can't just multiply (we will get to this later)
 
 ```{r}
 dnorm(y[1], mean = 0, sd = 1, log = FALSE) * dnorm(y[2], mean = 0, sd = 1, log = FALSE)
@@ -141,11 +147,13 @@ for(i in 1:length(mean_values)){
 LL
 ```
 
-Plotting the relationship between the different mean values and the likelihood gives a curve.
+The relationship between the different mean values and the likelihood is a curve (@fig-ll1)
 
 Important: This curve may look like a probability density function (PDF) but it is not! Why? Because the area under the curve does not sum to 1. As a result 1) we use the term likelihood rather than density and 2) while the curve gives us the most likelihood estimate for the parameter, it does **not** give us the PDF of the parameter (even if we really really want the PDF, Bayesian statistics are needed for that)
 
 ```{r}
+#|fig-cap: The likelihood curve over different values of the mean
+#|label: fig-ll1
 plot(x = mean_values, y = LL, type = "o", xlab = "mean", ylab = "log(likelihood)")
 ```
 
@@ -164,9 +172,11 @@ mean(y)
 
 We just calculated the **likelihood of the data GIVEN our model** where our model said that the data are normally distributed with specific means. We found the most likely value for a parameter in the model (the parameter being the mean of the PDF).
 
-For use in R tools that find the minimum of a function, find the minimum of the negative log likelihood
+For use in R tools that find the minimum of a function, find the minimum of the negative log likelihood (@fig-ll2)
 
 ```{r}
+#|fig-cap: The likelihood curve over different values of the mean with minimium shown
+#|label: fig-ll2
 plot(x = mean_values, y = -LL, type = "o", xlab = "mean", ylab = "-1 * log(likelihood)") #Notice negative sign
 abline(v = mean(y), col = "red")
 ```
@@ -215,6 +225,13 @@ sd_true <- 0.9
 x <- runif(100, 3, 10)
 y_true <- par_true[1] + par_true[2] * x
 y <- rnorm(length(y_true), mean = y_true, sd = sd_true) #This is the "fake data"
+```
+
+The fake data are shown in @fig-fake-data1.
+
+```{r}
+#|fig-cap: The "fake" data used in the following analysis
+#|label: fig-fake-data1
 plot(x, y)
 ```
 
@@ -336,6 +353,13 @@ par_true <- c(3, 1.2)
 sd_scalar_true <- 0.1
 y_true <- par_true[1] + par_true[2] * x
 y <- rnorm(length(y_true), mean = y_true, sd = sd_scalar_true * y) #This is the "fake data"
+```
+
+The fake data are shown in @fig-fake-data2.
+
+```{r}
+#|fig-cap: The "fake" data used in the following analysis
+#|label: fig-fake-data2
 plot(x, y)
 ```
 
@@ -376,8 +400,16 @@ par_true <- c(2, 0.5)
 sd_true <- 0.1
 y <- par_true[1] * (x / (x + par_true[2]))
 y <- rnorm(length(y), mean = y, sd = sd_true)
+```
+
+The fake data are shown in @fig-fake-data3.
+
+```{r}
+#|fig-cap: The "fake" data used in the following analysis
+#|label: fig-fake-data3
 plot(x, y)
 ```
+
 
 We certainly can't fit a linear regression to these data (will we could be it would not fit well). Fortunately, fitting it using likelihood is as simple as changing the *process* model
 
@@ -411,12 +443,16 @@ fit$par
 c(par_true, sd_true)
 ```
 
+@fig-data-curve shows the curve from the optimized parameters with the observations
+
 ```{r}
+#|fig-cap: the curve from the optimized parameters with the observations
+#|label: fig-data-curve
 plot(x, y)
 curve(pred_mm(x, par = fit$par), from = 0.1, to = 10, add = TRUE)
 ```
 
-Finally, we don't have to assume that the *data* model is a normal distribution. Here is an example assuming that the data model follows a gamma distribution. See Section 3.4.4 that starts on page 65 in Hobbs and Hooten.
+Finally, we don't have to assume that the *data* model is a normal distribution. Here is an example assuming that the data model follows a gamma distribution (@fig-data-curve-gamma).
 
 ```{r}
 #| warning: FALSE
@@ -425,10 +461,14 @@ LL_fn <- function(par, x, y){
 }
 
 fit <- optim(par = c(0.2, 1.5, 1), fn = LL_fn, x = x, y = y)
+```
 
+```{r}
+#|echo: false
+#|fig-cap: the curve from the optimized parameters with the observations for a gamma ditribution data model.
+#|label: fig-data-curve-gamma
 plot(x, y)
 curve(pred_mm(x, par = fit$par), from = 0.1, to = 10, add = TRUE)
-
 ```
 
 **Take home messages**
@@ -440,7 +480,7 @@ curve(pred_mm(x, par = fit$par), from = 0.1, to = 10, add = TRUE)
 
 **Components of a likelihood analysis that are not covered here**
 
--   Estimating uncertainty in the parameters using the shape of the likelihood curve (you can use the shape of the likelihood curve to estimate confidence (steeper = more confidence). In the example below, the blue line has more data in the calculation of the mean than the black line. The dashed lines are the 2-unit likelihood level (2 log(LL) units were subtracted from the highest likelihood to determine the dashed line). The values of the dashed lines where they cross the likelihood curve with the same color are approximately the 95% confidence intervals for the parameter.
+-   Estimating uncertainty in the parameters using the shape of the likelihood curve (you can use the shape of the likelihood curve to estimate confidence (steeper = more confidence). In the @fig-ll-unc, the blue line has more data in the calculation of the mean than the black line. The dashed lines are the 2-unit likelihood level (2 log(LL) units were subtracted from the highest likelihood to determine the dashed line). The values of the dashed lines where they cross the likelihood curve with the same color are approximately the 95% confidence intervals for the parameter.
 
 ```{r}
 #Create a dataset
@@ -461,18 +501,23 @@ for(i in 1:length(mean_values)){
   LL_small[i] <- sum(dnorm(y_small_data, mean = mean_values[i], sd = 1, log = TRUE))
 }
 
-#Plot the likelihood functions
-plot(x = mean_values, y = LL_small, type = "l", xlab = "mean", ylab = "log-likelihood") #Notice negative sign
-lines(x = mean_values, y = LL_more, col = "blue")
-
 #Find the highest likelihood
 mle_LL_small <- LL_small[which.max(LL_small)]
 mle_LL_more <- LL_more[which.max(LL_more)]
+```
 
+
+```{r}
+#| echo: false
+#| fig-cap: Likilihood curve with the two-unit support intervals shown
+#| label: @fig-ll-unc
+
+#Plot the likelihood functions
+plot(x = mean_values, y = LL_small, type = "l", xlab = "mean", ylab = "log-likelihood") #Notice negative sign
+lines(x = mean_values, y = LL_more, col = "blue")
 #Plot a line that shows a 2 likelihood reduction
 abline(h = mle_LL_small - 2, lty = "dashed")
 abline(h = mle_LL_more - 2, lty = "dashed", col = "blue")
-
 ```
 
 -   Comparing different models to select for the best model (uses the likelihood of the different models + a penalty for having more parameters). AIC is a common way to compare models (https://en.wikipedia.org/wiki/Akaike_information_criterion). It is 2 \* number of parameters - 2 \* ln (likelihood). Increasing the likelihood by adding more parameters won't necessarily result in lowest AIC (lower is better) because it includes a penalty for having more parameters.

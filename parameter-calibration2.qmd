@@ -11,16 +11,20 @@ library(patchwork)
 
 ## Starting with likelihood
 
-Here we start where we left off with the likelihood chapter. Imagine the following dataset with five data points drawn from a normal distribution.
+Here we start where we left off with the likelihood chapter. Imagine the following dataset with five data points drawn from a normal distribution (@fig-rnorm1).
 
 ```{r}
 num_data_points <- 5
 
 mean_data <- 3.0
 sd_data <- 1.0
-
 new_data <- rnorm(num_data_points, mean = mean_data, sd = sd_data)
-hist(new_data)
+```
+
+```{r}
+#| fig-cap: Five random simples from a normal distirubtion with mean = 3 and sd = 1
+#| label: fig-rnorm1
+hist(new_data, main = "")
 ```
 
 We can calculate the likelihood for a set of different means using the manual likelihood estimation that we did in the likelihood lecture
@@ -33,16 +37,26 @@ negative_log_likelihood <- rep(NA,length(x))
 for(i in 1:length(x)){
   negative_log_likelihood[i] <- -sum(dnorm(new_data, mean = x[i], sd = 1, log = TRUE))
 }
+```
 
+@fig-ll-bayes is the likelihood surface for different values of the mean given the observation of x = 2.
+
+```{r}
+#| fig-cap: Negative log likelihood curve
+#| label: fig-ll-bayes
 plot(x, negative_log_likelihood)
 ```
 
-The negative log likelihood is useful for using finding the maximum likelihood values with a optimizing function. However, here we want to convert back to density
+The negative log likelihood is useful for using finding the maximum likelihood values with a optimizing function. However, here we want to convert back to a density (@fig-ll2-density)
 
 ```{r}
 density_likelihood <- exp(-negative_log_likelihood)
-plot(x, density_likelihood, type = "l")
+```
 
+```{r}
+#| fig-cap: likelihood curve
+#| label: fig-ll2-density
+plot(x, density_likelihood, type = "l")
 ```
 
 The y-axis are tiny numbers because we multiplied probability densities together. This is OK for our illustrative purposes. To help visualize we can rescale so that area under the curve is 1. The area is approximated where the density is the height and the width is the distance between points on the x axis (`delta_x`) that we evaluated (height x width is the area of a bar under the curve). If we sum the bars together, we get the area under the curve (a value way less than 1). Dividing the likelihood by the area rescales the densities so the area under the curve is 1. Rescaling the likelihood is not a formal part of the the analysis - just used here for visualizing.
@@ -52,12 +66,14 @@ likelihood_area_under_curve <- sum(density_likelihood * delta_x) #Width * Height
 density_likelihood_rescaled <- density_likelihood/likelihood_area_under_curve
 ```
 
-The rescaled likelihood looks like this
+The rescaled likelihood looks like this (@fig-rescaled-ll)
 
 ```{r}
+#| fig-cap: Rescale likelihood (area under curve is 1)
+#| label: fig-rescaled-ll
 d <- tibble(x = x,
-            likelihood = density_likelihood_rescaled)
-ggplot(d, aes(x = x, y = likelihood)) +
+            likelihood = density_likelihood_rescaled) |> 
+ggplot(aes(x = x, y = likelihood)) +
   geom_line() +
   theme_bw()
 
@@ -74,9 +90,17 @@ Our prior is the following normal distribution
 ```{r}
 mean_prior <- 0
 sd_prior <- 1.0
+```
 
-#Priors
+With the density for each value of x in @fig-prior-dens
+
+```{r}
 density_prior <- dnorm(x, mean = mean_prior, sd = sd_prior)
+```
+
+```{r}
+#| fig-cap: likelihood of the x given the prior distribution
+#| label: fig-prior-dens
 d <- tibble(x = x,
             density_prior = density_prior)
 ggplot(d, aes(x = x, y = density_prior)) +
@@ -84,9 +108,11 @@ ggplot(d, aes(x = x, y = density_prior)) +
   theme_bw()
 ```
 
-Putting the rescaled likelihood on the same plot as the prior results in
+Putting the rescaled likelihood on the same plot as the prior results in @fig-prior-ll-dens
 
 ```{r}
+#| fig-cap: likelihood of the x given the prior distribution and likelihood of the model.
+#| label: fig-prior-ll-dens
 tibble(x = x,
             prior = density_prior,
             likelihood_rescaled = density_likelihood_rescaled) %>% 
@@ -98,10 +124,15 @@ tibble(x = x,
 
 ```
 
-Multiplying the prior x the likelihood (not rescaled)
+Multiplying the prior x the likelihood (not rescaled) gives @fig-post-unscaled
 
 ```{r}
 prior_times_likelihood <- density_prior * density_likelihood
+```
+
+```{r}
+#| fig-cap: 
+#| label: @fig-post-unscaled
 d <- tibble(x = x,
             prior_times_likelihood = prior_times_likelihood)
 ggplot(d, aes(x = x, y = prior_times_likelihood)) +
@@ -109,20 +140,22 @@ ggplot(d, aes(x = x, y = prior_times_likelihood)) +
   theme_bw()
 ```
 
-But from Bayes rule we can rescale the prior x likelihood by the area under the curve to convert to a probability density function
+But from Bayes rule we can rescale the prior x likelihood by the area under the curve to convert to a probability density function.  
 
 ```{r}
 area_under_curve <- sum(prior_times_likelihood * delta_x)  #sum(Width * Height) = total probability of the data given all possible values of the parameter
 normalized_posterior <- prior_times_likelihood / area_under_curve
-
-paste0("the probablity of the data is (i.e., area under likelihood x prior curve): ", area_under_curve)
 ```
+
+The probablity of the data is (i.e., area under likelihood x prior curve): `r area_under_curve`
 
 Now we can visualize the rescaled likelihood (remember that the un-scaled likelihood was actually used in the calculations), the prior, and the normalized posterior.
 
-See how the how the posterior is a blend of the prior and the likelihood
+@fig-prior-ll-post shows how the how the posterior is a blend of the prior and the likelihood.
 
 ```{r}
+#| fig-cap: Prior, likelihood, and posterior shown together 
+#| label: fig-prior-ll-post
 tibble(x = x,
        prior = density_prior,
        likelihood = density_likelihood_rescaled,
@@ -210,9 +243,16 @@ p4 <- explore_senstivity(num_data_points = 5,
                         mean_prior = 0,
                         sd_prior = 1.0,
                         title = "Make likelihood mean\ncloser to prior")
+
+```
+
+@fig-post-sens showns the senstivity of the posterior to assumptions of the prior and the data.
+
+```{r}
+#| echo: false
+#| fig-cap: Senstivity of posteriors to different data and prior scenarios
+#| label: fig-post-sens
 (p1 + p3) / (p2 + p4) + plot_layout(guides = "collect")  
-
-
 ```
 
 Just like we extended the likelihood analysis to the non-linear example, we can do the same for the Bayesian analysis.
@@ -228,6 +268,9 @@ x <- runif(num_data_points, 0, 10)
 par_true <- c(par1_true, 0.5)
 y_true <- par_true[1] * (x / (x + par_true[2]))
 y <- rnorm(length(y_true), mean = y_true, sd = sd_data)
+```
+
+```{r}
 plot(x, y, ylim = c(0, par1_true + 2))
 ```
 
@@ -260,7 +303,10 @@ density_prior <- dnorm(par1, mean = mean_prior, sd = sd_prior)
 prior_times_likelihood <- density_prior * density_likelihood
 area_under_curve <- sum(prior_times_likelihood * delta_par1) #Width * Height
 normalized_posterior <- prior_times_likelihood / area_under_curve
+```
 
+
+```{r}
 tibble(par1 = par1,
        prior = density_prior,
        likelihood = density_likelihood_rescaled,
@@ -270,7 +316,6 @@ tibble(par1 = par1,
   ggplot(aes(x = par1, y = density, color = distribution)) +
   geom_line()  +
   theme_bw()
-
 ```
 
 Now we can look at how our the prior and posterior distributions influence the shape of the process model curve (M-M). For illustration, the figure below shows the M-M curve using the most likely value from the prior, most likely value if we just looked at the likelihood, and most likely value from the posterior.
@@ -285,6 +330,9 @@ d <- tibble(x = seq(0,10, 0.1),
             posterior = par1_post * (x / (x + par_true[2]))) %>% 
   pivot_longer(cols = -x, names_to = "distribution", values_to = "prediction") %>% 
   mutate(distribution = factor(distribution))
+```
+
+```{r}
 ggplot(d, aes(x = x, y = prediction, col = distribution)) +
   geom_line() +
   labs(y = "M-M model prediction (process model)")  +
@@ -333,6 +381,9 @@ x <- runif(num_data_points, 0, 10)
 par_true <- c(par1_true, 0.5)
 y_true <- par_true[1] * (x / (x + par_true[2]))
 y <- rnorm(length(y_true), mean = y_true, sd = sd_data)
+```
+
+```{r}
 plot(x, y, ylim = c(0, par1_true + 2))
 ```
 
@@ -421,7 +472,10 @@ You should notice that the chain starts at 2 before moving to a mean of 3. The s
 nburn <- 100
 d_burn <- tibble(iter = nburn:num_iter,
        par1 = pars[nburn:num_iter])
+```
 
+```{r}
+#| warning: FALSE
 p1 <-  ggplot(d_burn, aes(x = iter, y = par1)) +
   geom_line() +
   theme_bw()
@@ -452,6 +506,9 @@ Finally, you can sample from the posterior distribution just like your would sam
 num_samples <- 100
 sample_index <- sample(x = 1:length(par_post_burn), size = num_samples, replace = TRUE)
 random_draws <- par_post_burn[sample_index]
+```
+
+```{r}
 hist(random_draws)
 ```
 
@@ -487,7 +544,10 @@ d <- tibble(x = x_new,
             lower95_mean = n.stats.mean[1, ],
             upper95_mean = n.stats.mean[3, ],
             obs = y)
+```
 
+
+```{r}
 ggplot(d, aes(x = x)) +
   geom_ribbon(aes(ymin = lower95_y, ymax = upper95_y), fill = "lightblue", alpha = 0.5) +
     geom_ribbon(aes(ymin = lower95_mean, ymax = upper95_mean), fill = "pink", alpha = 0.5) +
@@ -516,6 +576,9 @@ par_true <- c(3, 0.5)
 x <- runif(num_data_points, 0, 10)
 y_true <- par_true[1] * (x / (x + par_true[2]))
 y <- rnorm(length(y_true), mean = y_true, sd = sd_data)
+```
+
+```{r}
 plot(x, y, ylim = c(0, par_true[1] + 2))
 ```
 
@@ -611,6 +674,10 @@ d <- tibble(iter = 1:num_iter,
             par1 = pars[1, ],
             par2 = pars[2, ]) %>%
   pivot_longer(-iter, values_to = "value", names_to = "parameter")
+```
+
+```{r}
+#| warning: FALSE
 
 p1 <- ggplot(d, aes(x = iter, y = value)) +
   geom_line() +

@@ -182,7 +182,7 @@ measurement_dates <- tree_live_carbon |>
 
 ```{r}
 #| fig-cap: Plot level carbon in living trees for the focal NEON site
-#| fig-link: fig-plot-live-carbon
+#| label: fig-plot-live-carbon
 ggplot(plot_live_carbon, aes(x = measure_date, y = plot_kgCm2, color = plotID)) + 
   geom_point() +
   geom_line() +
@@ -210,7 +210,7 @@ site_live_carbon <- plot_live_carbon |>
 
 ```{r}
 #| fig-cap: Site level carbon in living trees for the focal NEON site
-#| fig-link: fig-site-live-carbon
+#| label: fig-site-live-carbon
 ggplot(site_live_carbon, aes(x = measure_date, y = mean_kgCperm2)) + 
   geom_point() + 
   geom_errorbar(aes(ymin=mean_kgCperm2-sd_kgCperm2, ymax=mean_kgCperm2+sd_kgCperm2), width=.2,
@@ -259,7 +259,7 @@ measurement_dates <- tree_dead_carbon |>
 
 ```{r}
 #| fig-cap: Plot level carbon in dead trees for the focal NEON site
-#| fig-link: fig-plot-dead-carbon
+#| label: fig-plot-dead-carbon
 ggplot(plot_dead_carbon, aes(x = measure_date, y = plot_kgCm2, color = plotID)) + 
   geom_point() +
   geom_line() +
@@ -280,7 +280,7 @@ Calculate site level carbon in dead trees from the plots measured each year.
 
 ```{r}
 #| fig-cap: Site level carbon in dead trees for the focal NEON site
-#| fig-link: fig-site-dead-carbon
+#| label: fig-site-dead-carbon
 ggplot(site_dead_carbon, aes(x = measure_date, y = mean_kgCperm2)) + 
   geom_point() +
   geom_line() +
@@ -480,7 +480,7 @@ The soil carbon can be visualized by depth @fig-som-horizon.
 
 ```{r}
 #|fig-cap: Soil carbon by depth for the site from the megapit.
-#|fig-link: fig-som-horizon
+#|label: fig-som-horizon
 ggplot(horizon_combined, map = aes(-biogeoTopDepth,horizon_C_kg_per_m2)) +
   geom_line() +
   geom_point() +
@@ -531,7 +531,7 @@ The different pools of carbon can be plotted on the same figure to compare the m
 ```{r}
 #|warning: false
 #|fig-cap: Site-leve carbon stocks at the focal NEON site
-#|fig-link: fig-all-site-carbon 
+#|label: fig-all-site-carbon 
 total_carbon_components |> 
   ggplot(aes(x = datetime, y = mean_kgCperm2, color = variable)) + 
   geom_point() +
@@ -587,7 +587,7 @@ lai_cleaned <- lai |>
 ```{r}
 #| warning: false
 #| fig-cap: MODIS LAI for the 500m grid-cell that includes the flux tower
-#| fig-link: fig-modis-lai
+#| label: fig-modis-lai
 lai_cleaned |> 
   ggplot(aes(x = datetime, y = observation)) +
   geom_point() +
@@ -617,7 +617,7 @@ flux <- read_csv(url, show_col_types = FALSE) |>
 #| warning: false
 #| echo: false
 #| fig-cap: Daily mean NEE from the flux tower at the focal NEON site
-#| fig-link: fig-nee-obs
+#| label: fig-nee-obs
 ggplot(flux, aes(x = datetime, y = observation)) + 
   geom_point()  +
   theme_bw()
@@ -641,7 +641,7 @@ The combined data with the variable names converted to the names used in the for
 
 ```{r}
 #| warning: false
-#| fig-link: fig-combined-all
+#| label: fig-combined-all
 #| fig-cap: The data avialable to constrain the forest process model.
 obs |> 
   ggplot(aes(x = datetime, y = observation)) + 

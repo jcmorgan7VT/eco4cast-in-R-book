@@ -114,7 +114,10 @@ gflu <- read_csv("data/gflu_data.txt", skip = 11, show_col_types = FALSE) %>%
          
          
 gflu <- gflu[1:15, ]
+```
 
+
+```{r}
 ggplot(data = gflu, aes(x = Date, y = log(Virginia))) +
   geom_line() +
   geom_point() +
@@ -177,10 +180,12 @@ for(t in 2:nt){
 }
 ```
 
-Now plot the particles individually
+@fig-parts-alone particles individually
 
 ```{r}
 #| warning: false
+#| fig-cap: Results of the particle filter with each particle shown
+#| label: fig-sim-prior-post
 
 tibble(time = 1:nt,
        as_tibble(x)) %>% 
@@ -246,10 +251,12 @@ for(t in 2:nt){
 }
 ```
 
-Now plot the particles with the observations. You can see how the particles are adjusted when data are present.
+@fig-sim-prior-post2 shows the particles with the observations. You can see how the particles are adjusted when data are present.
 
 ```{r}
 #| warning: false
+#| fig-cap: Results of the particle filter with each particle shown. Observations are included
+#| label: fig-sim-prior-post2
 
 tibble(time = 1:nt,
        as_tibble(x),
