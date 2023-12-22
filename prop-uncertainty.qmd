@@ -56,6 +56,8 @@ inputs_ensemble <- assign_met_ensembles(inputs, ens_members)
 
 ## Parameter uncertainity
 
+**TO DO: Add text about where parameter uncertainity comes from**
+
 Update parameters to include uncertainty
 
 ```{r}
@@ -97,6 +99,8 @@ parameter_df |>
 ```
 
 ## Process uncertainty
+
+**TO DO: Add text about where process uncertainty comes from.  Priors, experts, posteriors, estimated distributions**
 
 Change process uncertainty parameters from being zero to a positive value
 
@@ -142,6 +146,8 @@ process_df |>
 ```
 
 ## Initial condition uncertainty
+
+**TO DO: Add text about where initial condition uncertainty comes from**
 
 Update the initial starting point
 
@@ -189,6 +195,8 @@ initial_conditions_df |>
 ```
 
 ## Driver uncertainty
+
+**TO DO: Add text about where driver uncertainty comes from**
 
 ```{r}
 new_inputs <- get_forecast_met(site = site, sim_dates, use_mean = FALSE)
