@@ -26,6 +26,7 @@ book:
       chapters:
         - process-model.qmd
         - prop-uncertainty.qmd
+        - neon-data.qmd
         - parameter-calibration1.qmd
         - parameter-calibration2.qmd
         - parameter-calibration3.qmd
@@ -38,7 +39,6 @@ book:
     - references.qmd
     - part: "Appendix"
       chapters:
-      - neon-data.qmd
       - weather-drivers.qmd
 
 bibliography: references.bib

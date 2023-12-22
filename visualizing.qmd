@@ -8,6 +8,8 @@ The fourth forecast generation assignment will challenge analyze the automated f
 
 ## RMSE
 
+Pending
+
 ## Continuous Ranked Probability Score
 
 Forecasts will be scored using the continuous ranked probability score (CRPS), a proper scoring rule for evaluating forecasts presented as distributions or ensembles (Gneiting & Raftery 2007). The CRPS compares the forecast probability distribution to that of the validation observation and assigns a score based on both the accuracy and precision of the forecast. We will use the 'crps_sample' function from the `scoringRules` package in R to calculate the CRPS for each forecast.
@@ -174,7 +176,7 @@ Let's estimate the slope of the relationship. It looks like the optimal $sd$ for
 coef(lm(optimal_sd[sample_mean > 0] ~ sample_mean[sample_mean > 0]))
 ```
 
-## Appendix: CRPS tutorial
+## CRPS tutorial
 
 This provide a tutorial for the Continuous Ranked Probability Score (CRPS), a proper scoring rule used to evaluate probabilistic forecasts.
 
@@ -217,6 +219,7 @@ df <- bind_rows(df,
 ```
 
 ```{r}
+#| warning: false
 ggplot(df, aes(x = y, y = cdf, color = variable)) + geom_line()
 ```
 
@@ -235,6 +238,7 @@ cdf_diff_area <- error * dy
 ```
 
 ```{r}
+#| warning: false
 tibble(y = y,
        area = cdf_diff_area) |> 
   ggplot(aes(x = y, y = area)) + geom_line()
@@ -291,6 +295,7 @@ df <- bind_rows(df,
 ```
 
 ```{r}
+#| warning: false
 ggplot(df, aes(x = y1, y = cdf, color = variable)) + geom_line()
 ```
 

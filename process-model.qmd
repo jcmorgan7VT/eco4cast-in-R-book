@@ -7,9 +7,30 @@ library(tidyverse)
 library(lubridate)
 ```
 
+## Overview of model
+
 -   timestep: 1 day
 -   currency: MgC/ha
 -   dimension: 0-D
+
+Photosynthesis
+  - LAI
+
+Autotrophic respiration
+
+Allocation
+
+Litterfall
+
+Mortality
+
+Heterotrophic respiration
+
+Net Ecosystem Exchange
+
+## Model as a function
+
+- One time-step at a time
 
 ```{r}
 forest_model <- function(t, states, parms, inputs){
@@ -145,6 +166,8 @@ output[1, , 3] <- 140
 ```
 
 ## Run model
+
+Loop over the `sim_dates`.  The loop starts on index of 2 because index of 1 was set as the initial conditions above.  Save the output at step time-step to the output array.  
 
 ```{r}
 for(t in 2:length(sim_dates)){

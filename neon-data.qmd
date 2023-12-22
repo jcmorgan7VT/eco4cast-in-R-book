@@ -1,6 +1,7 @@
 # NEON data {.appendix}
 
 ```{r}
+#| message: FALSE
 library(tidyverse)
 library(lubridate)
 library(neonstore)
@@ -12,7 +13,7 @@ NEON data is organized by data product ID in the NEON Date Portal: <https://data
 
 ## Download data
 
-First, we are going to want to define the site ID. The four letter site code denotes NEON site. You can learn more about NEON sites here: <https://www.neonscience.org/field-sites/explore-field-sites>.  The elevation, latitude , and longitude are needed to convert the diameter measurements to biomass.
+First, we are going to want to define the site ID. The four letter site code denotes NEON site. You can learn more about NEON sites here: <https://www.neonscience.org/field-sites/explore-field-sites>. The elevation, latitude , and longitude are needed to convert the diameter measurements to biomass.
 
 ```{r}
 site <- "TALL"
@@ -27,7 +28,7 @@ longitude <- -87.393259
 
 In this section, we will be calculating carbon in live and dead trees at a NEON site. At the end we will have a *site-level* mean carbon stock in *live trees* for each year that was sampled from the plots that are sampling the ecosystem under the flux tower (e.g., tower plots).
 
-The code below read the data directly from NEON's cloud storage.  Since the columns may change between the official releases and the provisional data, they need to be read in separately before being combined.
+The code below read the data directly from NEON's cloud storage. Since the columns may change between the official releases and the provisional data, they need to be read in separately before being combined.
 
 ```{r}
 
@@ -213,7 +214,7 @@ combined_table_dead_tower <- combined_table_dbh %>%
          plotType == "tower") 
 ```
 
-Calculate the biomass of each tree in the table.  This assumes that standing dead trees have the same carbon as a live tree (which is an incorrect assumption).
+Calculate the biomass of each tree in the table. This assumes that standing dead trees have the same carbon as a live tree (which is an incorrect assumption).
 
 ```{r}
 tree_dead_carbon <- combined_table_dead_tower %>%
@@ -239,7 +240,7 @@ measurement_dates <- tree_dead_carbon |>
     summarise(plot_kgCm2 = sum(treeC_kgCm2, na.rm = TRUE), .by = c("plotID", "measure_date"))
 ```
 
-Visualize plot level carbon 
+Visualize plot level carbon
 
 ```{r}
 ggplot(plot_dead_carbon, aes(x = measure_date, y = plot_kgCm2, color = plotID)) + 
@@ -257,7 +258,7 @@ Calculate site level carbon
               sd_kgCperm2 = sd(plot_kgCm2))
 ```
 
-Visualize site level carbon 
+Visualize site level carbon
 
 ```{r}
 ggplot(site_dead_carbon, aes(x = measure_date, y = mean_kgCperm2)) + 
@@ -295,7 +296,7 @@ cdw_tally <- index |>
   filter(grepl("cdw_fieldtally", name)) |> 
   pull(url) |>
   #duckdbfs::open_dataset(format="csv", filename = TRUE) |>
-  read_csv()
+  read_csv(show_col_types = FALSE)
 ```
 
 ```{r}
@@ -504,7 +505,7 @@ total_carbon_components |>
   geom_point()
 ```
 
-Combine pools of carbon together to match the stocks used in our simple process model.  This converts it to a long data format.
+Combine pools of carbon together to match the stocks used in our simple process model. This converts it to a long data format.
 
 ```{r}
 total_carbon_simple <- total_carbon_components |> 
@@ -518,7 +519,7 @@ total_carbon_simple <- total_carbon_components |>
 
 ## MODIS LAI
 
-Download the leaf area index 
+Download the leaf area index
 
 ```{r}
 lai <- MODISTools::mt_subset(product = "MCD15A2H",
@@ -546,8 +547,8 @@ lai_cleaned <- lai |>
 
 Plot MODIS LAI
 
-
 ```{r}
+#| warning: false
 lai_cleaned |> 
   ggplot(aes(x = datetime, y = observation)) +
   geom_point() +
@@ -558,14 +559,18 @@ lai_cleaned |>
 
 ```{r}
 url <- "https://sdsc.osn.xsede.org/bio230014-bucket01/challenges/targets/project_id=neon4cast/duration=P1D/terrestrial_daily-targets.csv.gz"
+
 flux <- read_csv(url, show_col_types = FALSE) |> 
   filter(site_id %in% site, 
          variable == "nee") |> 
   mutate(datetime = as_date(datetime)) |> 
   select(datetime, variable, observation)
+```
 
-flux |> 
-ggplot(aes(x = datetime, y = observation)) + geom_point()
+```{r}
+#| warning: false
+#| echo: false
+ggplot(flux, aes(x = datetime, y = observation)) + geom_point()
 ```
 
 ## Combine together to create data contraints
@@ -581,6 +586,7 @@ obs <- total_carbon_simple |>
 ```
 
 ```{r}
+#| warning: false
 obs |> 
   ggplot(aes(x = datetime, y = observation)) + 
   geom_point() +

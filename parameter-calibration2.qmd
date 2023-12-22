@@ -64,6 +64,8 @@ Remember that this curve is the P(data \| mean = x). We want the P(mean = x \| d
 
 Following Bayes rule we can multiply the likelihood x the prior
 
+**TODO: add Bayes formula**
+
 Our prior is the following normal distribution
 
 ```{r}

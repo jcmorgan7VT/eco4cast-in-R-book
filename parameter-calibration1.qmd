@@ -417,6 +417,7 @@ curve(pred_mm(x, par = fit$par), from = 0.1, to = 10, add = TRUE)
 Finally, we don't have to assume that the *data* model is a normal distribution. Here is an example assuming that the data model follows a gamma distribution. See Section 3.4.4 that starts on page 65 in Hobbs and Hooten.
 
 ```{r}
+#| warning: FALSE
 LL_fn <- function(par, x, y){
     -sum(dgamma(y, shape = (pred_mm(x, par)^2/par[3]), rate =  pred_mm(x, par)/par[3], log = TRUE))
 }

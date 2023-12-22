@@ -63,6 +63,8 @@ new_params <- params
 new_params$alpha <- rnorm(ens_members, params$alpha, sd = 0.005)
 ```
 
+TODO: add parameter distributions
+
 ```{r}
 for(t in 2:length(sim_dates)){
 
@@ -100,6 +102,8 @@ new_params$sigma.leaf <- rep(0.1, ens_members)
 new_params$sigma.stem <- rep(1, ens_members) #0.01 ## wood biomass
 new_params$sigma.soil <- rep(1, ens_members)# 0.01
 ```
+
+TODO: add process distributions
 
 ```{r}
 
@@ -141,6 +145,8 @@ new_output[1, , 2] <- rnorm(ens_members, 140, 10)
 new_output[1, , 3] <- rnorm(ens_members, 140, 20)
 ```
 
+TODO: add initial condition distributions
+
 ```{r}
 for(t in 2:length(sim_dates)){
 
@@ -174,6 +180,8 @@ initial_conditions_df |>
 new_inputs <- get_forecast_met(site = site, sim_dates, use_mean = FALSE)
 new_inputs_ensemble <- assign_met_ensembles(inputs, ens_members)
 ```
+
+TODO: add plot of drivers
 
 ```{r}
 
@@ -223,5 +231,8 @@ Answer with text, code, and plots the following questions
 
 Using the code above as a guide, create code to estimate uncertainty based on the propagation all sources at the same time (unlike the one-at-a-time approach above).
 
-Answer with text, code, and plots the following questions - Plot the forecast with the combined uncertainty.\
-- If you calculate the variance of the combined uncertainty and compared to the sum of the individual variances, do they match? What does it mean if they are different?
+Answer with text, code, and plots the following questions
+
+-    Plot the forecast with the combined uncertainty.
+
+-   If you calculate the variance of the combined uncertainty and compared to the sum of the individual variances, do they match? What does it mean if they are different?
