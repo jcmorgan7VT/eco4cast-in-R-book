@@ -146,7 +146,7 @@ output_df |>
 
 ### Step 2: Generate forecaset
 
-Now
+
 
 ```{r}
 load("data/PF_analysis.Rdata")
@@ -304,6 +304,24 @@ save(analysis, file = "data/PF_analysis.Rdata")
 ```
 
 ### Step 8: Repeat
+
+TO DO: Add concept of "look back"
+
+```{r}
+look_back <- 7
+horizon <- 30
+sim_dates <- seq(as_date("2023-11-11"), length.out = look_back + horizon, by = "1 day")
+inputs_past <- get_historical_met(site = "TALL", sim_dates[1:look_back], use_mean = FALSE)
+inputs_future <- get_forecast_met(site = "TALL", sim_dates[(look_back+1):horizon], use_mean = FALSE)
+inputs <- bind_rows(inputs_past, inputs_future)
+```
+
+```{r}
+#| echo: false
+  ggplot(inputs, aes(x = datetime, y = prediction, group = parameter)) +
+  geom_line() +
+  facet_wrap(~variable, scales = "free")
+```
 
 ## Code example of forecast analysis cycle implimented in a more complex forest model
 

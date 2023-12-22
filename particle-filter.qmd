@@ -583,7 +583,7 @@ bind_rows(pf_low, pf_high) %>%
 You will need the following packages
 
 ```{r}
-#|echo: FALSE
+#| message: false
 library(tidyverse)
 library(lubridate)
 ```
