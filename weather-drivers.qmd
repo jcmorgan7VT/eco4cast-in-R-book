@@ -1,11 +1,5 @@
 # Accessing weather drivers
 
-```{r}
-#|echo: FALSE
-library(tidyverse)
-source("R/helpers.R")
-```
-
 ## "Historical weather"
 
 Our goal is to generate genuine forecasts of the future. Therefore we need to use weather forecasts as driver inputs into our model.
