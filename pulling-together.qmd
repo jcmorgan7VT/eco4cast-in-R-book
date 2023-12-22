@@ -18,7 +18,7 @@ We will start our forecast - analysis cycle by running the model with a particle
 
 ```{r}
 ens_members <- 100
-sim_dates <- seq(as_date("2023-01-07"), as_date("2023-11-15"), by = "1 day")
+sim_dates <- seq(Sys.Date()-365, Sys.Date()-1, by = "1 day")
 ```
 
 ```{r}
@@ -146,25 +146,35 @@ output_df |>
 
 ### Step 2: Generate forecaset
 
+Now we are going to generate a forecast that started from our 1 year spin up completed above.  First load the analysis data into memory so that we can access the initial conditions and parameters in it.
+
 ```{r}
 load("data/PF_analysis_0.Rdata")
 ```
 
-```{r}
+This example introduces the concept of a "look back".  This is stepping back in the past to restart the particle filter so that it can assimilate any data that has been make avialable since the last time that time period was run through the particle filter.  The look back is important because many observations have delays before becoming avialable (called latency).  NEON flux data can have a 5 day to 1.5 month latency.  MODIS LAI is a 8 day average so has an 8-day latency.  
 
+Here we use a look back of 14-days.  Since our forecast horizon is 30-days in the future, the total days of the simulation is 14 + 30.  Our reference_datetime is today.
+
+We will find the first day of our simulation (14 days ago) in the last saved analysis and use this for initial conditions.
+
+```{r}
 look_back <- 14
 horizon <- 30
-reference_datetime <- as_date("2023-11-15")
+reference_datetime <- Sys.Date()
 sim_dates <- seq(reference_datetime - look_back, length.out = look_back + horizon, by = "1 day")
 index <- which(analysis$sim_dates == sim_dates[1])
 ```
 
+The use of the loop back requires combining the "historial" weather and future weather into a single input data frame.
+
 ```{r}
-inputs_past <- get_historical_met(site = "TALL", sim_dates[1:look_back], use_mean = FALSE)
-inputs_future <- get_forecast_met(site = "TALL", sim_dates[(look_back+1):length(sim_dates)], use_mean = FALSE)
+inputs_past <- get_historical_met(site = "TALL", sim_dates[1:(look_back-1)], use_mean = FALSE)
+inputs_future <- get_forecast_met(site = "TALL", sim_dates[look_back:length(sim_dates)], use_mean = FALSE)
 inputs <- bind_rows(inputs_past, inputs_future)
 ```
 
+The combined weather drivers look like the following.  The vertical line is where the look back period transitions to the future.
 
 ```{r}
 #| echo: false
@@ -191,12 +201,6 @@ forecast[1, , 3] <- analysis$forecast[index, ,3]
 
 wt <- array(1, dim = c(length(sim_dates), ens_members))
 wt[1, ] <- analysis$wt[index, ]
-```
-
-```{r}
-obs <- obs |> 
-  filter(datetime <= reference_datetime,
-         datetime >= sim_dates[1])
 ```
 
 ```{r}
@@ -248,6 +252,7 @@ output_df |>
   geom_ribbon(aes(ymin = upper, ymax = lower), alpha = 0.7) +
   geom_line(aes(y = median)) +
   geom_point(aes(y = observation), color = "red") +
+  geom_vline(aes(xintercept = reference_datetime)) +
   facet_wrap(~variable, scale = "free")
 ```
 
@@ -258,23 +263,28 @@ Save the states and weights for use as initial conditions in the next forecast.
 save(analysis, file = "data/PF_analysis_1.Rdata")
 ```
 
+Convert to the format required by the NEON Ecological Forecasting Challenge
 
 ```{r}
 efi_output <- output_df |> 
   mutate(datetime = as_datetime(datetime),
          duration = "P1D",
          project_id = "neon4cast",
-         site_id = site,
+         site_id = "TALL",
          family = "ensemble",
          reference_datetime = as_datetime(reference_datetime)) |> 
   rename(parameter = ensemble) |> 
   filter(datetime >= reference_datetime) 
 ```
 
+Write the forecast to a csv file
+
 ```{r}
 file_name <- paste0("data/terrestrial_daily-", reference_datetime, "-simple_forest_model.csv")
 write_csv(efi_output, file_name)
 ```
+
+and submit to the Challenge
 
 ```{r}
 #| eval: false
@@ -283,10 +293,10 @@ neon4cast::submit(file_name, ask = FALSE)
 
 ### Step 4: Repeat Steps 2 -3
 
-Use yesterday's forecast of today for initial conditions and parameter distributions
+Wait for a day to pass and then use yesterday's analysis today for initial conditions and parameter distributions
 
 ```{r}
-load("data/PF_analysis.Rdata")
+load("data/PF_analysis_1.Rdata")
 ```
 
 
