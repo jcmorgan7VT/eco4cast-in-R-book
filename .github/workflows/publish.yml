@@ -43,7 +43,7 @@ jobs:
           git add data/saved_parameter_chain.csv
           git add data/site_carbon_data.csv
           git add data/PF_analysis_0.Rdata
-          git add data/PF_analysis.Rdata
+          git add data/PF_analysis_1.Rdata
           git commit -a -m "update data" || echo "nothing to commit"
           git push https://${GITHUB_PAT}:${GITHUB_PAT}@github.com/${GITHUB_REPOSITORY}
 
