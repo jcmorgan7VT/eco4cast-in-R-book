@@ -19,7 +19,24 @@ Now we are going to generate a forecast that started from our 1 year spin up com
 ```{r}
 load("data/PF_analysis_0.Rdata")
 ens_members <- dim(analysis$forecast)[2]
+```
 
+```{r}
+params <- list()
+params$alpha <- rep(0.02, ens_members)
+params$SLA <- rep(4.74, ens_members)
+params$leaf_frac <- rep(0.315, ens_members)
+params$Ra_frac <- rep(0.5, ens_members)
+params$Rbasal <- rep(0.002, ens_members)
+params$Q10 <- rep(2.1, ens_members)
+params$litterfall_rate <- rep(1/(2.0*365), ens_members) #Two year leaf lifespan
+params$litterfall_start <- rep(200, ens_members)
+params$litterfall_length<- rep(70, ens_members)
+params$mortality <- rep(0.00015, ens_members) #Wood lives about 18 years on average (all trees, branches, roots, course roots)
+params$sigma.leaf <- rep(0.1, ens_members) #0.01 
+params$sigma.stem <- rep(0.1, ens_members) #0.01 ## wood biomass
+params$sigma.soil <- rep(0.1, ens_members)# 0.01
+params <- as.data.frame(params)
 ```
 
 ## Step 2: Generate forecast
