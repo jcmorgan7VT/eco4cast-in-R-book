@@ -11,6 +11,8 @@ library(lubridate)
 
 The model is a 0-D model (no horizontal and vertical dimensions) that runs at a 1 day timestep.  It models carbon using MgC/ha.  
 
+![](img/model_diagram.png)    
+
 Photosynthesis (gross primary productivityl; gpp) is modeled using a light-use efficiency approach.  Photosynthetically Active Radiation (PAR) is converted to absorbed PAR by multiplying by the proportion absorbed by leaf area index (LAI).  As LAI increases more light is absorbed.  The absorbed PAR is multipled by a light use efficiency parameter (`alpha`).  LAI is determined by multipling leave carbon by the specific leaf area parameter (`SLA`).
 
 Autotrophic respiration (`ra`) is modeled as a constant proportion of GPP using the `Ra_frac` parameter. Net primary productivty (`npp`) is the carbon that is not used for autotrophic respiration (`gpp - ra`).  
