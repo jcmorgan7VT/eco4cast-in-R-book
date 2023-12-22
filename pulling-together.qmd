@@ -21,7 +21,15 @@ load("data/PF_analysis_0.Rdata")
 ens_members <- dim(analysis$forecast)[2]
 ```
 
-## Step 2: Generate forecast
+## Step 2: Get latest data
+
+The latest data is avialable by running [Chapter -@sec-neon] and reading in the csv.  You will need to re-run the code in [Chapter -@sec-neon] if you want to update the observations outside the automatic build of this book.
+
+```{r}
+obs <- read_csv("data/site_carbon_data.csv", show_col_types = FALSE)
+```
+
+## Step 3: Generate forecast
 
 This example introduces the concept of a "look back". This is stepping back in the past to restart the particle filter so that it can assimilate any data that has been make avialable since the last time that time period was run through the particle filter. The look back is important because many observations have delays before becoming avialable (called latency). NEON flux data can have a 5 day to 1.5 month latency. MODIS LAI is a 8 day average so has an 8-day latency.
 
@@ -113,7 +121,7 @@ for(t in 2:length(sim_dates)){
 }
 ```
 
-## Step 3: Save forecast and data assimiliation output
+## Step 4: Save forecast and data assimiliation output
 
 Convert forecast to a dataframe.
 
@@ -179,7 +187,7 @@ and submit to the Challenge
 neon4cast::submit(file_name, ask = FALSE)
 ```
 
-## Step 4: Repeat Steps 2 -3
+## Step 5: Repeat Steps 2 - 4
 
 Wait for a day to pass and then use yesterday's analysis today for initial conditions and parameter distributions
 
