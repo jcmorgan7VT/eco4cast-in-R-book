@@ -12,4 +12,4 @@ As part of the book, I recommend focusing on the Rshiny version of the module. Y
 
 This module was developed by: Lofton, M.E., T.N. Moore, Thomas, R.Q., and C.C. Carey. 20 September 2022. Macrosystems EDDIE: Using Data to Improve Ecological Forecasts. Macrosystems EDDIE Module 7, Version 1. <https://macrosystemseddie.shinyapps.io/module7>. Module development was supported by NSF grants DEB-1926050 and DBI-1933016.
 
-This module has been peer-reviewed and included in the "On the Cutting Edge Exemplary Teaching Activities" collection.
+This module has been peer-reviewed and included in the ["On the Cutting Edge Exemplary Teaching Activities"](https://serc.carleton.edu/teachearth/exemplary.html) collection.
