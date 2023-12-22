@@ -1,12 +1,15 @@
 # Data assimilation: Applying to process model {#sec-pf2}
 
 ```{r}
-#| echo: FALSE
+#| echo: false
+#| message: false
 source("R/helpers.R")
 source("R/forest_model.R")
+library(tidyverse)
+library(lubridate)
 ```
 
-In this chapter we apply the particle filter that was introduced in [Chapter -@sec-particle-filter] to the forest process model.  We will use an ensemble of 100 particles and assimilate the last two years of data.
+In this chapter we apply the particle filter that was introduced in [Chapter -@sec-particle-filter] to the forest process model. We will use an ensemble of 100 particles and assimilate the last two years of data.
 
 ```{r}
 ens_members <- 100
@@ -43,6 +46,7 @@ params <- as.data.frame(params)
 ```
 
 Read in the observational data and use the first data in the simulation period as the initial condition.
+
 ```{r}
 obs <- read_csv("data/site_carbon_data.csv", show_col_types = FALSE)
 state_init <- rep(NA, 3)
@@ -81,7 +85,7 @@ forecast[1, , 3] <- state_init[3]
 wt <- array(1, dim = c(length(sim_dates), ens_members))
 ```
 
-Read in the parameter chain from [Chapter -@sec-bayes-process].  We sample from the chain to get the initial starting distribution for the particle filter.  Importantly, the parameter has to be sampled together to preserve the correlation between them.  In our example, assume the `litterfall_start` is constant at the calibrated mean.
+Read in the parameter chain from [Chapter -@sec-bayes-process]. We sample from the chain to get the initial starting distribution for the particle filter. Importantly, the parameter has to be sampled together to preserve the correlation between them. In our example, assume the `litterfall_start` is constant at the calibrated mean.
 
 ```{r}
 fit_params_table <- read_csv("data/saved_parameter_chain.csv", show_col_types = FALSE) |> 
@@ -155,7 +159,6 @@ for(t in 2:length(sim_dates)){
 }
 ```
 
-
 Process the output and parameters into a data frame using the particle weights.
 
 ```{r}
@@ -194,7 +197,7 @@ output_df |>
   theme_bw()
 ```
 
-Visualize how the parameters changed over the simulation.  You can see the distributions widening between observations and narrowing when an observation is assimilated.
+Visualize how the parameters changed over the simulation. You can see the distributions widening between observations and narrowing when an observation is assimilated.
 
 ```{r}
 parameter_df |> 
