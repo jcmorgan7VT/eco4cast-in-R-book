@@ -4,7 +4,7 @@ This book is designed for Virginia Tech graduate course FREC 5174: Ecological Mo
 
 The book uses R code to teach concepts by example (hence the name "A practical guide...") . Hopefully the code provides an mechanism for developing your intuition through examples.
 
-The book is a near-term iterative forecast itself. It automatically rebuilds every day using GitHub actions. Each build accesses the latest NEON data, NOAA weather forecasts, assimilated data, generates a new forecast of daily net ecosystem exchange (NEE) for one NEON site (TALL). The forecast is submitted to the NEON Ecological Forecasting Challenge.
+The book is a near-term iterative forecast itself. It automatically rebuilds every day using GitHub actions. Each build accesses the latest NEON data, NOAA weather forecasts, assimilated data, generates a new forecast of daily net ecosystem exchange (NEE) for one NEON site (TALL). The NEON data in [Chapter -@sec-neon] and the forecast in [Chapter -@sec-pulling-together] should be near real-time. The forecast is submitted to the NEON Ecological Forecasting Challenge.
 
 The book is a work in progress that involves harmonizing materials developed for many different use-cases (undergraduate courses, tutorials, graduate classes). As a result there are likely to differences among chapters in style and approaches to assignments.
 

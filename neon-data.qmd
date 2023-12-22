@@ -1,4 +1,4 @@
-# NEON data {.appendix}
+# NEON data {#sec-neon}
 
 ```{r}
 #| message: FALSE
