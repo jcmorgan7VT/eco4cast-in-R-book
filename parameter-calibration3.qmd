@@ -1,4 +1,4 @@
-# Parameter calibration: Applying to process model
+# Parameter calibration: Applying to process model {#sec-bayes-process}
 
 ## Runing MCMC on the forest process model
 

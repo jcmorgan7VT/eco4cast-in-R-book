@@ -1,4 +1,4 @@
-# Data assimilation: particle filter
+# Data assimilation: particle filter {#sec-particle-filter}
 
 ```{r}
 #| echo: false
@@ -116,8 +116,11 @@ gflu <- read_csv("data/gflu_data.txt", skip = 11, show_col_types = FALSE) %>%
 gflu <- gflu[1:15, ]
 ```
 
+@fig-glu-va shows the data for Virginia
 
 ```{r}
+#| fig-cap: Google flu data for Virginia
+#| label: fig-glu-va
 ggplot(data = gflu, aes(x = Date, y = log(Virginia))) +
   geom_line() +
   geom_point() +
@@ -408,10 +411,12 @@ for(t in 2:nt){
 }
 ```
 
-Now visualize the states from the PF
+@fig-pf-parameters shows the states from the PF when parameter fitting is included
 
 ```{r}
 #| warning: false
+#| fig-cap: Results of the particle filter when parameter fitting is included
+#| label: fig-pf-parameters
 
 tibble(time = 1:nt,
        obs = y,
@@ -425,13 +430,16 @@ tibble(time = 1:nt,
   theme_bw()
 ```
 
-And visualize the time-evolution of the parameter. There are two new concepts illustrated below:
+And visualize the time-evolution of the parameter (@fig-parameter-timeseries). There are two new concepts illustrated below:
 
 1.  parameters distributions evolve through time. As a result the distribution of parameters is strongly influenced by the most recent observations. The distributions produced by a PF are not the same as the distributions produced by MCMC chain.\
 2.  particles can have degeneracy, whereby the values of the parameters collapse down to one or a few values. This occurs because the PF does not propose new parameter values, it only selects (through resampling) parameter values from the initial set that you started with. Over the time-step the PF weeds out bad parameters and only a few ones are left. This is a major issue with a PF. Degeneracy can also occur in the states but since we are adding process uncertainty (`sd_add`) the particles are able to separate through time. There are a couple of ways to solve degeneracy - increase the number of particles so you sample more initial parameter values or propose new parameter values as part of the PF (how do to this is beyond the scope of this lecture)
 
 ```{r}
+#| echo: false
 #| warning: false
+#| fig-cap: Timing evolution of the parameters
+#| label: fig-parameter-timeseries
 
 tibble(time = 1:nt,
        as_tibble(b1)) %>% 
@@ -510,12 +518,6 @@ pf_10 <- bootstrap_pf(10)
 pf_100 <- bootstrap_pf(100)
 pf_1000 <- bootstrap_pf(1000)
 pf_10000 <- bootstrap_pf(10000)
-```
-
-And combine to a single plot. You see the width of the 95 % confidence interval increases substantially from 10 to 1000 particles but then is similar from 1000 to 10000. This reflects what we learned from the very first exercise where you drew random samples from a distribution and found that between 1000 and 10000 random samples were required to approximate the distribution well.
-
-```{r}
-#| warning: false
 
 p10 <- tibble(time = gflu$Date,
        as_tibble(pf_10$x)) %>% 
@@ -538,7 +540,14 @@ p10000 <- tibble(time = gflu$Date,
   mutate(type = "pf_10000")
 
 gflu$obs_in_fit <- exp(y)
+```
 
+And combine to a single plot (@fig-pf-num-sens). You see the width of the 95 % confidence interval increases substantially from 10 to 1000 particles but then is similar from 1000 to 10000. This reflects what we learned from the very first exercise where you drew random samples from a distribution and found that between 1000 and 10000 random samples were required to approximate the distribution well.
+
+```{r}
+#|warning: false
+#|fig-cap: Sensitivity of predictions to different number of particles
+#| label: fig-pf-num-sens
 bind_rows(p10, p100, p1000, p10000) %>% 
   group_by(time, type) %>% 
   mutate(x = exp(x)) %>% 
@@ -577,7 +586,14 @@ pf_high <- tibble(time = gflu$Date,
   mutate(type = "high obs uncertainity")
 
 gflu$obs_in_fit <- exp(y)
+```
 
+Does @fig-pf-obs-sens match your intuition? 
+
+```{r}
+#|warning: false
+#|fig-cap: Sensitivity of predictions to observation uncertainty
+#| label: fig-pf-obs-sens
 bind_rows(pf_low, pf_high) %>% 
   group_by(time, type) %>% 
   mutate(x = exp(x)) %>% 
@@ -633,10 +649,13 @@ This step is already done for you.
 Here is the data for ages 1 through 50 for the plot (starting in 1950-01-01). It was measured every 5 years.
 
 ```{r}
-#| warning: false
-
 plot_data <- read_csv("data/PF_data1.csv", show_col_types = FALSE)
+```
 
+```{r}
+#| warning: false
+#| fig-cap: Time-series of forest biomass data
+#| label: fig-biomass-timeseries
 ggplot(plot_data, aes(x = datetime, y = biomass)) +
   geom_point() +
   labs(x = "age", y = "aboveground biomass (gC/m2)") +

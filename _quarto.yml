@@ -42,6 +42,7 @@ book:
         - parameter-calibration2.qmd
         - parameter-calibration3.qmd
         - particle-filter.qmd
+        - particle-filter2.qmd
         - pulling-together.qmd
     - part: "Project 2"
       chapters:

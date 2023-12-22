@@ -6,15 +6,23 @@ source("R/helpers.R")
 source("R/forest_model.R")
 ```
 
+In this chapter we apply the particle filter that was introduced in [Chapter -@sec-particle-filter] to the forest process model.  We will use an ensemble of 100 particles and assimilate the last two years of data.
+
 ```{r}
 ens_members <- 100
 sim_dates <- seq(Sys.Date() - 365*2, Sys.Date() - 1, by = "1 day")
 ```
 
+## Prep data
+
+Get the historical weather for the site
+
 ```{r}
 inputs <- get_historical_met(site = "TALL", sim_dates, use_mean = TRUE)
 inputs_ensemble <- assign_met_ensembles(inputs, ens_members)
 ```
+
+Set the constant parameters (we will fit two parameters using the particle filter below)
 
 ```{r}
 params <- list()
@@ -34,6 +42,7 @@ params$sigma.soil <- rep(0.1, ens_members)# 0.01
 params <- as.data.frame(params)
 ```
 
+Read in the observational data and use the first data in the simulation period as the initial condition.
 ```{r}
 obs <- read_csv("data/site_carbon_data.csv", show_col_types = FALSE)
 state_init <- rep(NA, 3)
@@ -60,6 +69,8 @@ state_init[3] <- obs |>
   pull(observation)
 ```
 
+Assigne the intial conditions to the first time-step of the simulation
+
 ```{r}
 #Set initial conditions
 forecast <- array(NA, dim = c(length(sim_dates), ens_members, 12)) #12 is the number of outputs
@@ -69,6 +80,8 @@ forecast[1, , 3] <- state_init[3]
 
 wt <- array(1, dim = c(length(sim_dates), ens_members))
 ```
+
+Read in the parameter chain from [Chapter -@sec-bayes-process].  We sample from the chain to get the initial starting distribution for the particle filter.  Importantly, the parameter has to be sampled together to preserve the correlation between them.  In our example, assume the `litterfall_start` is constant at the calibrated mean.
 
 ```{r}
 fit_params_table <- read_csv("data/saved_parameter_chain.csv", show_col_types = FALSE) |> 
@@ -82,6 +95,10 @@ fit_params[1, , 2] <- fit_params_table$Rbasal[samples]
 params$litterfall_start <- mean(fit_params_table$litterfall_start, na.rm = TRUE)
 
 ```
+
+## Run the particle filter
+
+In the particle filter we perturb the parameter values sligthly to prevent them from collapsing to a single value.
 
 ```{r}
 for(t in 2:length(sim_dates)){
@@ -138,6 +155,9 @@ for(t in 2:length(sim_dates)){
 }
 ```
 
+
+Process the output and parameters into a data frame using the particle weights.
+
 ```{r}
 forecast_weighted <- array(NA, dim = c(length(sim_dates), ens_members, 12))
 params_weighted <- array(NA, dim = c(length(sim_dates) ,ens_members , num_pars))
@@ -151,7 +171,11 @@ output_df <- output_to_df(forecast_weighted, sim_dates, sim_name = "particle_fil
 parameter_df <- parameters_to_df(params_weighted, sim_dates, sim_name = "particle_filter", param_names = c("alpha","Rbasal"))
 ```
 
+Visualize the simulation using the particle filter
+
 ```{r}
+#| warning: false
+#| 
 obs_dates <- obs |> 
   filter(variable == c("nee","lai", "wood")) |> 
   pull(datetime)
@@ -170,6 +194,8 @@ output_df |>
   theme_bw()
 ```
 
+Visualize how the parameters changed over the simulation.  You can see the distributions widening between observations and narrowing when an observation is assimilated.
+
 ```{r}
 parameter_df |> 
   summarise(median = median(prediction),
@@ -182,7 +208,9 @@ parameter_df |>
   facet_wrap(~variable, scale = "free") +
   theme_bw()
 ```
-Save the 
+
+Combine the forecast, parameters, weights, simulation dates, and constant parameters into an object called `analysis` and save for use in [Chapter -@sec-pulling-together]
+
 ```{r}
 analysis <- list(forecast = forecast, fit_params = fit_params, wt = wt, sim_dates = sim_dates, params = params)
 save(analysis, file = "data/PF_analysis_0.Rdata")

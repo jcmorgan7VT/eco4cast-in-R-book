@@ -35,8 +35,8 @@ Imagine that we are measuring the same thing with the same sensor but the sensor
 The question is "What is the probability that X = y_i given a normal distribution with mean = 0 and sd = 1?".  In @fig-simple-rnorm-obs, the red line is a hypothetical observation (y_i).
 
 ```{r}
-#|fig-cap: Normal distribution with mean = 0 and sd = 1. The red line is an 'observation'
-#|label: fig-simple-rnorm-obs
+#| fig-cap: Normal distribution with mean = 0 and sd = 1. The red line is an 'observation'
+#| label: fig-simple-rnorm-obs
 plot(density(rnorm(10000, mean = 0, sd = 1)), xlab = "y", main = "mean = 0, sd = 1")
 abline(v = y_i, col = "red")
 ```
@@ -44,8 +44,8 @@ abline(v = y_i, col = "red")
 We could also ask "What is the probability that X = y_i given a normal distribution with mean = 2 and sd = 1?" In @fig-simple-rnorm-obs2 you can see that the observation is at a lower probability in the distribution.
 
 ```{r}
-#|fig-cap: Normal distribution with mean = 2 and sd = 1. The red line is an 'observation'
-#|label: fig-simple-rnorm-obs2
+#| fig-cap: Normal distribution with mean = 2 and sd = 1. The red line is an 'observation'
+#| label: fig-simple-rnorm-obs2
 plot(density(rnorm(10000, mean = 2, sd = 1)), xlab = "y", main = "mean = 2, sd = 1")
 abline(v = y_i, col = "red")
 ```
@@ -152,8 +152,8 @@ The relationship between the different mean values and the likelihood is a curve
 Important: This curve may look like a probability density function (PDF) but it is not! Why? Because the area under the curve does not sum to 1. As a result 1) we use the term likelihood rather than density and 2) while the curve gives us the most likelihood estimate for the parameter, it does **not** give us the PDF of the parameter (even if we really really want the PDF, Bayesian statistics are needed for that)
 
 ```{r}
-#|fig-cap: The likelihood curve over different values of the mean
-#|label: fig-ll1
+#| fig-cap: The likelihood curve over different values of the mean
+#| label: fig-ll1
 plot(x = mean_values, y = LL, type = "o", xlab = "mean", ylab = "log(likelihood)")
 ```
 
@@ -175,8 +175,8 @@ We just calculated the **likelihood of the data GIVEN our model** where our mode
 For use in R tools that find the minimum of a function, find the minimum of the negative log likelihood (@fig-ll2)
 
 ```{r}
-#|fig-cap: The likelihood curve over different values of the mean with minimium shown
-#|label: fig-ll2
+#| fig-cap: The likelihood curve over different values of the mean with minimium shown
+#| label: fig-ll2
 plot(x = mean_values, y = -LL, type = "o", xlab = "mean", ylab = "-1 * log(likelihood)") #Notice negative sign
 abline(v = mean(y), col = "red")
 ```
@@ -230,8 +230,8 @@ y <- rnorm(length(y_true), mean = y_true, sd = sd_true) #This is the "fake data"
 The fake data are shown in @fig-fake-data1.
 
 ```{r}
-#|fig-cap: The "fake" data used in the following analysis
-#|label: fig-fake-data1
+#| fig-cap: The "fake" data used in the following analysis
+#| label: fig-fake-data1
 plot(x, y)
 ```
 
@@ -358,8 +358,8 @@ y <- rnorm(length(y_true), mean = y_true, sd = sd_scalar_true * y) #This is the 
 The fake data are shown in @fig-fake-data2.
 
 ```{r}
-#|fig-cap: The "fake" data used in the following analysis
-#|label: fig-fake-data2
+#| fig-cap: The "fake" data used in the following analysis
+#| label: fig-fake-data2
 plot(x, y)
 ```
 
@@ -405,8 +405,8 @@ y <- rnorm(length(y), mean = y, sd = sd_true)
 The fake data are shown in @fig-fake-data3.
 
 ```{r}
-#|fig-cap: The "fake" data used in the following analysis
-#|label: fig-fake-data3
+#| fig-cap: The "fake" data used in the following analysis
+#| label: fig-fake-data3
 plot(x, y)
 ```
 
@@ -446,8 +446,8 @@ c(par_true, sd_true)
 @fig-data-curve shows the curve from the optimized parameters with the observations
 
 ```{r}
-#|fig-cap: the curve from the optimized parameters with the observations
-#|label: fig-data-curve
+#| fig-cap: the curve from the optimized parameters with the observations
+#| label: fig-data-curve
 plot(x, y)
 curve(pred_mm(x, par = fit$par), from = 0.1, to = 10, add = TRUE)
 ```
@@ -464,9 +464,9 @@ fit <- optim(par = c(0.2, 1.5, 1), fn = LL_fn, x = x, y = y)
 ```
 
 ```{r}
-#|echo: false
-#|fig-cap: the curve from the optimized parameters with the observations for a gamma ditribution data model.
-#|label: fig-data-curve-gamma
+#| echo: false
+#| fig-cap: the curve from the optimized parameters with the observations for a gamma ditribution data model.
+#| label: fig-data-curve-gamma
 plot(x, y)
 curve(pred_mm(x, par = fit$par), from = 0.1, to = 10, add = TRUE)
 ```

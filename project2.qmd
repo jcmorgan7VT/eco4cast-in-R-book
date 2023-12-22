@@ -1,14 +1,12 @@
 # Project 2
 
-Project 2 challenges you to 
+Project 2 challenges you to
 
-- Either modify the process model to better represent an ecosystem process or include a new process that is missing, or
-- Apply the process model to a new NEON site.
-
+-   Either modify the process model to better represent an ecosystem process or include a new process that is missing, or
+-   Apply the process model to a new NEON site.
 
 You are ask to provide a kitted R markdown (or Quarto) document with text, code, and plots following:
 
-- Your forest process model
-- Parameter estimation either using likelihood, Bayesian batch, or particle filter methods
-- A 30-day ahead forecast using your model
-
+-   Your forest process model
+-   Parameter estimation either using likelihood, Bayesian batch, or particle filter methods
+-   A 30-day ahead forecast using your model
