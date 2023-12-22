@@ -510,7 +510,7 @@ mle_LL_more <- LL_more[which.max(LL_more)]
 ```{r}
 #| echo: false
 #| fig-cap: Likilihood curve with the two-unit support intervals shown
-#| label: @fig-ll-unc
+#| label: fig-ll-unc
 
 #Plot the likelihood functions
 plot(x = mean_values, y = LL_small, type = "l", xlab = "mean", ylab = "log-likelihood") #Notice negative sign
