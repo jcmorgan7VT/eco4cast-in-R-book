@@ -132,6 +132,7 @@ parameter_df <- parameters_to_df(params_weighted, sim_dates, sim_name = "paramet
 ```{r}
 #| warning: false
 #| echo: false
+#| fig-cap: Post-analysis predictions from the forest model (median and 90% CI) with data assimilation using the particle filter. Observations used in data assimilation are denoted as red dots.
 output_df |> 
   summarise(median = median(prediction),
             upper = quantile(prediction, 0.95, na.rm = TRUE),
@@ -174,12 +175,14 @@ The use of the loop back requires combining the "historial" weather and future w
 inputs_past <- get_historical_met(site = "TALL", sim_dates[1:(look_back-2)], use_mean = FALSE)
 inputs_future <- get_forecast_met(site = "TALL", sim_dates[(look_back-1):length(sim_dates)], use_mean = FALSE)
 inputs <- bind_rows(inputs_past, inputs_future)
+inputs_ensemble <- assign_met_ensembles(inputs, ens_members)
 ```
 
 The combined weather drivers look like the following. The vertical line is where the look back period transitions to the future.
 
 ```{r}
 #| echo: false
+#| fig-cap: NOAA Global Ensemble Forecasting System 31 ensemble members for the two drivers in the forest model.  The look-back and forecast periods are included with the transition denoted with a vertical line.
   ggplot(inputs, aes(x = datetime, y = prediction, group = parameter)) +
   geom_line() +
   geom_vline(aes(xintercept = reference_datetime)) +
@@ -244,6 +247,7 @@ Visualize forecast. The vertical line is where the look back period transitions 
 ```{r}
 #| echo: false
 #| warning: false
+#| fig-cap: Forecast median and 90% CI.  The look-back and forecast periods are included with the transition denoted with a vertical line.
 
 output_df |> 
   summarise(median = median(prediction),
