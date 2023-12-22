@@ -1,4 +1,6 @@
-# Parameter calibration: Intro to probability and likelihood
+# Parameter calibration: likelihood methods
+
+## Intro to probability and likelihood
 
 ```{r}
 #| echo: FALSE

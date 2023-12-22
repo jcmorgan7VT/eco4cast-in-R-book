@@ -1,4 +1,6 @@
-# Parameter calibration: Intro to Bayesian statistics
+# Parameter calibration: Bayesian methods
+
+## Introduction to Bayesian statistics
 
 ```{r}
 #| echo: FALSE
