@@ -21,24 +21,6 @@ load("data/PF_analysis_0.Rdata")
 ens_members <- dim(analysis$forecast)[2]
 ```
 
-```{r}
-params <- list()
-params$alpha <- rep(0.02, ens_members)
-params$SLA <- rep(4.74, ens_members)
-params$leaf_frac <- rep(0.315, ens_members)
-params$Ra_frac <- rep(0.5, ens_members)
-params$Rbasal <- rep(0.002, ens_members)
-params$Q10 <- rep(2.1, ens_members)
-params$litterfall_rate <- rep(1/(2.0*365), ens_members) #Two year leaf lifespan
-params$litterfall_start <- rep(200, ens_members)
-params$litterfall_length<- rep(70, ens_members)
-params$mortality <- rep(0.00015, ens_members) #Wood lives about 18 years on average (all trees, branches, roots, course roots)
-params$sigma.leaf <- rep(0.1, ens_members) #0.01 
-params$sigma.stem <- rep(0.1, ens_members) #0.01 ## wood biomass
-params$sigma.soil <- rep(0.1, ens_members)# 0.01
-params <- as.data.frame(params)
-```
-
 ## Step 2: Generate forecast
 
 This example introduces the concept of a "look back". This is stepping back in the past to restart the particle filter so that it can assimilate any data that has been make avialable since the last time that time period was run through the particle filter. The look back is important because many observations have delays before becoming avialable (called latency). NEON flux data can have a 5 day to 1.5 month latency. MODIS LAI is a 8 day average so has an 8-day latency.
@@ -81,12 +63,17 @@ The combined weather drivers look like the following. The vertical line is where
   theme_bw()
 ```
 
+Get the constant params from the analysis (so that we are sure to use the same parameters that were used in the previous analysis) and initialize the parameters that are being fit by the particle filter with the values from the analysis.
 ```{r}
+params <- analysis$params
+
 num_pars <- 2
 fit_params <- array(NA, dim = c(length(sim_dates) ,ens_members , num_pars))
 fit_params[1, , 1] <- analysis$fit_params[index, ,1]
 fit_params[1, , 2] <- analysis$fit_params[index, ,1]
 ```
+
+Initialize the states with the states from the analysis that occurred on the index simulation date in the previous run through the particle filter.
 
 ```{r}
 #Set initial conditions
@@ -98,6 +85,8 @@ forecast[1, , 3] <- analysis$forecast[index, ,3]
 wt <- array(1, dim = c(length(sim_dates), ens_members))
 wt[1, ] <- analysis$wt[index, ]
 ```
+
+Run the particle filter (over the look back days) that transitions to a forecast (which is the same as the particle filter without data)
 
 ```{r}
 for(t in 2:length(sim_dates)){
@@ -158,6 +147,7 @@ output_df |>
 Save the states and weights for use as initial conditions in the next forecast.
 
 ```{r}
+analysis$params <- params
 save(analysis, file = "data/PF_analysis_1.Rdata")
 ```
 

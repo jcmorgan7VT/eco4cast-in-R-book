@@ -184,6 +184,6 @@ parameter_df |>
 ```
 Save the 
 ```{r}
-analysis <- list(forecast = forecast, fit_params = fit_params, wt = wt, sim_dates = sim_dates)
+analysis <- list(forecast = forecast, fit_params = fit_params, wt = wt, sim_dates = sim_dates, params = params)
 save(analysis, file = "data/PF_analysis_0.Rdata")
 ```
