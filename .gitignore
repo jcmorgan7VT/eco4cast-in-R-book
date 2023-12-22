@@ -8,5 +8,4 @@
 .DS_Store
 
 data/neon_raw
-data/PF_analysis*
 data/terrestrial_daily*

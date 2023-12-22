@@ -1,4 +1,4 @@
-# Data assimilation: particle filter 2
+# Data assimilation: Applying to process model {#sec-pf2}
 
 ```{r}
 #| echo: FALSE
@@ -181,4 +181,9 @@ parameter_df |>
   geom_line(aes(y = median)) +
   facet_wrap(~variable, scale = "free") +
   theme_bw()
+```
+Save the 
+```{r}
+analysis <- list(forecast = forecast, fit_params = fit_params, wt = wt, sim_dates = sim_dates)
+save(analysis, file = "data/PF_analysis_0.Rdata")
 ```

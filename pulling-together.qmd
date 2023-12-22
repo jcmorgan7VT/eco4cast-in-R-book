@@ -10,150 +10,17 @@ library(tidyverse)
 library(lubridate)
 ```
 
-## Example of the forecast and analysis cycle
-
-### Step 1: Set initial conditions and parameter distributions
+## Step 1: Set initial conditions and parameter distributions
 
 We will start our forecast - analysis cycle by running the model with a particle filter over a period of time in the past. This is designed to spin-up the model and set the initial states and parameters for a forecast.
 
-```{r}
-ens_members <- 100
-sim_dates <- seq(Sys.Date()-365, Sys.Date()-1, by = "1 day")
-```
-
-```{r}
-inputs <- get_historical_met(site = "TALL", sim_dates, use_mean = FALSE)
-inputs_ensemble <- assign_met_ensembles(inputs, ens_members)
-```
-
-```{r}
-params <- list()
-params$alpha <- rep(0.02, ens_members)
-params$SLA <- rep(4.74, ens_members)
-params$leaf_frac <- rep(0.315, ens_members)
-params$Ra_frac <- rep(0.5, ens_members)
-params$Rbasal <- rep(0.002, ens_members)
-params$Q10 <- rep(2.1, ens_members)
-params$litterfall_rate <- rep(1/(2.0*365), ens_members) #Two year leaf lifespan
-params$litterfall_start <- rep(200, ens_members)
-params$litterfall_length<- rep(70, ens_members)
-params$mortality <- rep(0.00015, ens_members) #Wood lives about 18 years on average (all trees, branches, roots, course roots)
-params$sigma.leaf <- rep(0.1, ens_members) #0.01 
-params$sigma.stem <- rep(1, ens_members) #0.01 ## wood biomass
-params$sigma.soil <- rep(1, ens_members)# 0.01
-params <- as.data.frame(params)
-```
-
-```{r}
-obs <- read_csv("data/site_carbon_data.csv", show_col_types = FALSE)
-state_init <- rep(NA, 3)
-
-state_init[1] <- obs |> 
-  filter(variable == "lai",
-         datetime %in% sim_dates) |> 
-  na.omit() |> 
-  slice(1) |> 
-  mutate(observation = observation / (mean(params$SLA) * 0.1)) |> 
-  pull(observation)
-
-state_init[2] <- obs |> 
-  filter(variable == "wood") |> 
-  na.omit() |> 
-  slice(1) |> 
-  pull(observation)
-
-state_init[3] <- obs |> 
-  filter(variable == "som") |> 
-  na.omit() |>  
-  slice(1) |> 
-  pull(observation)
-```
-
-```{r}
-#Set initial conditions
-forecast <- array(NA, dim = c(length(sim_dates), ens_members, 12)) #12 is the number of outputs
-forecast[1, , 1] <- rnorm(ens_members, state_init[1], sd = 0.1)
-forecast[1, , 2] <- rnorm(ens_members, state_init[2], sd = 10)
-forecast[1, , 3] <- rnorm(ens_members, state_init[2], sd = 20)
-
-wt <- array(1, dim = c(length(sim_dates), ens_members))
-```
-
-```{r}
-fit_params_table <- read_csv("data/saved_parameter_chain.csv", show_col_types = FALSE) |> 
-  pivot_wider(names_from = parameter, values_from = value)
-
-num_pars <- 2
-fit_params <- array(NA, dim = c(length(sim_dates) ,ens_members , num_pars))
-samples <- sample(1:nrow(fit_params_table), size = ens_members, replace = TRUE)
-fit_params[1, , 1] <- fit_params_table$alpha[samples]
-fit_params[1, , 2] <- fit_params_table$Rbasal[samples]
-```
-
-```{r}
-for(t in 2:length(sim_dates)){
-  
-  fit_params[t, , 1] <- rnorm(ens_members, fit_params[t-1, ,1], sd = 0.0005)
-  fit_params[t, , 2] <- rnorm(ens_members, fit_params[t-1, ,2], sd = 0.00005)
-  
-  params$alpha  <- fit_params[t, , 1]
-  params$Rbasal  <- fit_params[t, , 2]
-  
-  forecast[t, , ]  <- forest_model(t, 
-                                   states = matrix(forecast[t-1 , , 1:3], nrow = ens_members) , 
-                                   parms = params, 
-                                   inputs = matrix(inputs_ensemble[t , , ], nrow = ens_members))
-  
-  analysis <- particle_filter(t, forecast, obs, sim_dates, wt, fit_params)
-  
-  forecast <- analysis$forecast
-  fit_params <- analysis$fit_params
-  wt <- analysis$wt
-}
-```
-
-```{r}
-save(analysis, file = "data/PF_analysis_0.Rdata")
-```
-
-```{r}
-forecast_weighted <- array(NA, dim = c(length(sim_dates), ens_members, 12))
-params_weighted <- array(NA, dim = c(length(sim_dates) ,ens_members , num_pars))
-for(t in 1:length(sim_dates)){
-  wt_norm <-  wt[t, ]/sum(wt[t, ])
-  resample_index <- sample(1:ens_members, ens_members, replace = TRUE, prob = wt_norm ) 
-  forecast_weighted[t, , ] <- forecast[t, resample_index, 1:12] 
-  params_weighted[t, , ] <- fit_params[t,resample_index, ] 
-}
-output_df <- output_to_df(forecast_weighted, sim_dates, sim_name = "parameter_unc")
-parameter_df <- parameters_to_df(params_weighted, sim_dates, sim_name = "parameter_unc", param_names = c("alpha","Rbasal"))
-```
-
-```{r}
-#| warning: false
-#| echo: false
-#| fig-cap: Post-analysis predictions from the forest model (median and 90% CI) with data assimilation using the particle filter. Observations used in data assimilation are denoted as red dots.
-output_df |> 
-  summarise(median = median(prediction),
-            upper = quantile(prediction, 0.95, na.rm = TRUE),
-            lower = quantile(prediction, 0.05, na.rm = TRUE), .by = c("datetime", "variable")) |> 
-  left_join(obs, by = c("datetime", "variable")) |> 
-  filter(variable %in% c("nee","wood","som","lai")) |> 
-  ggplot(aes(x = datetime)) +
-  geom_ribbon(aes(ymin = upper, ymax = lower), alpha = 0.7) +
-  geom_line(aes(y = median)) +
-  geom_point(aes(y = observation), color = "red") +
-  facet_wrap(~variable, scale = "free") +
-  theme_bw()
-```
-
-### Step 2: Generate forecaset
-
-Now we are going to generate a forecast that started from our 1 year spin up completed above. First load the analysis data into memory so that we can access the initial conditions and parameters in it.
+Now we are going to generate a forecast that started from our 1 year spin up completed in [Chapter -@sec-pf2]. First load the analysis data into memory so that we can access the initial conditions and parameters in it.
 
 ```{r}
 load("data/PF_analysis_0.Rdata")
 ```
+
+## Step 2: Generate forecast
 
 This example introduces the concept of a "look back". This is stepping back in the past to restart the particle filter so that it can assimilate any data that has been make avialable since the last time that time period was run through the particle filter. The look back is important because many observations have delays before becoming avialable (called latency). NEON flux data can have a 5 day to 1.5 month latency. MODIS LAI is a 8 day average so has an 8-day latency.
 
@@ -234,7 +101,7 @@ for(t in 2:length(sim_dates)){
 }
 ```
 
-### Step 3: Save forecast and data assimiliation output
+## Step 3: Save forecast and data assimiliation output
 
 Convert forecast to a dataframe.
 
@@ -299,7 +166,7 @@ and submit to the Challenge
 neon4cast::submit(file_name, ask = FALSE)
 ```
 
-### Step 4: Repeat Steps 2 -3
+## Step 4: Repeat Steps 2 -3
 
 Wait for a day to pass and then use yesterday's analysis today for initial conditions and parameter distributions
 

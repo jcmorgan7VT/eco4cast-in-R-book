@@ -1,6 +1,6 @@
 # Visualizing and evaluating forecasts
 
-The fourth forecast generation assignment will challenge analyze the automated forecasts that you submitted as part of @third-forecast.qmd#sec-third-forecast. The assign uses the module in Freya Olsson's tutorial that provides code to access the automatically scored forecasts. You will add code to your respository that generates plots.
+The fourth forecast generation assignment will challenge analyze the automated forecasts that you submitted as part of @sec-third-forecast. The assign uses the module in Freya Olsson's tutorial that provides code to access the automatically scored forecasts. You will add code to your respository that generates plots.
 
 <https://github.com/OlssonF/NEON-forecast-challenge-workshop/blob/main/Analyse_scores/Get_scores_tutorial.Rmd>
 
