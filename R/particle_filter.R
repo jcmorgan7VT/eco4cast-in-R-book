@@ -1,8 +1,8 @@
-particle_filter <- function(forecast, obs, sim_dates, wt, fit_params){
+particle_filter <- function(t, forecast, obs, sim_dates, wt, fit_params){
 
   curr_obs <- obs |>
     filter(datetime == sim_dates[t],
-           variable %in% c("nee","lai"))
+           variable %in% c("lai", "wood", "som", "nee"))
 
   if(nrow(curr_obs) > 0){
 
@@ -12,7 +12,7 @@ particle_filter <- function(forecast, obs, sim_dates, wt, fit_params){
     combined_output_obs <- combine_model_obs(forecast_df,
                                              obs = curr_obs,
                                              variables = c("lai", "wood", "som", "nee"),
-                                             sds = c(0.1, 20, 20, 0.005))
+                                             sds = c(0.1, 1, 20, 0.005))
 
     likelihood <- rep(0, ens_members)
     for(ens in 1:ens_members){
