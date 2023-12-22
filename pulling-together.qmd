@@ -147,15 +147,15 @@ output_df |>
 
 ### Step 2: Generate forecaset
 
-Now we are going to generate a forecast that started from our 1 year spin up completed above.  First load the analysis data into memory so that we can access the initial conditions and parameters in it.
+Now we are going to generate a forecast that started from our 1 year spin up completed above. First load the analysis data into memory so that we can access the initial conditions and parameters in it.
 
 ```{r}
 load("data/PF_analysis_0.Rdata")
 ```
 
-This example introduces the concept of a "look back".  This is stepping back in the past to restart the particle filter so that it can assimilate any data that has been make avialable since the last time that time period was run through the particle filter.  The look back is important because many observations have delays before becoming avialable (called latency).  NEON flux data can have a 5 day to 1.5 month latency.  MODIS LAI is a 8 day average so has an 8-day latency.  
+This example introduces the concept of a "look back". This is stepping back in the past to restart the particle filter so that it can assimilate any data that has been make avialable since the last time that time period was run through the particle filter. The look back is important because many observations have delays before becoming avialable (called latency). NEON flux data can have a 5 day to 1.5 month latency. MODIS LAI is a 8 day average so has an 8-day latency.
 
-Here we use a look back of 14-days.  Since our forecast horizon is 30-days in the future, the total days of the simulation is 14 + 30.  Our reference_datetime is today.
+Here we use a look back of 14-days. Since our forecast horizon is 30-days in the future, the total days of the simulation is 14 + 30. Our reference_datetime is today.
 
 We will find the first day of our simulation (14 days ago) in the last saved analysis and use this for initial conditions.
 
@@ -175,7 +175,7 @@ inputs_future <- get_forecast_met(site = "TALL", sim_dates[look_back:length(sim_
 inputs <- bind_rows(inputs_past, inputs_future)
 ```
 
-The combined weather drivers look like the following.  The vertical line is where the look back period transitions to the future.
+The combined weather drivers look like the following. The vertical line is where the look back period transitions to the future.
 
 ```{r}
 #| echo: false
@@ -233,7 +233,6 @@ for(t in 2:length(sim_dates)){
 
 Convert forecast to a dataframe.
 
-
 ```{r}
 output_df <- output_to_df(forecast, sim_dates, sim_name = "simple_forest_model")
 ```
@@ -258,7 +257,6 @@ output_df |>
   geom_vline(aes(xintercept = reference_datetime)) +
   facet_wrap(~variable, scale = "free")
 ```
-
 
 Save the states and weights for use as initial conditions in the next forecast.
 
@@ -301,7 +299,6 @@ Wait for a day to pass and then use yesterday's analysis today for initial condi
 ```{r}
 load("data/PF_analysis_1.Rdata")
 ```
-
 
 ## Code example of forecast analysis cycle implimented in a more complex forest model
 
