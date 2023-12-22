@@ -71,7 +71,7 @@ The combined weather drivers look like the following. The vertical line is where
   theme_bw()
 ```
 
-Get the constant params from the analysis (so that we are sure to use the same parameters that were used in the previous analysis) and initialize the parameters that are being fit by the particle filter with the values from the analysis.
+Get the constant `params` from the analysis (so that we are sure to use the same parameters that were used in the previous analysis) and initialize the parameters that are being fit by the particle filter with the values from the analysis.
 ```{r}
 params <- analysis$params
 

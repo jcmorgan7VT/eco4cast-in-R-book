@@ -13,9 +13,9 @@ The model is a 0-D model (no horizontal and vertical dimensions) that runs at a 
 
 ![Conceptual diagram of the forest model](img/model_diagram.png){fig-align="center"}   
 
-Photosynthesis (gross primary productivity; gpp) is modeled using a light-use efficiency approach.  Photosynthetically Active Radiation (PAR) is converted to absorbed PAR by multiplying by the proportion absorbed by leaf area index (LAI).  As LAI increases more light is absorbed.  The absorbed PAR is multipled by a light use efficiency parameter (`alpha`).  LAI is determined by multiplying leave carbon by the specific leaf area parameter (`SLA`).
+Photosynthesis (gross primary productivity; gpp) is modeled using a light-use efficiency approach.  Photosynthetically Active Radiation (PAR) is converted to absorbed PAR by multiplying by the proportion absorbed by leaf area index (LAI).  As LAI increases more light is absorbed.  The absorbed PAR is multiplied by a light use efficiency parameter (`alpha`).  LAI is determined by multiplying leave carbon by the specific leaf area parameter (`SLA`).
 
-Autotrophic respiration (`ra`) is modeled as a constant proportion of GPP using the `Ra_frac` parameter. Net primary productivty (`npp`) is the carbon that is not used for autotrophic respiration (`gpp - ra`).  
+Autotrophic respiration (`ra`) is modeled as a constant proportion of GPP using the `Ra_frac` parameter. Net primary productivity (`npp`) is the carbon that is not used for autotrophic respiration (`gpp - ra`).  
 
 NPP is allocated to the two vegetation carbon states (`wood` and `leaves`) based on a constant proportion parameter. `leaf_frac` is the proportion that is allocated to leaves and `1-leaf_frac` is the allocation to wood.
 
