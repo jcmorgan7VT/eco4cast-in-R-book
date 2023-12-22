@@ -19,6 +19,7 @@ Now we are going to generate a forecast that started from our 1 year spin up com
 ```{r}
 load("data/PF_analysis_0.Rdata")
 ens_members <- dim(analysis$forecast)[2]
+fit_params_table
 ```
 
 ## Step 2: Generate forecast
@@ -34,10 +35,15 @@ look_back <- 14
 horizon <- 30
 reference_datetime <- Sys.Date()
 sim_dates <- seq(reference_datetime - look_back, length.out = look_back + horizon, by = "1 day")
+```
+
+We will fit the time index of the previous forecast that corresponds to the start of our look back + forecast simulation dates
+
+```{r}
 index <- which(analysis$sim_dates == sim_dates[1])
 ```
 
-The use of the loop back requires combining the "historial" weather and future weather into a single input data frame.
+The use of the loop back requires combining the "historical" weather and future weather into a single input data frame.
 
 ```{r}
 inputs_past <- get_historical_met(site = "TALL", sim_dates[1:(look_back-2)], use_mean = FALSE)
@@ -61,7 +67,6 @@ The combined weather drivers look like the following. The vertical line is where
 ```{r}
 num_pars <- 2
 fit_params <- array(NA, dim = c(length(sim_dates) ,ens_members , num_pars))
-samples <- sample(1:nrow(fit_params_table), size = ens_members, replace = TRUE)
 fit_params[1, , 1] <- analysis$fit_params[index, ,1]
 fit_params[1, , 2] <- analysis$fit_params[index, ,1]
 ```
