@@ -18,6 +18,7 @@ Now we are going to generate a forecast that started from our 1 year spin up com
 
 ```{r}
 load("data/PF_analysis_0.Rdata")
+ens_members <- dim(forecast)[2]
 ```
 
 ## Step 2: Generate forecast
