@@ -198,4 +198,6 @@ load("data/PF_analysis_1.Rdata")
 
 ## Code example of forecast analysis cycle implimented in a more complex forest model
 
-<https://github.com/mdietze/FluxCourseForecast>
+I recommend looking at a [tutorial](https://github.com/mdietze/FluxCourseForecast) created by Mike Dietze that has many of the particle filter concepts used here.  It is a similar process model that runs at the 30-minute time-step.  The tutorial is more advanced in its use of priors on the parameters and shows how to forecast across multiple sites.  
+
+
