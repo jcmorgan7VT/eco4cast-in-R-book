@@ -39,6 +39,7 @@ In this section, we will be calculating carbon in live and dead trees at a NEON 
 The code below read the data directly from NEON's cloud storage. Since the columns may change between the official releases and the provisional data, they need to be read in separately before being combined.
 
 ```{r}
+#| message: false
 
 index <-  neonstore:::neon_data(product = "DP1.10098.001",
                                 site = site,
@@ -177,9 +178,11 @@ measurement_dates <- tree_live_carbon |>
     summarise(plot_kgCm2 = sum(treeC_kgCm2, na.rm = TRUE), .by = c("plotID", "measure_date"))
 ```
 
-Visualize the plot level biomass
+@fig-plot-live-carbon plot level carbon in living trees
 
 ```{r}
+#| fig-cap: Plot level carbon in living trees for the focal NEON site
+#| fig-link: fig-plot-live-carbon
 ggplot(plot_live_carbon, aes(x = measure_date, y = plot_kgCm2, color = plotID)) + 
   geom_point() +
   geom_line() +
@@ -203,9 +206,11 @@ site_live_carbon <- plot_live_carbon |>
               sd_kgCperm2 = sd(plot_kgCm2))
 ```
 
-Plot the site level carbon
+@fig-site-live-carbon is the site level carbon calculated by taking the mean only the plots that were measured each year
 
 ```{r}
+#| fig-cap: Site level carbon in living trees for the focal NEON site
+#| fig-link: fig-site-live-carbon
 ggplot(site_live_carbon, aes(x = measure_date, y = mean_kgCperm2)) + 
   geom_point() + 
   geom_errorbar(aes(ymin=mean_kgCperm2-sd_kgCperm2, ymax=mean_kgCperm2+sd_kgCperm2), width=.2,
@@ -250,16 +255,18 @@ measurement_dates <- tree_dead_carbon |>
     summarise(plot_kgCm2 = sum(treeC_kgCm2, na.rm = TRUE), .by = c("plotID", "measure_date"))
 ```
 
-Visualize plot level carbon
+@fig-plot-dead-carbon plot level carbon in dead trees.
 
 ```{r}
+#| fig-cap: Plot level carbon in dead trees for the focal NEON site
+#| fig-link: fig-plot-dead-carbon
 ggplot(plot_dead_carbon, aes(x = measure_date, y = plot_kgCm2, color = plotID)) + 
   geom_point() +
   geom_line() +
   theme_bw()
 ```
 
-Calculate site level carbon
+Calculate site level carbon in dead trees from the plots measured each year.
 
 ```{r}
  site_dead_carbon <- plot_dead_carbon %>%
@@ -269,9 +276,11 @@ Calculate site level carbon
               sd_kgCperm2 = sd(plot_kgCm2))
 ```
 
-Visualize site level carbon
+@fig-site-dead-carbon is the site level carbon.
 
 ```{r}
+#| fig-cap: Site level carbon in dead trees for the focal NEON site
+#| fig-link: fig-site-dead-carbon
 ggplot(site_dead_carbon, aes(x = measure_date, y = mean_kgCperm2)) + 
   geom_point() +
   geom_line() +
@@ -283,6 +292,7 @@ ggplot(site_dead_carbon, aes(x = measure_date, y = mean_kgCperm2)) +
 The data needed to calculate carbon in trees that are laying on the ground are in two NEON data products.
 
 ```{r}
+#| message: false
 
 index <-  neonstore:::neon_data(product = "DP1.10014.001",
                                 site = site,
@@ -339,8 +349,6 @@ for (i in 1:nrow(log_table_filter)){
 site_cwd_carbon <- log_table_filter %>%
   summarize(mean_kgCperm2 = .5 * sum(gcm3, na.rm = TRUE) * .1) |> 
   mutate(year = unique(log_table_filter$yearBoutBegan))
-
-site_cwd_carbon
 ```
 
 ## Calculate carbon in fine roots
@@ -348,6 +356,8 @@ site_cwd_carbon
 Here we are going to calculate the carbon stored in fine roots using the root chemistry data product. We will calculate the carbon in both dead and alive roots. Though we are interested mostly in live roots, at the time of writing this, there the 2021 NEON data for our site does not have `rootStatus` data available. Thus we will use historical data to compute an estimate of the ratio, so that we don't have to throw away perfectly good information.
 
 ```{r}
+#| message: false
+
 ## root chemistry data product
 index <-  neonstore:::neon_data(product = "DP1.10067.001",
                                 site = site,
@@ -415,6 +425,7 @@ site_roots <- rootmass %>%
 {{< video https://www.youtube.com/embed/khfIC5TpyPQ?si=f1ldTnTVpA8UWbb7 >}}
 
 ```{r}
+#| message: false
 #Download bieogeochemistry soil data to get carbon concentration
 #data_product1 <- "DP1.00097.001"
 #Download physical soil data to get bulk density
@@ -463,13 +474,13 @@ horizon_combined <- inner_join(horizon_carbon,bulk_density, by = "horizonName") 
            horizon_C_kg_per_m2 = horizon_C_g_percm2 * 10000 / 1000) %>% #Units are g C per m2
     select(-CTot_g_per_g_soil,-horizon_C_g_percm2) %>%
     arrange(biogeoTopDepth)
-  
-site_soil_carbon <- horizon_combined %>% 
-    summarize(soilC_gC_m2 = sum(horizon_C_kg_per_m2)) |> 
-  mutate(year = year)
 ```
 
+The soil carbon can be visualized by depth @fig-som-horizon.
+
 ```{r}
+#|fig-cap: Soil carbon by depth for the site from the megapit.
+#|fig-link: fig-som-horizon
 ggplot(horizon_combined, map = aes(-biogeoTopDepth,horizon_C_kg_per_m2)) +
   geom_line() +
   geom_point() +
@@ -477,7 +488,12 @@ ggplot(horizon_combined, map = aes(-biogeoTopDepth,horizon_C_kg_per_m2)) +
   coord_flip()  +
   theme_bw()
 ```
+Total soil carbon is the sum across the depths.
 
+```{r}
+site_soil_carbon <- horizon_combined %>% 
+    summarize(soilC_gC_m2 = sum(horizon_C_kg_per_m2))
+```
 ## Combine together
 
 ```{r}
@@ -507,14 +523,15 @@ site_soil_carbon <- site_soil_carbon |>
   mutate(datetime = as_date(paste(year, "01-01"))) |> 
   select(datetime, variable, mean_kgCperm2)
 
-
 total_carbon_components <- bind_rows(site_live_carbon, site_dead_carbon, site_cwd_carbon, site_roots, site_soil_carbon)
 ```
 
-Plot the different pools of carbon
+The different pools of carbon can be plotted on the same figure to compare the magnitudes @fig-all-site-carbon.  
 
 ```{r}
-
+#|warning: false
+#|fig-cap: Site-leve carbon stocks at the focal NEON site
+#|fig-link: fig-all-site-carbon 
 total_carbon_components |> 
   ggplot(aes(x = datetime, y = mean_kgCperm2, color = variable)) + 
   geom_point() +
@@ -535,9 +552,11 @@ total_carbon_simple <- total_carbon_components |>
 
 ## MODIS LAI
 
+We can use leaf area index (LAI) from the MODIS satellite sensor to constrain and evaluate LAI predictions.  MODIS LAI product is a 8-day mean for a 500m grid cell.
+
 {{< video https://www.youtube.com/embed/n9t_ANefhjU?si=U4OYgoq83Uu2nu57 >}}
 
-Download the leaf area index
+Download the leaf area index for the focal NEON site using the `MODISTools` package.
 
 ```{r}
 lai <- MODISTools::mt_subset(product = "MCD15A2H",
@@ -563,10 +582,12 @@ lai_cleaned <- lai |>
   select(datetime, variable, observation)
 ```
 
-Plot MODIS LAI
+@fig-modis-lai is the LAI for the focal NEON site.
 
 ```{r}
 #| warning: false
+#| fig-cap: MODIS LAI for the 500m grid-cell that includes the flux tower
+#| fig-link: fig-modis-lai
 lai_cleaned |> 
   ggplot(aes(x = datetime, y = observation)) +
   geom_point() +
@@ -590,15 +611,21 @@ flux <- read_csv(url, show_col_types = FALSE) |>
   select(datetime, variable, observation)
 ```
 
+@fig-nee-obs is the daily mean NEE for the focal NEON site.  
+
 ```{r}
 #| warning: false
 #| echo: false
+#| fig-cap: Daily mean NEE from the flux tower at the focal NEON site
+#| fig-link: fig-nee-obs
 ggplot(flux, aes(x = datetime, y = observation)) + 
   geom_point()  +
   theme_bw()
 ```
 
 ## Combine together to create data contraints
+
+The units of the carbon stocks and nee need to be converted to the units of the forest process model.  The carbon stocks are converted from kgC/m2 to MgC/ha and nee is converted from gC/m2/day to MgC/ha/day.
 
 ```{r}
 obs <- total_carbon_simple |> 
@@ -610,14 +637,20 @@ obs <- total_carbon_simple |>
 
 ```
 
+The combined data with the variable names converted to the names used in the forest process model @fig-combined-all.
+
 ```{r}
 #| warning: false
+#| fig-link: fig-combined-all
+#| fig-cap: The data avialable to constrain the forest process model.
 obs |> 
   ggplot(aes(x = datetime, y = observation)) + 
   geom_point() +
   facet_wrap(~variable, scale = "free") +
   theme_bw()
 ```
+
+Save the observations to a csv file for use in later chapters.
 
 ```{r}
 write_csv(obs, "data/site_carbon_data.csv")

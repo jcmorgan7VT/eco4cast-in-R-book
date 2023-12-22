@@ -9,9 +9,9 @@ library(lubridate)
 
 ## Overview of model
 
-The model is a 0-D model (no horizontal and vertical dimensions) that runs at a 1 day timestep.  It models carbon using MgC/ha.  
+The model @fig-process-model is a 0-D model (no horizontal and vertical dimensions) that runs at a 1 day timestep.  It models carbon using MgC/ha.  
 
-![Conceptual diagram of the forest model](img/model_diagram.png){fig-align="center"}   
+![Conceptual diagram of the forest model](img/model_diagram.png){fig-process-model fig-align="center"}   
 
 Photosynthesis (gross primary productivity; gpp) is modeled using a light-use efficiency approach.  Photosynthetically Active Radiation (PAR) is converted to absorbed PAR by multiplying by the proportion absorbed by leaf area index (LAI).  As LAI increases more light is absorbed.  The absorbed PAR is multiplied by a light use efficiency parameter (`alpha`).  LAI is determined by multiplying leave carbon by the specific leaf area parameter (`SLA`).
 
@@ -187,11 +187,13 @@ The `output_to_df` converts the output into a data frame and is located in the `
 output_df <- output_to_df(output, sim_dates, sim_name = "baseline")
 ```
 
-Plot the data frame.
+@fig-determ-output is a plot of the output data frame.
 
 ```{r}
 #| warning: FALSE
 #| message: FALSE
+#| fig-cap: Output without uncertainty from the process model 
+#| fig-link: fig-determ-output
 output_df |> 
   filter(variable %in% c("lai", "wood", "som", "nee")) |> 
   ggplot(aes(x = datetime)) +
