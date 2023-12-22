@@ -56,7 +56,8 @@ The rescaled likelihood looks like this
 d <- tibble(x = x,
             likelihood = density_likelihood_rescaled)
 ggplot(d, aes(x = x, y = likelihood)) +
-  geom_line()
+  geom_line() +
+  theme_bw()
 
 ```
 
@@ -77,7 +78,8 @@ density_prior <- dnorm(x, mean = mean_prior, sd = sd_prior)
 d <- tibble(x = x,
             density_prior = density_prior)
 ggplot(d, aes(x = x, y = density_prior)) +
-  geom_line()
+  geom_line()  +
+  theme_bw()
 ```
 
 Putting the rescaled likelihood on the same plot as the prior results in
@@ -89,7 +91,8 @@ tibble(x = x,
   pivot_longer(cols = -x, names_to = "distribution", values_to = "density") %>% 
   mutate(distribution = factor(distribution)) %>% 
   ggplot(aes(x = x, y = density, color = distribution)) +
-  geom_line() 
+  geom_line()  +
+  theme_bw()
 
 ```
 
@@ -100,7 +103,8 @@ prior_times_likelihood <- density_prior * density_likelihood
 d <- tibble(x = x,
             prior_times_likelihood = prior_times_likelihood)
 ggplot(d, aes(x = x, y = prior_times_likelihood)) +
-  geom_line()
+  geom_line()  +
+  theme_bw()
 ```
 
 But from Bayes rule we can rescale the prior x likelihood by the area under the curve to convert to a probability density function
@@ -124,7 +128,8 @@ tibble(x = x,
   pivot_longer(cols = -x, names_to = "distribution", values_to = "density") %>% 
   mutate(distribution = factor(distribution)) %>% 
   ggplot(aes(x = x, y = density, color = distribution)) +
-  geom_line()
+  geom_line()  +
+  theme_bw()
 ```
 
 Here is a function that will allow you to explore how the posterior is sensitive to the likelihood and the prior
@@ -163,7 +168,8 @@ p <- tibble(x = x,
   mutate(distribution = factor(distribution)) %>% 
   ggplot(aes(x = x, y = density, color = distribution)) +
   geom_line() +
-  labs(title = title)
+  labs(title = title)  +
+  theme_bw()
 return(p)
 }
 ```
@@ -260,7 +266,8 @@ tibble(par1 = par1,
   pivot_longer(cols = -par1, names_to = "distribution", values_to = "density") %>% 
   mutate(distribution = factor(distribution)) %>% 
   ggplot(aes(x = par1, y = density, color = distribution)) +
-  geom_line()
+  geom_line()  +
+  theme_bw()
 
 ```
 
@@ -278,7 +285,8 @@ d <- tibble(x = seq(0,10, 0.1),
   mutate(distribution = factor(distribution))
 ggplot(d, aes(x = x, y = prediction, col = distribution)) +
   geom_line() +
-  labs(y = "M-M model prediction (process model)")
+  labs(y = "M-M model prediction (process model)")  +
+  theme_bw()
 ```
 
 ## Solving a Bayesian model
@@ -393,10 +401,12 @@ d <- tibble(iter = 1:num_iter,
        par1 = pars)
 
 p1 <-  ggplot(d, aes(x = iter, y = par1)) +
-  geom_line()
+  geom_line()  +
+  theme_bw()
 
 p2 <- ggplot(d, aes(x = par1)) +
-  geom_histogram()
+  geom_histogram() +
+  theme_bw()
 
 p1 | p2
 ```
@@ -411,10 +421,12 @@ d_burn <- tibble(iter = nburn:num_iter,
        par1 = pars[nburn:num_iter])
 
 p1 <-  ggplot(d_burn, aes(x = iter, y = par1)) +
-  geom_line()
+  geom_line() +
+  theme_bw()
 
 p2 <- ggplot(d_burn, aes(x = par1)) +
-  geom_histogram()
+  geom_histogram() +
+  theme_bw()
 
 p1 | p2
 ```
@@ -479,7 +491,8 @@ ggplot(d, aes(x = x)) +
     geom_ribbon(aes(ymin = lower95_mean, ymax = upper95_mean), fill = "pink", alpha = 0.5) +
   geom_line(aes(y = median)) +
   geom_point(aes(y = obs)) +
-  labs(y = "M-M Prediction")
+  labs(y = "M-M Prediction")  +
+  theme_bw()
 
 ```
 
@@ -599,11 +612,13 @@ d <- tibble(iter = 1:num_iter,
 
 p1 <- ggplot(d, aes(x = iter, y = value)) +
   geom_line() +
-  facet_wrap(~parameter, scales = "free")
+  facet_wrap(~parameter, scales = "free") +
+  theme_bw()
 
 p2 <- ggplot(d, aes(x = value)) +
   geom_histogram() +
-  facet_wrap(~parameter, scales = "free")
+  facet_wrap(~parameter, scales = "free") +
+  theme_bw()
 
 p1 / p2
 ```

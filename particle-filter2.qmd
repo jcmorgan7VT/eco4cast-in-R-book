@@ -166,7 +166,8 @@ output_df |>
   geom_ribbon(aes(ymin = upper, ymax = lower), alpha = 0.7) +
   geom_line(aes(y = median)) +
   geom_point(aes(y = observation), color = "red") +
-  facet_wrap(~variable, scale = "free")
+  facet_wrap(~variable, scale = "free") +
+  theme_bw()
 ```
 
 ```{r}
@@ -178,5 +179,6 @@ parameter_df |>
   ggplot(aes(x = datetime)) +
   geom_ribbon(aes(ymin = upper, ymax = lower), alpha = 0.7) +
   geom_line(aes(y = median)) +
-  facet_wrap(~variable, scale = "free")
+  facet_wrap(~variable, scale = "free") +
+  theme_bw()
 ```

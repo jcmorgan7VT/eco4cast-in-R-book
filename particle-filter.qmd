@@ -118,7 +118,8 @@ gflu <- gflu[1:15, ]
 ggplot(data = gflu, aes(x = Date, y = log(Virginia))) +
   geom_line() +
   geom_point() +
-  labs(x = "Date", y = "Log(flu cases)", title = "Virginia Google Flu Trends")
+  labs(x = "Date", y = "Log(flu cases)", title = "Virginia Google Flu Trends") +
+  theme_bw()
 ```
 
 ### PF with no-observations
@@ -187,7 +188,8 @@ tibble(time = 1:nt,
   mutate(x = exp(x)) %>% 
   ggplot(aes(x = time, y = x, group = factor(ensemble))) +
   geom_line() +
-  labs(x = "Date", y = "Flu cases", title = "State of Virginia")
+  labs(x = "Date", y = "Flu cases", title = "State of Virginia") +
+  theme_bw()
 ```
 
 Lets save the output as a different name so we can compare to a PF with observations
@@ -258,7 +260,8 @@ tibble(time = 1:nt,
   ggplot(aes(x = time, y = x, group = factor(ensemble))) +
   geom_line() +
   geom_point(aes(y = obs), color = "red") +
-  labs(x = "Date", y = "Flu cases", title = "State of Virginia")
+  labs(x = "Date", y = "Flu cases", title = "State of Virginia") +
+  theme_bw()
 ```
 
 Save the output as a different object to compare to other PF simulations
@@ -297,7 +300,8 @@ combined %>%
   geom_ribbon(aes(ymin = lower, ymax = upper, color = type, fill = type), alpha = 0.2) +
   geom_point(data = gflu, aes(x = Date, y = Virginia), color = "red") +
   geom_point(data = gflu, aes(x = Date, y = obs_in_fit), color = "black") +
-  labs(x = "Date", y = "Flu cases", title = "Google Flu Trends for Virginia")
+  labs(x = "Date", y = "Flu cases", title = "Google Flu Trends for Virginia") +
+  theme_bw()
 ```
 
 ### PF with parameter estimation
@@ -327,7 +331,8 @@ gflu$Tmin = df$tmin..deg.c.[match(gflu$Date,df$date)] - Tmean
 
 gflu <- gflu[1:15, ]
 ggplot(data = gflu, aes(x = Date, y = log(Virginia))) +
-  geom_line()
+  geom_line() +
+  theme_bw()
 ```
 
 Now modify the PF with the DLM model instead of the random walk. This should be familiar to you.
@@ -409,7 +414,8 @@ tibble(time = 1:nt,
   ggplot() +
   geom_line(aes(x = time, y = x, group = factor(ensemble))) +
   geom_point(aes(x = time, y = exp(obs)), color = "red") +
-  labs(x = "Date", y = "Flu cases", title = "State of Virginia")
+  labs(x = "Date", y = "Flu cases", title = "State of Virginia") +
+  theme_bw()
 ```
 
 And visualize the time-evolution of the parameter. There are two new concepts illustrated below:
@@ -425,7 +431,8 @@ tibble(time = 1:nt,
   pivot_longer(cols = -c(time), names_to = "ensemble", values_to = "b1") %>% 
   ggplot() +
   geom_line(aes(x = time, y = b1, group = factor(ensemble))) +
-  labs(x = "Date", y = "B1", title = "State of Virginia")
+  labs(x = "Date", y = "B1", title = "State of Virginia") +
+  theme_bw()
 ```
 
 ### Sensitivity to number of particles
@@ -536,7 +543,8 @@ bind_rows(p10, p100, p1000, p10000) %>%
   geom_ribbon(aes(ymin = lower, ymax = upper, color = type, fill = type), alpha = 0.2) +
   geom_point(data = gflu, aes(x = Date, y = Virginia), color = "red") +
   geom_point(data = gflu, aes(x = Date, y = obs_in_fit), color = "black") +
-  labs(x = "Date", y = "Flu cases", title = "Google Flu Trends for Virginia")
+  labs(x = "Date", y = "Flu cases", title = "Google Flu Trends for Virginia") +
+  theme_bw()
 
 ```
 
@@ -574,7 +582,8 @@ bind_rows(pf_low, pf_high) %>%
   geom_ribbon(aes(ymin = lower, ymax = upper, color = type, fill = type), alpha = 0.2) +
   geom_point(data = gflu, aes(x = Date, y = Virginia), color = "red") +
   geom_point(data = gflu, aes(x = Date, y = obs_in_fit), color = "black") +
-  labs(x = "Date", y = "Flu cases", title = "Google Flu Trends for Virginia")
+  labs(x = "Date", y = "Flu cases", title = "Google Flu Trends for Virginia") +
+  theme_bw()
 
 ```
 
@@ -623,7 +632,8 @@ plot_data <- read_csv("data/PF_data1.csv", show_col_types = FALSE)
 
 ggplot(plot_data, aes(x = datetime, y = biomass)) +
   geom_point() +
-  labs(x = "age", y = "aboveground biomass (gC/m2)")
+  labs(x = "age", y = "aboveground biomass (gC/m2)") +
+  theme_bw()
 ```
 
 The following model was used to estimate the posterior distributions of the parameters using a Bayesian framework.
@@ -706,7 +716,8 @@ new_data <- read_csv("data/PF_data2.csv", show_col_types = FALSE)
 
 ggplot(new_data, aes(x = datetime, y = biomass)) +
   geom_point() +
-  labs(x = "age", y = "aboveground biomass (gC/m2)")
+  labs(x = "age", y = "aboveground biomass (gC/m2)") +
+  theme_bw()
 ```
 
 #### Step 1: Repeat the PF setup

@@ -142,7 +142,8 @@ output_df |>
   geom_ribbon(aes(ymin = upper, ymax = lower), alpha = 0.7) +
   geom_line(aes(y = median)) +
   geom_point(aes(y = observation), color = "red") +
-  facet_wrap(~variable, scale = "free")
+  facet_wrap(~variable, scale = "free") +
+  theme_bw()
 ```
 
 ### Step 2: Generate forecaset
@@ -182,7 +183,8 @@ The combined weather drivers look like the following. The vertical line is where
   ggplot(inputs, aes(x = datetime, y = prediction, group = parameter)) +
   geom_line() +
   geom_vline(aes(xintercept = reference_datetime)) +
-  facet_wrap(~variable, scales = "free")
+  facet_wrap(~variable, scales = "free") +
+  theme_bw()
 ```
 
 ```{r}
@@ -255,7 +257,8 @@ output_df |>
   geom_line(aes(y = median)) +
   geom_point(aes(y = observation), color = "red") +
   geom_vline(aes(xintercept = reference_datetime)) +
-  facet_wrap(~variable, scale = "free")
+  facet_wrap(~variable, scale = "free") +
+  theme_bw()
 ```
 
 Save the states and weights for use as initial conditions in the next forecast.

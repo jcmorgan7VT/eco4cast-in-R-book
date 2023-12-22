@@ -63,7 +63,10 @@ new_params <- params
 new_params$alpha <- rnorm(ens_members, params$alpha, sd = 0.005)
 ```
 
-TODO: add parameter distributions
+```{r}
+#| echo: false
+hist(new_params$alpha)
+```
 
 ```{r}
 for(t in 2:length(sim_dates)){
@@ -89,7 +92,8 @@ parameter_df |>
   ggplot(aes(x = datetime)) +
   geom_ribbon(aes(ymin = lower90, ymax = upper90), alpha = 0.7) +
   geom_line(aes(y = median)) +
-  facet_wrap(~variable, scale = "free")
+  facet_wrap(~variable, scale = "free") +
+  theme_bw()
 ```
 
 ## Process uncertainty
@@ -103,7 +107,11 @@ new_params$sigma.stem <- rep(1, ens_members) #0.01 ## wood biomass
 new_params$sigma.soil <- rep(1, ens_members)# 0.01
 ```
 
-TODO: add process distributions
+The spread that is added to each leaves at each time step.
+
+```{r}
+hist(rnorm(ens_members, mean = output[1, , 1], sd = new_params$sigma.leaf))
+```
 
 ```{r}
 
@@ -145,7 +153,12 @@ new_output[1, , 2] <- rnorm(ens_members, 140, 10)
 new_output[1, , 3] <- rnorm(ens_members, 140, 20)
 ```
 
-TODO: add initial condition distributions
+The spread in leaves at the first time-step.
+
+```{r}
+hist(new_output[1, , 1])
+```
+
 
 ```{r}
 for(t in 2:length(sim_dates)){
@@ -171,7 +184,8 @@ initial_conditions_df |>
   ggplot(aes(x = datetime)) +
   geom_ribbon(aes(ymin = lower90, ymax = upper90), alpha = 0.7) +
   geom_line(aes(y = median)) +
-  facet_wrap(~variable, scale = "free")
+  facet_wrap(~variable, scale = "free")  +
+  theme_bw()
 ```
 
 ## Driver uncertainty
@@ -181,7 +195,15 @@ new_inputs <- get_forecast_met(site = site, sim_dates, use_mean = FALSE)
 new_inputs_ensemble <- assign_met_ensembles(inputs, ens_members)
 ```
 
-TODO: add plot of drivers
+Uncertainty in the weather forecasts 
+
+```{r}
+#| echo: false
+ggplot(new_inputs, aes(x = datetime, y = prediction, group = parameter)) +
+  geom_line() +
+  facet_wrap(~variable, scales = "free")  +
+  theme_bw()
+```
 
 ```{r}
 
@@ -208,7 +230,8 @@ drivers_df |>
   ggplot(aes(x = datetime)) +
   geom_ribbon(aes(ymin = lower90, ymax = upper90), alpha = 0.7) +
   geom_line(aes(y = median)) +
-  facet_wrap(~variable, scale = "free")
+  facet_wrap(~variable, scale = "free") +
+  theme_bw()
 ```
 
 ## Problem Set

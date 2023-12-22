@@ -174,7 +174,8 @@ Visualize the plot level biomass
 ```{r}
 ggplot(plot_live_carbon, aes(x = measure_date, y = plot_kgCm2, color = plotID)) + 
   geom_point() +
-  geom_line()
+  geom_line() +
+  theme_bw()
 ```
 
 Determine the set of plots that are measured each year (a subset, n = 5) are measured each year, while all the plots are measured every 5 years.
@@ -200,7 +201,8 @@ Plot the site level carbon
 ggplot(site_live_carbon, aes(x = measure_date, y = mean_kgCperm2)) + 
   geom_point() + 
   geom_errorbar(aes(ymin=mean_kgCperm2-sd_kgCperm2, ymax=mean_kgCperm2+sd_kgCperm2), width=.2,
-                 position=position_dodge(0.05))
+                 position=position_dodge(0.05)) +
+  theme_bw()
 
 ```
 
@@ -245,7 +247,8 @@ Visualize plot level carbon
 ```{r}
 ggplot(plot_dead_carbon, aes(x = measure_date, y = plot_kgCm2, color = plotID)) + 
   geom_point() +
-  geom_line()
+  geom_line() +
+  theme_bw()
 ```
 
 Calculate site level carbon
@@ -263,7 +266,8 @@ Visualize site level carbon
 ```{r}
 ggplot(site_dead_carbon, aes(x = measure_date, y = mean_kgCperm2)) + 
   geom_point() +
-  geom_line()
+  geom_line() +
+  theme_bw()
 ```
 
 ## Calculate carbon in trees on the ground (coarse woody debris)
@@ -460,7 +464,8 @@ ggplot(horizon_combined, map = aes(-biogeoTopDepth,horizon_C_kg_per_m2)) +
   geom_line() +
   geom_point() +
   labs(y = "Carbon", x = "Depth", title = "Soil carbon by depth") +
-  coord_flip()
+  coord_flip()  +
+  theme_bw()
 ```
 
 ## Combine together
@@ -502,7 +507,8 @@ Plot the different pools of carbon
 
 total_carbon_components |> 
   ggplot(aes(x = datetime, y = mean_kgCperm2, color = variable)) + 
-  geom_point()
+  geom_point() +
+  theme_bw()
 ```
 
 Combine pools of carbon together to match the stocks used in our simple process model. This converts it to a long data format.
@@ -552,7 +558,8 @@ Plot MODIS LAI
 lai_cleaned |> 
   ggplot(aes(x = datetime, y = observation)) +
   geom_point() +
-  geom_smooth(span = 0.12)
+  geom_smooth(span = 0.12) +
+  theme_bw()
 ```
 
 ## Flux data
@@ -570,7 +577,9 @@ flux <- read_csv(url, show_col_types = FALSE) |>
 ```{r}
 #| warning: false
 #| echo: false
-ggplot(flux, aes(x = datetime, y = observation)) + geom_point()
+ggplot(flux, aes(x = datetime, y = observation)) + 
+  geom_point()  +
+  theme_bw()
 ```
 
 ## Combine together to create data contraints
@@ -590,7 +599,8 @@ obs <- total_carbon_simple |>
 obs |> 
   ggplot(aes(x = datetime, y = observation)) + 
   geom_point() +
-  facet_wrap(~variable, scale = "free")
+  facet_wrap(~variable, scale = "free") +
+  theme_bw()
 ```
 
 ```{r}

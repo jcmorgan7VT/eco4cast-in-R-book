@@ -9,28 +9,29 @@ library(lubridate)
 
 ## Overview of model
 
--   timestep: 1 day
--   currency: MgC/ha
--   dimension: 0-D
+The model is a 0-D model (no horizontal and vertical dimensions) that runs at a 1 day timestep.  It models carbon using MgC/ha.  
 
-Photosynthesis
-  - LAI
+Photosynthesis (gross primary productivityl; gpp) is modeled using a light-use efficiency approach.  Photosynthetically Active Radiation (PAR) is converted to absorbed PAR by multiplying by the proportion absorbed by leaf area index (LAI).  As LAI increases more light is absorbed.  The absorbed PAR is multipled by a light use efficiency parameter (`alpha`).  LAI is determined by multipling leave carbon by the specific leaf area parameter (`SLA`).
 
-Autotrophic respiration
+Autotrophic respiration (`ra`) is modeled as a constant proportion of GPP using the `Ra_frac` parameter. Net primary productivty (`npp`) is the carbon that is not used for autotrophic respiration (`gpp - ra`).  
 
-Allocation
+NPP is allocated to the two vegetation carbon states (`wood` and `leaves`) based on a constant proportion parameter. `leaf_frac` is the proportion that is allocated to leaves and `1-leaf_frac` is the allocation to wood.
 
-Litterfall
+Litterfall is occurs between a starting day-of-year (`litterfall_start`) and an ending day-of-year (`litterfall_start + litterfall_length`).  The annual proportion of leaves (`litterfall_rate`) that are dropped is removed during this period.
 
-Mortality
+Tree mortality is modeled as a constant proportion of wood (`mortality`) that is lost each day.
 
-Heterotrophic respiration
+Heterotrophic respiration is modeled as a constant proportion of soil carbon (`Rbasal`) that is adjusted by the temperature using a Q10 function that is governed by a Q10 parameter (`Q10`)
 
-Net Ecosystem Exchange
+The change is leaves in each time step is modeled as leaf allocation - litterfall.  The change in wood in each timestep is modeled as wood allocation - mortality.  The change in soil carbon in each timestep is modeled as litterfall + mortality - heterotrophic respiration.  
+
+Finally, net ecosystem exchange (`nee`) is modeled as `-(gpp - ra - rh)`
+
+The model requires inputs of photosynthetic active radiation (`PAR`), air temperature (`temp`), and day-of-year (`doy`).
 
 ## Model as a function
 
-- One time-step at a time
+The code below describes the model as a R function.  The function predicts one time-step at a time.  The same function is found in the `R/forecast_model.R` script in the book repository.
 
 ```{r}
 forest_model <- function(t, states, parms, inputs){
@@ -44,8 +45,6 @@ forest_model <- function(t, states, parms, inputs){
   # Unit Conversion: umol/m2/sec to Mg/ha/timestep
   k <- 1e-6 * 12 * 1e-6 * 10000 * 86400 #mol/umol*gC/mol*Mg/g*m2/ha*sec/timestep
 
-
-  
   # Convert leaf carbon to leaf area index
   lai <- states[, 1] * parms$SLA * 0.1  #0.1 is conversion from Mg/ha to kg/m2
   
@@ -71,7 +70,8 @@ forest_model <- function(t, states, parms, inputs){
   #calculate the daily rate of leaf drop
   litterfall <- states[ , 1] * (parms$litterfall_rate * (365/ (params$litterfall_length)))
   #Not leaf drop if outside the day of year window
-  litterfall[!(inputs_doy > params$litterfall_start & inputs_doy[1] < (params$litterfall_start + params$litterfall_length))] <- 0.0
+  litterfall[!(inputs_doy > params$litterfall_start & 
+              inputs_doy[1] < (params$litterfall_start + params$litterfall_length))] <- 0.0
   
   #kill trees
   mortality <- states[ , 2] * parms$mortality
@@ -108,7 +108,6 @@ forest_model <- function(t, states, parms, inputs){
                rh = rh,
                litterfall = litterfall,
                mortality = mortality))
-
 }
 ```
 
@@ -156,7 +155,7 @@ params <- as.data.frame(params)
 
 ### Set inital condition
 
-Set the starting point of the simulation. All states need a starting point.
+Set the starting point of the simulation. All three states need a starting point.
 
 ```{r}
 output <- array(NA, dim = c(length(sim_dates), ens_members, 12)) #12 is the number of outputs
@@ -180,7 +179,7 @@ for(t in 2:length(sim_dates)){
 
 ## Plot output
 
-The `output_to_df` converts the output into a data frame.
+The `output_to_df` converts the output into a data frame and is located in the `R/helpers.R` script in the book repository.
 
 ```{r}
 output_df <- output_to_df(output, sim_dates, sim_name = "baseline")
@@ -195,5 +194,6 @@ output_df |>
   filter(variable %in% c("lai", "wood", "som", "nee")) |> 
   ggplot(aes(x = datetime)) +
   geom_point(aes(y = prediction, group = ensemble)) +
-  facet_wrap(~variable, scale = "free")
+  facet_wrap(~variable, scale = "free") +
+  theme_bw()
 ```
