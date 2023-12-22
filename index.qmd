@@ -2,7 +2,9 @@
 
 This book is designed for Virginia Tech graduate course FREC 5174: Ecological Modeling and Forecasting. It leverages work through the NSF-funded Macrosystems EDDIE (DEB-1926050) and Ecological Forecasting Initiative Research Coordination Network (DEB-1926388) projects. It includes training materials developed by the Macrosystems EDDIE forecasting team at Virginia Tech (Cayelan Carey, Mary Lofton, Tadhg Moore, Whitney Woelmer), Freya Olsson (NEON Ecological Forecasting Challenge workshop), Mike Dietze (Terrestrial carbon flux tutorial and modified activities from his Ecological Forecasting book), and John Smith (NEON carbon data processing code). The imprint of Carl Boettiger on the materials is throughout the book.
 
-The book uses R code to teach concepts by example (hence the name "A practical guide...") . Hopefully the code provides an mechanism for developing your intuition.
+The book uses R code to teach concepts by example (hence the name "A practical guide...") . Hopefully the code provides an mechanism for developing your intuition through examples.
+
+The book is a near-term iterative forecast itself. It automatically rebuilds every day using GitHub actions. Each build accesses the latest NEON data, NOAA weather forecasts, assimilated data, generates a new forecast of daily net ecosystem exchange (NEE) for one NEON site (TALL). The forecast is submitted to the NEON Ecological Forecasting Challenge.
 
 The book is a work in progress that involves harmonizing materials developed for many different use-cases (undergraduate courses, tutorials, graduate classes). As a result there are likely to differences among chapters in style and approaches to assignments.
 

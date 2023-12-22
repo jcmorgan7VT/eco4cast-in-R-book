@@ -11,6 +11,14 @@ In this document, we will be creating a carbon budget for a NEON site. It was de
 
 NEON data is organized by data product ID in the NEON Date Portal: <https://data.neonscience.org/static/browse.html>
 
+## NEON Project
+
+{{< video https://www.youtube.com/embed/39YrzpxVRF8?si=MZaH7miPEYhgiF6e >}}
+
+## NEON Terrestrial sites
+
+{{< video https://www.youtube.com/embed/FXpqf89w6QU?si=_wGoKN0i13yJbd5S >}}
+
 ## Download data
 
 First, we are going to want to define the site ID. The four letter site code denotes NEON site. You can learn more about NEON sites here: <https://www.neonscience.org/field-sites/explore-field-sites>. The elevation, latitude , and longitude are needed to convert the diameter measurements to biomass.
@@ -404,6 +412,8 @@ site_roots <- rootmass %>%
 
 ## Calculate carbon in soils
 
+{{< video https://www.youtube.com/embed/khfIC5TpyPQ?si=f1ldTnTVpA8UWbb7 >}}
+
 ```{r}
 #Download bieogeochemistry soil data to get carbon concentration
 #data_product1 <- "DP1.00097.001"
@@ -525,6 +535,8 @@ total_carbon_simple <- total_carbon_components |>
 
 ## MODIS LAI
 
+{{< video https://www.youtube.com/embed/n9t_ANefhjU?si=U4OYgoq83Uu2nu57 >}}
+
 Download the leaf area index
 
 ```{r}
@@ -563,6 +575,10 @@ lai_cleaned |>
 ```
 
 ## Flux data
+
+Learn about flux data used to calibrate and evaluate NEE fluxes in the model
+
+{{< video https://www.youtube.com/embed/CR4Anc8Mkas?si=45r0mDvamjYGWq1E >}}
 
 ```{r}
 url <- "https://sdsc.osn.xsede.org/bio230014-bucket01/challenges/targets/project_id=neon4cast/duration=P1D/terrestrial_daily-targets.csv.gz"
