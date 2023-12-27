@@ -488,12 +488,14 @@ ggplot(horizon_combined, map = aes(-biogeoTopDepth,horizon_C_kg_per_m2)) +
   coord_flip()  +
   theme_bw()
 ```
+
 Total soil carbon is the sum across the depths.
 
 ```{r}
 site_soil_carbon <- horizon_combined %>% 
     summarize(soilC_gC_m2 = sum(horizon_C_kg_per_m2))
 ```
+
 ## Combine together
 
 ```{r}
@@ -526,7 +528,7 @@ site_soil_carbon <- site_soil_carbon |>
 total_carbon_components <- bind_rows(site_live_carbon, site_dead_carbon, site_cwd_carbon, site_roots, site_soil_carbon)
 ```
 
-The different pools of carbon can be plotted on the same figure to compare the magnitudes @fig-all-site-carbon.  
+The different pools of carbon can be plotted on the same figure to compare the magnitudes @fig-all-site-carbon.
 
 ```{r}
 #|warning: false
@@ -552,7 +554,7 @@ total_carbon_simple <- total_carbon_components |>
 
 ## MODIS LAI
 
-We can use leaf area index (LAI) from the MODIS satellite sensor to constrain and evaluate LAI predictions.  MODIS LAI product is a 8-day mean for a 500m grid cell.
+We can use leaf area index (LAI) from the MODIS satellite sensor to constrain and evaluate LAI predictions. MODIS LAI product is a 8-day mean for a 500m grid cell.
 
 {{< video https://www.youtube.com/embed/n9t_ANefhjU?si=U4OYgoq83Uu2nu57 >}}
 
@@ -611,7 +613,7 @@ flux <- read_csv(url, show_col_types = FALSE) |>
   select(datetime, variable, observation)
 ```
 
-@fig-nee-obs is the daily mean NEE for the focal NEON site.  
+@fig-nee-obs is the daily mean NEE for the focal NEON site.
 
 ```{r}
 #| warning: false
@@ -625,7 +627,7 @@ ggplot(flux, aes(x = datetime, y = observation)) +
 
 ## Combine together to create data contraints
 
-The units of the carbon stocks and nee need to be converted to the units of the forest process model.  The carbon stocks are converted from kgC/m2 to MgC/ha and nee is converted from gC/m2/day to MgC/ha/day.
+The units of the carbon stocks and nee need to be converted to the units of the forest process model. The carbon stocks are converted from kgC/m2 to MgC/ha and nee is converted from gC/m2/day to MgC/ha/day.
 
 ```{r}
 obs <- total_carbon_simple |> 
@@ -646,7 +648,7 @@ The combined data with the variable names converted to the names used in the for
 obs |> 
   ggplot(aes(x = datetime, y = observation)) + 
   geom_point() +
-  facet_wrap(~variable, scale = "free") +
+  facet_wrap(~variable, scale = "free_y") +
   theme_bw()
 ```
 
