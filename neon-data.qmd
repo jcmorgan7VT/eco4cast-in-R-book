@@ -41,74 +41,33 @@ The code below read the data directly from NEON's cloud storage. Since the colum
 ```{r}
 #| message: false
 
-index <-  neonstore:::neon_data(product = "DP1.10098.001",
-                                site = site,
-                                type="basic")
-
 ## Mapping and tagging table
 
-df1 <-index |>
-  filter(grepl("mappingandtagging", name)) |> 
-  filter(grepl("RELEASE", release)) |> 
-  pull(url) |>
-  duckdbfs::open_dataset(format="csv", filename = TRUE) |> 
+map_tag_table <- neon_cloud("mappingandtagging",
+                            product = "DP1.10098.001",
+                            site = site) |> 
   select(individualID, scientificName) |> 
-  collect()
-
-df2 <- index |>
-  filter(grepl("mappingandtagging", name)) |> 
-  filter(!grepl("RELEASE", release)) |> 
-  pull(url) |>
-  duckdbfs::open_dataset(format="csv", filename = TRUE) |> 
-  select(individualID, scientificName) |> 
-  collect()
-
-map_tag_table <- bind_rows(df1,df2) |> 
+  collect() |> 
   group_by(individualID) |> 
   slice(1) |> #This is needed because some individuals change species IDs
   ungroup()
 
 ## Individual table
-
-df1 <- index |>
-  filter(grepl("apparentindividual", name)) |> 
-  filter(grepl("RELEASE", release)) |> 
-  pull(url) |>
-  duckdbfs::open_dataset(format="csv", filename = TRUE) |> 
+ind_table <- neon_cloud("apparentindividual",
+                        product = "DP1.10098.001",
+                        site = site) |>
   select(individualID, eventID, plotID, date, stemDiameter,plantStatus, measurementHeight) |> 
-  collect() 
-
-df2 <- index |>
-  filter(grepl("apparentindividual", name)) |> 
-  filter(!grepl("RELEASE", release)) |> 
-  pull(url) |>
-  duckdbfs::open_dataset(format="csv", filename = TRUE) |>
-  select(individualID, eventID, plotID, date, stemDiameter,plantStatus, measurementHeight) |> 
+  distinct() |> 
   collect()
-
-ind_table <- bind_rows(df1,df2) |> 
-  distinct()
 
 ## Plot table
-
-df1 <-index |>
-  filter(grepl("perplotperyear", name)) |> 
-  filter(grepl("RELEASE", release)) |> 
-  pull(url) |>
-  duckdbfs::open_dataset(format="csv", filename = TRUE) |> 
+plot_table <- neon_cloud("perplotperyear",
+                        product = "DP1.10098.001",
+                        site = site) |> 
   select(plotID,totalSampledAreaTrees,plotType) |>  
+  distinct(plotID, .keep_all = TRUE) |> 
   collect() 
 
-df2 <- index |>
-  filter(grepl("perplotperyear", name)) |> 
-  filter(!grepl("RELEASE", release)) |> 
-  pull(url) |>
-  duckdbfs::open_dataset(perplotperyear$url, format="csv", filename = TRUE) |>
-    select(plotID,totalSampledAreaTrees,plotType) |>  
-  collect()
-
-plot_table <- bind_rows(df1,df2) |> 
-    distinct(plotID, .keep_all = TRUE)
 ```
 
 The species names in the mapping and tagging table need to be separated into the genus and species so that we can calculate the biomass.
@@ -294,31 +253,21 @@ The data needed to calculate carbon in trees that are laying on the ground are i
 ```{r}
 #| message: false
 
-index <-  neonstore:::neon_data(product = "DP1.10014.001",
-                                site = site,
-                                type="basic")
-
-cdw_density <- index |>
-  filter(grepl("cdw_densitydisk", name)) |> 
-  pull(url) |>
-  duckdbfs::open_dataset(format="csv", filename = TRUE) |> 
+cdw_density <- neon_cloud("cdw_densitydisk",
+                        product = "DP1.10014.001",
+                        site = site) |> 
   collect()
 
-log_table <- index |>
-  filter(grepl("cdw_densitylog", name)) |> 
-  pull(url) |>
-  duckdbfs::open_dataset(format="csv", filename = TRUE) |> 
+log_table <- neon_cloud("cdw_densitylog",
+                        product = "DP1.10014.001",
+                        site = site) |> 
+  collect()
+ 
+cdw_tally <- neon_cloud("cdw_fieldtally",
+                        product = "DP1.10010.001",
+                        site = site) |> 
   collect()
 
-index <-  neonstore:::neon_data(product = "DP1.10010.001",
-                                site = site,
-                                type="basic")
-
-cdw_tally <- index |> 
-  filter(grepl("cdw_fieldtally", name)) |> 
-  pull(url) |>
-  #duckdbfs::open_dataset(format="csv", filename = TRUE) |>
-  read_csv(show_col_types = FALSE)
 ```
 
 ```{r}
@@ -359,20 +308,14 @@ Here we are going to calculate the carbon stored in fine roots using the root ch
 #| message: false
 
 ## root chemistry data product
-index <-  neonstore:::neon_data(product = "DP1.10067.001",
-                                site = site,
-                                type="basic")
-
-bbc_percore <- index |>
-  filter(grepl("bbc_percore", name)) |> 
-  pull(url) |>
-  duckdbfs::open_dataset(format="csv", filename = TRUE) |> 
+bbc_percore <- neon_cloud("bbc_percore",
+                          product = "DP1.10067.001",
+                          site = site) |> 
   collect()
 
-rootmass <- index |>
-  filter(grepl("bbc_rootmass", name)) |> 
-  pull(url) |>
-  duckdbfs::open_dataset(format="csv", filename = TRUE) |> 
+rootmass <- neon_cloud("bbc_rootmass",
+                        product = "DP1.10067.001",
+                        site = site) |> 
   collect()
 ```
 
@@ -429,20 +372,15 @@ site_roots <- rootmass %>%
 #Download bieogeochemistry soil data to get carbon concentration
 #data_product1 <- "DP1.00097.001"
 #Download physical soil data to get bulk density
-index <-  neonstore:::neon_data(product = "DP1.00096.001",
-                                site = site,
-                                type="basic")
 
-mgc_perbiogeosample <- index |>
-  filter(grepl("mgp_perbiogeosample", name)) |> 
-  pull(url) |>
-  duckdbfs::open_dataset(format="csv", filename = TRUE) |> 
+mgc_perbiogeosample <- neon_cloud("mgp_perbiogeosample",
+                        product = "DP1.00096.001",
+                        site = site) |> 
   collect()
 
-mgp_perbulksample <- index |>
-  filter(grepl("mgp_perbulksample", name)) |> 
-  pull(url) |>
-  duckdbfs::open_dataset(format="csv", filename = TRUE) |> 
+mgp_perbulksample <- neon_cloud("mgp_perbulksample",
+                        product = "DP1.00096.001",
+                        site = site) |> 
   collect()
 ```
 
