@@ -166,6 +166,7 @@ Convert to the format required by the NEON Ecological Forecasting Challenge
 ```{r}
 efi_output <- output_df |> 
   mutate(datetime = as_datetime(datetime),
+         model_id = "bookcast_forest",
          duration = "P1D",
          project_id = "neon4cast",
          site_id = "TALL",
@@ -178,14 +179,13 @@ efi_output <- output_df |>
 Write the forecast to a csv file
 
 ```{r}
-file_name <- paste0("data/terrestrial_daily-", reference_datetime, "-simple_forest_model.csv")
+file_name <- paste0("data/terrestrial_daily-", reference_datetime, "-bookcast_forest.csv")
 write_csv(efi_output, file_name)
 ```
 
-and submit to the Challenge
+and submit to the Challenge.  The submission uses the submit function in the neon4cast package(`remotes::install_github("eco4cast/neon4cast")`)
 
 ```{r}
-#| eval: false
 neon4cast::submit(file_name, ask = FALSE)
 ```
 

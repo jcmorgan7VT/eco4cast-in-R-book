@@ -1,0 +1,4 @@
+# Putting it together: Analyzing forecasts {#sec-analysis}
+
+Pending: add code to analyze submissions from the previous chapter.
+
