@@ -173,7 +173,8 @@ efi_output <- output_df |>
          family = "ensemble",
          reference_datetime = as_datetime(reference_datetime)) |> 
   rename(parameter = ensemble) |> 
-  filter(datetime >= reference_datetime) 
+  filter(datetime >= reference_datetime) |> 
+  filter(variable == "nee")
 ```
 
 Write the forecast to a csv file
@@ -183,7 +184,7 @@ file_name <- paste0("data/terrestrial_daily-", reference_datetime, "-bookcast_fo
 write_csv(efi_output, file_name)
 ```
 
-and submit to the Challenge.  The submission uses the submit function in the neon4cast package(`remotes::install_github("eco4cast/neon4cast")`)
+and submit to the Challenge. The submission uses the submit function in the neon4cast package(`remotes::install_github("eco4cast/neon4cast")`)
 
 ```{r}
 neon4cast::submit(file_name, ask = FALSE)
