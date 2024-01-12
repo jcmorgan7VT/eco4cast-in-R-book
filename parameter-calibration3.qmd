@@ -14,7 +14,7 @@ set.seed(100)
 ```
 
 ```{r}
-site <- "TALL"
+site <- "OSBS"
 ```
 
 Read in observations
@@ -26,7 +26,7 @@ obs <- read_csv("data/site_carbon_data.csv", show_col_types = FALSE)
 Set up dates of simulation, parameters, initial conditions, and meterology inputs
 
 ```{r}
-sim_dates <- seq(as_date("2022-01-01"), Sys.Date() - 1, by = "1 day")
+sim_dates <- seq(as_date("2022-01-01"), Sys.Date() - 2, by = "1 day")
 
 ens_members <- 1
 params <- list()
@@ -69,7 +69,7 @@ state_init[3] <- obs |>
   slice(1) |> 
   pull(observation)
 
-inputs <- get_historical_met(site = "TALL", sim_dates, use_mean = TRUE)
+inputs <- get_historical_met(site = site, sim_dates, use_mean = TRUE)
 inputs_ensemble <- assign_met_ensembles(inputs, ens_members)
 ```
 
@@ -269,7 +269,7 @@ output_df_optim <- output_to_df(output, sim_dates, sim_name = "optimized")
 
 ### Visualize influence of optimization
 
-@fig-sim-prior-post shows a simulation that use the prior distribution and a simulation that uses the posterior distribution.  This highlights the constraint provided by the data on the model predictions.
+@fig-sim-prior-post shows a simulation that use the prior distribution and a simulation that uses the posterior distribution. This highlights the constraint provided by the data on the model predictions.
 
 ```{r}
 #| warning: FALSE
@@ -296,7 +296,7 @@ bind_rows(output_df_no_optim, output_df_optim) |>
 
 ### Save posteriors for future use
 
-The calibrated parameter chains will be used in later chapters.  
+The calibrated parameter chains will be used in later chapters.
 
 ```{r}
   write_csv(parameter_MCMC, "data/saved_parameter_chain.csv")

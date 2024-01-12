@@ -38,6 +38,7 @@ Here we use a look back of 14-days. Since our forecast horizon is 30-days in the
 We will find the first day of our simulation (14 days ago) in the last saved analysis and use this for initial conditions.
 
 ```{r}
+site <- "OSBS"
 look_back <- 14
 horizon <- 30
 reference_datetime <- Sys.Date()
@@ -53,8 +54,8 @@ index <- which(analysis$sim_dates == sim_dates[1])
 The use of the loop back requires combining the "historical" weather and future weather into a single input data frame.
 
 ```{r}
-inputs_past <- get_historical_met(site = "TALL", sim_dates[1:(look_back-2)], use_mean = FALSE)
-inputs_future <- get_forecast_met(site = "TALL", sim_dates[(look_back-1):length(sim_dates)], use_mean = FALSE)
+inputs_past <- get_historical_met(site = site, sim_dates[1:(look_back-2)], use_mean = FALSE)
+inputs_future <- get_forecast_met(site = site, sim_dates[(look_back-1):length(sim_dates)], use_mean = FALSE)
 inputs <- bind_rows(inputs_past, inputs_future)
 inputs_ensemble <- assign_met_ensembles(inputs, ens_members)
 ```
@@ -169,7 +170,7 @@ efi_output <- output_df |>
          model_id = "bookcast_forest",
          duration = "P1D",
          project_id = "neon4cast",
-         site_id = "TALL",
+         site_id = site,
          family = "ensemble",
          reference_datetime = as_datetime(reference_datetime)) |> 
   rename(parameter = ensemble) |> 

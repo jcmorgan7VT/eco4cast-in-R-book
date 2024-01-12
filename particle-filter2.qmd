@@ -12,8 +12,9 @@ library(lubridate)
 In this chapter we apply the particle filter that was introduced in [Chapter -@sec-particle-filter] to the forest process model. We will use an ensemble of 100 particles and assimilate the last two years of data.
 
 ```{r}
+site <- "OSBS"
 ens_members <- 100
-sim_dates <- seq(Sys.Date() - 365*2, Sys.Date() - 1, by = "1 day")
+sim_dates <- seq(Sys.Date() - 365*2, Sys.Date() - 2, by = "1 day")
 ```
 
 ## Prep data
@@ -21,7 +22,7 @@ sim_dates <- seq(Sys.Date() - 365*2, Sys.Date() - 1, by = "1 day")
 Get the historical weather for the site
 
 ```{r}
-inputs <- get_historical_met(site = "TALL", sim_dates, use_mean = TRUE)
+inputs <- get_historical_met(site = site, sim_dates, use_mean = TRUE)
 inputs_ensemble <- assign_met_ensembles(inputs, ens_members)
 ```
 

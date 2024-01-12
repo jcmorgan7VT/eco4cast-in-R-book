@@ -2,3 +2,10 @@
 
 Pending: add code to analyze submissions from the previous chapter.
 
+```{r}
+#| eval: false
+all_results <- arrow::open_dataset("s3://anonymous@bio230014-bucket01/challenges/scores/parquet/project_id=neon4cast/duration=P1D/variable=nee/model_id=bookcast_forest?endpoint_override=sdsc.osn.xsede.org")
+df <- all_results |> 
+  filter(site_id == "OSBS") |> 
+  collect()
+```
