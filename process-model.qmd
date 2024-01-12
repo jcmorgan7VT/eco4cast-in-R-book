@@ -122,7 +122,7 @@ We are doing a deterministic simulation (no uncertainty) so we only have one ens
 ```{r}
 site <- "OSBS"
 ens_members <- 1
-sim_dates <- seq(as_date("2020-09-30"), Sys.Date() - lubridate::days(1), by = "1 day")
+sim_dates <- seq(as_date("2020-09-30"), Sys.Date() - lubridate::days(2), by = "1 day")
 ```
 
 ### Set drivers
