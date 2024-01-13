@@ -115,7 +115,9 @@ for(t in 2:length(sim_dates)){
                                    inputs = matrix(inputs_ensemble[t , , ], nrow = ens_members))
   }
   
-  analysis <- particle_filter(t, forecast, obs, sim_dates, wt, fit_params)
+  analysis <- particle_filter(t, forecast, obs, sim_dates, wt, fit_params,
+                              variables = c("lai", "wood", "som", "nee"), 
+                                             sds = c(0.1, 1, 20, 0.005))
   
   forecast <- analysis$forecast
   fit_params <- analysis$fit_params
