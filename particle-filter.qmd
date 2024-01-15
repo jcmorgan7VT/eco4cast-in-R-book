@@ -66,9 +66,9 @@ In the sequential method we can restart at any time point, as long as we have th
 
 ## Introduction to Particle Filter
 
-There are many sequential data assimilation methods that make different assumptions about data and model distributions in order to simplify the analysis. Many of the methods emerged before the our massive computational resources or were developed for **HUGE** problems like assimilating terabytes of data into a global weather model that simulates the physics of the atmosphere at 25 km vertical resolution. Examples include the Kalman Filter, Extending Kalman Filter, Ensemble Kalman Filter, and 4D-var. These methods all heavily use matrix algebra which I have not introduced in this class. Since these methods commonly assume that the data and model errors are normally distributed, the numerical version (Ensemble Kalman Filter) can run fewer particles (in this case: ensemble members) because it doesn't take as many samples to estimate the mean and variance of a distribution than it does to estimate the full distribution
+There are many sequential data assimilation methods that make different assumptions about data and model distributions in order to simplify the analysis. Many of the methods emerged before the our massive computational resources or were developed for **HUGE** problems like assimilating terabytes of data into a global weather model that simulates the physics of the atmosphere at 25 km vertical resolution. Examples include the Kalman Filter, Extended Kalman Filter, Ensemble Kalman Filter, and 4D-var. These methods all heavily use matrix algebra which I have not introduced in this class. Since these methods commonly assume that the data and model errors are normally distributed, the numerical version (Ensemble Kalman Filter) can run fewer particles (in this case: ensemble members) because it doesn't take as many samples to estimate the mean and variance of a distribution than it does to estimate the full distribution
 
-Here I introduce the Particle Filter. The particle filter is a sequential method that is familiar to folks that have learned the Bayesian methods that we have covered in the class. It has the concept of a likelihood, of which you are well versed. The particle filter does not assume a specific distribution of the data and model error so it requires more particles to estimate the full distributions. As a result, it is more appropriate for "smaller" problems like the ones we are tackling in this class.
+Here I introduce the particle filter. The particle filter is a sequential method that will be more familiar to those that have learned the Bayesian methods that we have covered in the earlier chapters (@sec-bayes). It has the concept of a likelihood, of which you are well versed (@sec-likelihood). The particle filter does not assume a specific distribution of the data and model error so it requires more particles to estimate the full distributions. As a result, it is more appropriate for "smaller" problems like the ones we are tackling in this book
 
 The particle filter is quite simple
 
@@ -102,7 +102,7 @@ Specifically we refer to the particle filter described above as a bootstrap part
 
 ## Example of Particle Filter
 
-Here is an example of the particle filter applied to the google flu data
+Here is an example of the particle filter applied to the [Google Flu data](https://en.wikipedia.org/wiki/Google_Flu_Trends), project that has been since stoped by Google due to accuracy issues.  It is still a good dataset for illustrative purposes here.
 
 First load in data. We are only going to focus on the first 15 weeks of the data so that you can see the particles more easily
 

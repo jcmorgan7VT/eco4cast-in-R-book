@@ -1,4 +1,4 @@
-# Parameter calibration: Bayesian methods
+# Parameter calibration: Bayesian methods {#sec-bayes}
 
 ## Introduction to Bayesian statistics
 
@@ -9,9 +9,9 @@ library(tidyverse)
 library(patchwork)
 ```
 
-## Starting with likelihood
+### Starting with likelihood
 
-Here we start where we left off with the likelihood chapter. Imagine the following dataset with five data points drawn from a normal distribution (@fig-rnorm1).
+Here we start where we left off with the likelihood chapter @sec-likelihood. Imagine the following dataset with five data points drawn from a normal distribution (@fig-rnorm1).
 
 ```{r}
 num_data_points <- 5
@@ -27,7 +27,7 @@ new_data <- rnorm(num_data_points, mean = mean_data, sd = sd_data)
 hist(new_data, main = "")
 ```
 
-We can calculate the likelihood for a set of different means using the manual likelihood estimation that we did in the likelihood lecture
+We can calculate the likelihood for a set of different means using the manual likelihood estimation that we did in @sec-likelihood.
 
 ```{r}
 #DATA MODEL
@@ -47,7 +47,7 @@ for(i in 1:length(x)){
 plot(x, negative_log_likelihood)
 ```
 
-The negative log likelihood is useful for using finding the maximum likelihood values with a optimizing function. However, here we want to convert back to a density (@fig-ll2-density)
+The negative log likelihood is useful for finding the maximum likelihood values with a optimizing function. However, here we want to convert back to a density (@fig-ll2-density)
 
 ```{r}
 density_likelihood <- exp(-negative_log_likelihood)
@@ -59,7 +59,7 @@ density_likelihood <- exp(-negative_log_likelihood)
 plot(x, density_likelihood, type = "l")
 ```
 
-The y-axis are tiny numbers because we multiplied probability densities together. This is OK for our illustrative purposes. To help visualize we can rescale so that area under the curve is 1. The area is approximated where the density is the height and the width is the distance between points on the x axis (`delta_x`) that we evaluated (height x width is the area of a bar under the curve). If we sum the bars together, we get the area under the curve (a value way less than 1). Dividing the likelihood by the area rescales the densities so the area under the curve is 1. Rescaling the likelihood is not a formal part of the the analysis - just used here for visualizing.
+The y-axis are tiny numbers because we multiplied probability densities together. This is OK for our illustrative purposes. To help visualize we can rescale so that area under the curve is 1. The area is approximated where the density is the height and the width is the distance between points on the x axis (`delta_x`) that we evaluated (height x width is the area of a bar under the curve). If we sum the bars together, we get the area under the curve (a value way less than 1). Dividing the likelihood by the area rescales the densities so the area under the curve is 1. Rescaling the likelihood is not a formal part of the analysis - just used here for visualizing.
 
 ```{r}
 likelihood_area_under_curve <- sum(density_likelihood * delta_x) #Width * Height
@@ -81,10 +81,18 @@ ggplot(aes(x = x, y = likelihood)) +
 
 Remember that this curve is the P(data \| mean = x). We want the P(mean = x \| data).
 
-Following Bayes rule we can multiply the likelihood x the prior
+Following Bayes rule where the $P(data | model)$ is the likelihood and $P(model)$ is our guess for the mean before seeing the data (called the prior)
 
-**TODO: add Bayes formula**
+$$
+P(model | data) = \frac{P(data | model) \cdot P(model)}{P(data)}
+$$
 
+
+we can multiply the likelihood x the prior. 
+
+$$
+P(mean | data) \simeq likelihood \cdot prior
+$$
 Our prior is the following normal distribution
 
 ```{r}
@@ -139,14 +147,14 @@ ggplot(d, aes(x = x, y = prior_times_likelihood)) +
   theme_bw()
 ```
 
-But from Bayes rule we can rescale the prior x likelihood by the area under the curve to convert to a probability density function.  
+But from Bayes rule we can rescale the prior x likelihood by the area under the curve to convert to a probability density function.
 
 ```{r}
 area_under_curve <- sum(prior_times_likelihood * delta_x)  #sum(Width * Height) = total probability of the data given all possible values of the parameter
 normalized_posterior <- prior_times_likelihood / area_under_curve
 ```
 
-The probablity of the data is (i.e., area under likelihood x prior curve): `r area_under_curve`
+The probability of the data is (i.e., area under likelihood x prior curve): `r area_under_curve`
 
 Now we can visualize the rescaled likelihood (remember that the un-scaled likelihood was actually used in the calculations), the prior, and the normalized posterior.
 
@@ -166,7 +174,7 @@ tibble(x = x,
   theme_bw()
 ```
 
-Here is a function that will allow you to explore how the posterior is sensitive to the likelihood and the prior
+Here is a function that will allow us to explore how the posterior is sensitive to the likelihood and the prior
 
 ```{r}
 explore_senstivity <- function(num_data_points, mean_data, sd_data, mean_prior, sd_prior, title){
@@ -208,7 +216,7 @@ return(p)
 }
 ```
 
-Now you can explore how the posterior is sensitive to 1) prior sd (i.e., confidence in the prior) 2) the number of data points used in the likelihood (how does increasing the number of data points influence the posterior) the prior mean 3) the mean of the data used in the likelihood (how different is it than the prior?)
+Now we can explore how the posterior is sensitive to 1) prior sd (i.e., confidence in the prior) 2) the number of data points used in the likelihood (how does increasing the number of data points influence the posterior) the prior mean 3) the mean of the data used in the likelihood (how different is it than the prior?)
 
 ```{r}
 #Baseline
@@ -245,7 +253,7 @@ p4 <- explore_senstivity(num_data_points = 5,
 
 ```
 
-@fig-post-sens showns the senstivity of the posterior to assumptions of the prior and the data.
+@fig-post-sens shows the sensitivity of the posterior to assumptions of the prior and the data.
 
 ```{r}
 #| echo: false
@@ -304,7 +312,6 @@ area_under_curve <- sum(prior_times_likelihood * delta_par1) #Width * Height
 normalized_posterior <- prior_times_likelihood / area_under_curve
 ```
 
-
 ```{r}
 tibble(par1 = par1,
        prior = density_prior,
@@ -340,11 +347,11 @@ ggplot(d, aes(x = x, y = prediction, col = distribution)) +
 
 ## Solving a Bayesian model
 
-The example above is designed to build an intuition for how a Bayesian analysis works but is not how the parameters in a Bayesian model are estimated in practice. For one thing, if there are multiple parameters being estimated it is very hard to estimate the area under the curve. Second, the area is very very same if there are many data points (so small that the computer can't hold it well)
+The example above is designed to build an intuition for how a Bayesian analysis works but is not how the parameters in a Bayesian model are estimated in practice. For one thing, if there are multiple parameters being estimated, it is very hard to estimate the area under the curve. Second, the area is very very small if there are many data points (so small that the computer can't hold it well)
 
 There are two common methods for estimating posterior distributions that involve numerical computation. Both methods involve randomly sampling from an unknown posterior distribution and saving the samples. The sequence of saved sample for the parameters is called a Markov chain Monte Carlo (MCMC). The distribution of parameter values in the MCMC chain is your posterior distribution.
 
-The first is called Gibbs sampling and is used when you know the probability distribution type for the posterior but not the parameter values of the distribution. For example, if your prior is normally distributed and your likelihood is normally distributed then you know (from math that other have already done for you) that the posterior is normally distributed. Therefore, you can randomly draw from that distribution to build your MCMC chain that generates your posterior distribution. We will not go over this in detail but know that this method will give you an answer quicker but requires you (or the software you are using) to know that your prior and likelihood are conjunct (i.e., someone else has worked out that the posterior always has a certain PDF if the prior and likelihood are of certain PDF - see pages 86-89 and Table A3 in Hobbs and Hooten).
+The first is called Gibbs sampling and is used when you know the probability distribution type for the posterior but not the parameter values of the distribution. For example, if your prior is normally distributed and your likelihood is normally distributed then you know (from math that others have already done for you) that the posterior is normally distributed. Therefore, you can randomly draw from that distribution to build your MCMC chain that generates your posterior distribution. We will not go over this in detail but know that this method will give you an answer quicker but requires you (or the software you are using) to know that your prior and likelihood are conjunct (i.e., someone else has worked out that the posterior always has a certain PDF if the prior and likelihood are of certain PDF - see pages 86-89 and Table A3 in Hobbs and Hooten).
 
 The second is called MCMC Metropolis--Hastings (MCMC-MH) and is a rejection sampling method. In this case you don't know the form of the posterior. Basically the MCMC-MH is the following
 
@@ -545,7 +552,6 @@ d <- tibble(x = x_new,
             obs = y)
 ```
 
-
 ```{r}
 ggplot(d, aes(x = x)) +
   geom_ribbon(aes(ymin = lower95_y, ymax = upper95_y), fill = "lightblue", alpha = 0.5) +
@@ -559,7 +565,7 @@ ggplot(d, aes(x = x)) +
 
 ## Problem set
 
-Using the following as a guide
+Your task is to modify the code below to estimate the posterior distribution of parameters in Q10 function that was in the likelihood analysis exercise (@sec-q10). Use the same data as used in the Q10 likelihood exercise.
 
 ```{r}
 #| warning: FALSE
@@ -690,8 +696,6 @@ p2 <- ggplot(d, aes(x = value)) +
 
 p1 / p2
 ```
-
-Your task is to modify the code above to estimate the posterior distribution of parameters in Q10 function that was in the likelihood analysis exercise. Use the same data as used in the Q10 likelihood exercise.
 
 **Question 1**: Provide the distribution and parameters describing the distribution for your prior distributions. Justify why you chose the distribution and parameters. (do not spend time looking at the literature for values to use to build prior distribution - just give plausible priors and say why their plausible)
 
