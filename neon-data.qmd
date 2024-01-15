@@ -9,7 +9,9 @@ library(neonstore)
 
 In this document, we will be creating a carbon budget for a NEON site. It was developed in collaboration with John Smith at Montana State University.
 
-NEON data is organized by data product ID in the NEON Date Portal: <https://data.neonscience.org/static/browse.html>
+NEON data is organized by data product ID in the NEON Data Portal: <https://data.neonscience.org/static/browse.html>
+
+The chapter uses the `neonstore` packages developed by Carl Boettiger to access NEON data.  The `neon_cloud` function uses the NEON data produce ID and the table within the product to download the data from NEON cloud storage.  If you are new to a NEON data product, it is important to explore the data product on NEON's Data Portal before using the `neon_cloud` functionality (otherwise you don't know what tables you need to download and how they link together).
 
 ## NEON Project
 
@@ -21,7 +23,7 @@ NEON data is organized by data product ID in the NEON Date Portal: <https://data
 
 ## Download data
 
-First, we are going to want to define the site ID. The four letter site code denotes NEON site. You can learn more about NEON sites here: <https://www.neonscience.org/field-sites/explore-field-sites>. The elevation, latitude , and longitude are needed to convert the diameter measurements to biomass.
+First, we define the site ID. The four letter site code denotes NEON site. You can learn more about NEON sites here: <https://www.neonscience.org/field-sites/explore-field-sites>. The elevation, latitude, and longitude are needed to convert the diameter measurements to biomass and are found on the NEON page describing the site.
 
 ```{r}
 site <- "OSBS"
@@ -34,9 +36,11 @@ longitude <- -81.993431 #-87.393259
 
 ### Calculate carbon in trees
 
-In this section, we will be calculating carbon in live and dead trees at a NEON site. At the end we will have a *site-level* mean carbon stock in *live trees* for each year that was sampled from the plots that are sampling the ecosystem under the flux tower (e.g., tower plots).
+In this section, we will be calculating carbon in live and dead trees at a NEON site. At the end we will have a *site-level* mean carbon stock in *live trees* for each year that was sampled from the plots represent ecosystem under the flux tower (e.g., tower plots).  We use the tower plots so correspond to same ecosystem as the NEON `nee` data.  
 
-The code below read the data directly from NEON's cloud storage. Since the columns may change between the official releases and the provisional data, they need to be read in separately before being combined.
+We will select the key variables in each table (thus only downloading those variables).
+
+The code below reads the data directly from NEON's cloud storage. 
 
 ```{r}
 #| message: false
@@ -80,14 +84,14 @@ map_tag_table <- map_tag_table |>
          SPECIES = genus_species[,2]) 
 ```
 
-Select the key variables in each table and join into the individual table, making sure that we have `GENUS`, `SPECIES`, and `measurementHeight`. These will be important when we use `allodb` to estimate the amount of carbon.
+Now we will join the tables by the key variables to build our dataset for the site.
 
 ```{r}
 
 combined_table <- left_join(ind_table, map_tag_table, by = "individualID") |> 
   arrange(plotID,individualID)
 
-combined_table <- inner_join(combined_table, plot_table, by = c("plotID")) |> 
+combined_table <- inner_join(combined_table, plot_table, by = "plotID") |> 
   arrange(individualID)
 
 combined_table_dbh <- combined_table[which(combined_table$measurementHeight == 130),]
@@ -101,13 +105,16 @@ Tidy up the individual tree data to include only live trees from the tower plots
 ```{r}
 combined_table_live_tower <- combined_table_dbh |>  
   filter(str_detect(plantStatus,"Live"),
-         plotType == "tower") |> 
+         plotType == "tower",
+         measurementHeight == 130) |> 
   mutate(stemDiameter = as.numeric(stemDiameter))
 ```
 
-Calculate the biomass of each tree in the table. We will do this using `get_biomass` in the `allodb` package. This function takes as arguments: `dbh`, `genus`, `species`, `coords`. We have already extracted genus and species, and in fact we have already extracted dbh as well. The steps where we were subsetting based on measurement heights of 130 cm was actually subsetting to include only data that had dbh measurements.
+To calculate the biomass of each tree in the table, we will do this using `get_biomass` in the `allodb` package. This function takes as arguments: `dbh`, `genus`, `species`, `coords`. We have already extracted genus and species. The steps where we were subsetting based on measurement heights of 130 cm was actually subsetting to include only data that had dbh measurements.
 
-In this next section, as well as a future one where we calculate dead tree carbon, we are going to make a simplfying assumption. We will assume that the below ground biomass of a tree is some fixed proportion of its above ground biomass. In our analysis, we will assume this value is $.3$, but it is a parameter that can be changed.
+In this next section, as well as a future one where we calculate dead tree carbon, we are going to make a simplfying assumption. We will assume that the below ground biomass of a tree is some fixed proportion of its above ground biomass. In our analysis, we will assume this value is $.3$, but it is a parameter that can be changed.  We also assume that carbon is 0.5 of biomass.
+
+The `get_biomass` function is within the `allodb` package and returnes the biomass of each tree in units of kg.  
 
 ```{r}
 library(allodb)
@@ -149,7 +156,7 @@ ggplot(plot_live_carbon, aes(x = measure_date, y = plot_kgCm2, color = plotID)) 
   theme_bw()
 ```
 
-Determine the set of plots that are measured each year (a subset, n = 5) are measured each year, while all the plots are measured every 5 years.
+Only a subset of plots are measured each year and we only want the plots have annual measurements.  This code determines the set of plots that are measured each year (a subset, n = 5) are measured each year, while all the plots are measured every 5 years.
 
 ```{r}
 last_plots <- plot_live_carbon |> 
@@ -166,7 +173,7 @@ site_live_carbon <- plot_live_carbon |>
               sd_kgCperm2 = sd(plot_kgCm2))
 ```
 
-@fig-site-live-carbon is the site level carbon calculated by taking the mean only the plots that were measured each year
+@fig-site-live-carbon is the site level carbon calculated by taking the mean only of the plots that were measured each year.  
 
 ```{r}
 #| fig-cap: Site level carbon in living trees for the focal NEON site
@@ -181,7 +188,7 @@ ggplot(site_live_carbon, aes(x = measure_date, y = mean_kgCperm2)) +
 
 ### Calculate carbon in dead trees
 
-We will now use `allodb` to extract the carbon in dead trees.
+We will now use `allodb` package to extract the carbon in dead trees.  This is exactly like the steps above except for using the trees with a dead status.
 
 ```{r}
 combined_table_dead_tower <- combined_table_dbh |> 

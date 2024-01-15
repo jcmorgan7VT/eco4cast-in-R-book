@@ -9,7 +9,7 @@ library(lubridate)
 
 ## Overview of model
 
-The model @fig-process-model is a 0-D model (no horizontal and vertical dimensions) that runs at a 1 day timestep.  It models carbon using MgC/ha.  
+We use a simple representation of a forest ecosystem that simulates carbon using three pools (leaves, wood, and soil).  The model @fig-process-model is a 0-D model (no horizontal and vertical dimensions) that runs at a 1 day timestep.  It models carbon using the unis of MgC/ha.  
 
 ![Conceptual diagram of the forest model](img/model_diagram.png){#fig-process-model fig-align="center"}   
 
@@ -27,13 +27,17 @@ Heterotrophic respiration is modeled as a constant proportion of soil carbon (`R
 
 The change is leaves in each time step is modeled as leaf allocation - litterfall.  The change in wood in each timestep is modeled as wood allocation - mortality.  The change in soil carbon in each timestep is modeled as litterfall + mortality - heterotrophic respiration.  
 
-Finally, net ecosystem exchange (`nee`) is modeled as `-(gpp - ra - rh)`
+Finally, net ecosystem exchange (`nee`) is modeled as `ra + rh - gpp` with negative values corresponding to net gain in carbon by the ecosystem.
 
 The model requires inputs of photosynthetic active radiation (`PAR`), air temperature (`temp`), and day-of-year (`doy`).
 
 ## Model as a function
 
-The code below describes the model as a R function.  The function predicts one time-step at a time.  The same function is found in the `R/forecast_model.R` script in the book repository.
+The code below describes the model as a R function.  The function predicts one time-step at a time.  The same function is found in the `R/forecast_model.R` script in the book repository.  The inputs to the function are:
+- `t`: the index of the current model time-step
+- `states`: a matrix of the states (rows = ensemble member, columns = state)
+- `parms`: a data frame of parameters (rows = ensemble member, columns = parameter)
+- `inputs`: a matrix of drivers (rows = ensemble member, columns = driver)
 
 ```{r}
 forest_model <- function(t, states, parms, inputs){
@@ -96,7 +100,7 @@ forest_model <- function(t, states, parms, inputs){
   
   #Dervived variables (LAI and net ecosystem exchange)
   lai <- states[, 1]  * parms$SLA * 0.1
-  nee <- -(gpp - ra - rh)
+  nee <- ra + rh - gpp
   
   return(cbind(state1 = states[, 1],
               state2 = states[, 2],
@@ -117,7 +121,7 @@ forest_model <- function(t, states, parms, inputs){
 
 ### Time frame, site id, and number of ensembles
 
-We are doing a deterministic simulation (no uncertainty) so we only have one ensemble member
+In this chapter, we are running a deterministic simulation (no uncertainty) so we only have one ensemble member.  The simulation is for a single NEON site (OSBS).  The simulation will run from `2020-09-30` to two days ago.
 
 ```{r}
 site <- "OSBS"
@@ -127,14 +131,21 @@ sim_dates <- seq(as_date("2020-09-30"), Sys.Date() - lubridate::days(2), by = "1
 
 ### Set drivers
 
-There is a custom function to access the weater drivers. You can learn more about the function in the appendix (add link)
+I have provided a custom function to access the weater drivers. You can learn more about the function in the appendix (add link).  They are provided in the chapter as a function rather than the full code to avoid unncessary detraction from the focus on the process model.
 
 ```{r}
 inputs <- get_historical_met(site = site, sim_dates, use_mean = TRUE)
 inputs_ensemble <- assign_met_ensembles(inputs, ens_members)
 ```
 
+Here is a plot of the meterological input data.
+
+```{r}
+#INSERT FIGURE
+```
 ### Set parameters
+
+The model has 10 process parameters and 3 parameters representing the process uncertainty.  Each of the parameters is set below to reasonable values.  The process uncertainty standard deviations are set to 0.0 since our simulation is deterministic. 
 
 ```{r}
 #Set parameters
@@ -157,7 +168,7 @@ params <- as.data.frame(params)
 
 ### Set inital condition
 
-Set the starting point of the simulation. All three states need a starting point.
+Next we set the starting point of the simulation. All three states need a starting point.
 
 ```{r}
 output <- array(NA, dim = c(length(sim_dates), ens_members, 12)) #12 is the number of outputs
@@ -168,20 +179,20 @@ output[1, , 3] <- 140
 
 ## Run model
 
-Loop over the `sim_dates`.  The loop starts on index of 2 because index of 1 was set as the initial conditions above.  Save the output at step time-step to the output array.  
+Loop over the `sim_dates` vector that includes the dates of the simulation.  The loop starts on index of 2 because index of 1 was set as the initial conditions above.  The `forest_model` function is the the process model above.  Save the output at each time-step to the output array.  
 
 ```{r}
 for(t in 2:length(sim_dates)){
   output[t, , ]  <- forest_model(t, 
-                               states = matrix(output[t-1 , , 1:3], nrow = ens_members) , 
-                               parms = params, 
-                               inputs = matrix(inputs_ensemble[t ,, ], nrow = ens_members))
+                                 states = matrix(output[t-1 , , 1:3], nrow = ens_members),
+                                 parms = params,
+                                 inputs = matrix(inputs_ensemble[t ,, ], nrow = ens_members))
 }
 ```
 
 ## Plot output
 
-The `output_to_df` converts the output into a data frame and is located in the `R/helpers.R` script in the book repository.
+The `output_to_df` converts the output into a data frame and is located in the `R/helpers.R` script in the book repository.  The `sim_name` is the name of your simulation. 
 
 ```{r}
 output_df <- output_to_df(output, sim_dates, sim_name = "baseline")
