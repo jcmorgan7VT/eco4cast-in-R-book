@@ -102,7 +102,7 @@ Specifically we refer to the particle filter described above as a bootstrap part
 
 ## Example of Particle Filter
 
-Here is an example of the particle filter applied to the [Google Flu data](https://en.wikipedia.org/wiki/Google_Flu_Trends), project that has been since stoped by Google due to accuracy issues.  It is still a good dataset for illustrative purposes here.
+Here is an example of the particle filter applied to the [Google Flu data](https://en.wikipedia.org/wiki/Google_Flu_Trends), project that has been since stopped by Google due to [accuracy issues](https://www.science.org/doi/abs/10.1126/science.1248506).  It is still a good dataset for illustrative purposes here. The exercises from Mike Dietze's Ecological Forecasting book also use Google Flu data. 
 
 First load in data. We are only going to focus on the first 15 weeks of the data so that you can see the particles more easily
 
@@ -539,7 +539,7 @@ p10000 <- tibble(time = gflu$Date,
 gflu$obs_in_fit <- exp(y)
 ```
 
-And combine to a single plot (@fig-pf-num-sens). You see the width of the 95 % confidence interval increases substantially from 10 to 1000 particles but then is similar from 1000 to 10000. This reflects what we learned from the very first exercise where you drew random samples from a distribution and found that between 1000 and 10000 random samples were required to approximate the distribution well.
+And combine to a single plot (@fig-pf-num-sens). You see the width of the 95% confidence interval increases substantially from 10 to 1000 particles but then is similar from 1000 to 10000. This reflects what we learned from the very first exercise where you drew random samples from a distribution and found that between 1000 and 10000 random samples were required to approximate the distribution well.
 
 ```{r}
 #|warning: false

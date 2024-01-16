@@ -1,12 +1,18 @@
 # Background skills
 
+This chapter provides information about data science skills that are crucial completing the activities in the book (aka prerequisites).
+
+## R/Rstudio Installation
+
+Pending
+
 ## R skills
 
 The book uses R as the focal programming language and generate uses the Tidyverse approach when working with and visualizing data. The following functions are commonly used: `read_csv`, `write_csv`, `mutate`, `filter`, `group_by`, `summarize`, `ggplot`, `select`, pipes (`|>` or `%>`), `pivot_wider`, `pivot_longer`, `arrange`, `left_join`). If you are new R and Tidyverse there are many great materials on the internet. The Data Carpentry "Data Analysis and Visualization in R for Ecologists" is an excellent starting point for learning. The [R for Data Science book](https://r4ds.hadley.nz%5D) is an especially useful reference for learning the Tidyverse commands. Finally, I have created an [introductory to tidyverse module](https://github.com/frec-3044/tidyvere-intro-template) for my undergraduate Environmental Data Science class. You can use the module as a "test" of your Tidyverse skills
 
 ## Git Skills {#sec-github}
 
-You will be required to use Git and GitHub to complete the assignments in the book.  In particular, Git and GitHub are uses for the generation and submission of forecasts to the NEON Ecological Forecasting Challenge.  Below are instructions for setting up Git and GitHub on your computer.
+You will be required to use Git and GitHub to complete the assignments in the book. In particular, Git and GitHub are uses for the generation and submission of forecasts to the NEON Ecological Forecasting Challenge. Below are instructions for setting up Git and GitHub on your computer.
 
 1.  Create a GitHub user account at <https://github.com>, if you don't already have one. [Here is advice about choosing a user name](https://happygitwithr.com/github-acct.html#username-advice), because choosing a good user name is critical.
 
@@ -72,7 +78,7 @@ If you are having issues (i.e., your computer does not seem to have Git installe
 
 ## Docker Skills
 
-Docker is tool that the activities in the book use for improving the reproduciblity and automation of data analysis and forecasting workflows.  Below are the instructions for setting up and interacting with a Docker container (instructions are from Freya Olsson's workshop)
+Docker is tool that the activities in the book use for improving the reproduciblity and automation of data analysis and forecasting workflows. Below are the instructions for setting up and interacting with a Docker container (instructions are from Freya Olsson's workshop)
 
 Go to <https://docs.docker.com/get-docker/> to install the relevant install for your platform (available for PC, Mac and Linux). Also see <https://docs.docker.com/desktop/>.
 
