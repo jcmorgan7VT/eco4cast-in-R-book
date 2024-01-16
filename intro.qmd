@@ -10,7 +10,7 @@ The second half of the book will introduce more advanced concepts in ecological 
 
 Throughout the class you will work with multiple NEON data products that include water temperature, phenocam, chlorophyll-a and terrestrial carbon. [NEON]( https://www.neonscience.org) is a continental-scale observatory funded by the U.S. National Science Foundation to generate standardized measurements of ecological systems across 81 sites over the next 30-years. The data are freely available to use.
 
-Learning objectives
+## Learning objectives
 
 Having completed the course a student will be able to:
 
@@ -19,3 +19,21 @@ Having completed the course a student will be able to:
 3.  Apply Bayesian methods to estimate parameter distributions in ecological models using data,
 4.  Apply sequential data assimilation to improve ecological model predictions, and
 5.  Create, evaluate, and interpret an ecological forecast of the future that includes uncertainty.
+
+## Readings
+
+Clark, J. S., Carpenter, S. R., Barber, M., Collins, S., Dobson, A., Foley, J. A., et al. (2001). Ecological Forecasts: An Emerging Imperative. Science, 293(5530), 657–660. <https://doi.org/10.1126/science.293.5530.657>
+
+Dietze, M., & Lynch, H. (2019). Forecasting a bright future for ecology. Frontiers in Ecology and the Environment, 17(1), 3–3. <https://doi.org/10.1002/fee.1994>
+
+Thomas, R. Q., Boettiger, C., Carey, C. C., Dietze, M. C., Johnson, L. R., Kenney, M. A., et al. (2023). The NEON Ecological Forecasting Challenge. Frontiers in Ecology and the Environment, 21(3), 112–113. <https://doi.org/10.1002/fee.2616>
+
+
+
+
+
+
+
+
+
+

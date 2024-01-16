@@ -13,3 +13,8 @@ This module has been peer-reviewed and included in the ["On the Cutting Edge Exe
 Reference describing the effectiveness of the module:
 
 Woelmer, W.M., T.N. Moore, M.E. Lofton, R.Q. Thomas, and C.C. Carey. 2023. Embedding communication concepts in forecasting training increases students' understanding of ecological uncertainty Ecosphere 14: e4628 <https://doi.org/10.1002/ecs2.4628>
+
+## Reading 
+
+Spiegelhalter, D., Pearson, M., & Short, I. (2011). Visualizing Uncertainty About the Future. Science, 333(6048), 1393–1400. <https://doi.org/10.1126/science.1191181>
+
