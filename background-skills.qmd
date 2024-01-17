@@ -4,7 +4,7 @@ This chapter provides information about data science skills that are crucial com
 
 ## R/Rstudio Installation
 
-Pending
+The R for Data Science book provides instructions for [installing R and Rstudio](https://r4ds.hadley.nz/intro#prerequisites).
 
 ## R skills
 
