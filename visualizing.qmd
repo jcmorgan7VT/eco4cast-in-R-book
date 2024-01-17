@@ -1,20 +1,22 @@
-# Visualizing and evaluating forecasts {#sec-analysis}
+# Evaluating forecasts {#sec-analysis}
 
-The fourth forecast generation assignment will challenge analyze the automated forecasts that you submitted as part of @sec-third-forecast. The assign uses the module in Freya Olsson's tutorial that provides code to access the automatically scored forecasts. You will add code to your repository that generates plots.
+The fourth forecast generation assignment will challenge you to analyze the automated forecasts that you submitted as part of @sec-third-forecast. The assignment uses the module in Freya Olsson's tutorial that provides code to access the automatically scored forecasts. You will add code to your repository that generates plots.
 
 [**Tutorial Rmarkdown**](https://github.com/OlssonF/NEON-forecast-challenge-workshop/blob/main/Analyse_scores/Get_scores_tutorial.Rmd)
 
+This chapter provides a description of metrics for evaluating forecast, including the comparison to simple baseline forecast models.
+
 ## Scoring metrics
 
-## RMSE
+A scoring metric is a value that can be used to evaluate how good a forecast compares to observations.  Scores can then be compared among forecast models to evaluate relative performance.    Typically lower scores are better. Scoring metrics are also called "costs".  The most based score would be the difference between the forecast mean and observation.  However, there are a couple of issues with that score.  First, forecast below the observation will receive negative values and forecasts above will receive positive values, thus the lowest value is not the best.  Second, it does not use any information from the forecast uncertainty in the evaluation.  Metrics like absolute error (absolute value of the difference between the forecast mean and observation) and root mean-squared error (RMSE) address the first issue but still do not consider the uncertainty.  
 
-Pending
+It is important to consider uncertainty because intuitively a forecast that has the create mean but a large uncertainty (so it puts very little confidence on the observed value) should have a lower score that a forecast with a mean that is slightly off but with lower uncertainty (so it actually puts more confidence on the observed value).  The Continuous Ranked Probablity Score (CRPS) is one metric that evaluates the forecast distribution
 
-## Continuous Ranked Probability Score
+### Continuous Ranked Probability Score
 
 Forecasts can scored using the continuous ranked probability score (CRPS), a proper scoring rule for evaluating forecasts presented as distributions or ensembles (@gneitingStrictlyProperScoring2007). The CRPS compares the forecast probability distribution to that of the validation observation and assigns a score based on both the accuracy and precision of the forecast. We will use the 'crps_sample' function from the `scoringRules` package in R to calculate the CRPS for each forecast.
 
-CRPS is calculate for each forecast - observation pair (e.g., a single datetime from a reference_datetime). CRPS can then be combined all sites and forecast horizons to understand the aggregate performance.
+CRPS is calculation for each forecast - observation pair (e.g., a single datetime from a reference_datetime). CRPS can then be combined all sites and forecast horizons to understand the aggregate performance.
 
 Importantly, we use the convention for CRPS where zero is lowest and best possible score, therefore forecasts want to achieve the lowest score. CPRS can be also expressed as a negative number with zero as highest and best possible score (@gneitingStrictlyProperScoring2007). The `scoringRules` package that we use follows the 0 or greater convention.
 
@@ -26,7 +28,7 @@ library(tidyverse)
 
 ### Example of a CRPS calculation from an ensemble forecast
 
-The goal of this section is to provide an initition for the CRPS metric.
+The goal of this section is to provide an intuition  for the CRPS metric.
 
 First, create a random sample from a probability distribution. This is the "forecast" for a particular point in time. For simplicity, we will use a normal distribution with a mean of 8 and standard deviation of 1
 
@@ -40,26 +42,12 @@ Second, we have our data point (i.e., the target) that we set to 8 as well.
 y <- 8
 ```
 
-Now calculate CRPS using Equation 2
-
-```{r}
-s <- 0
-for(i in 1:length(x)){
-  for(j in 1:length(x)){
-    s <- s + abs(x[i] - x[j])
-  }
-}
-crps_equation_2 <- mean(abs(x - y)) - s / (2 * length(x)^2)
-crps_equation_2
-```
-
 Now calculate using the `crps_sample()` function in the `scoringRules` package
 
 ```{r}
+library(scoringRules)
 crps_sample(y = y, dat = x)
 ```
-
-The two values should be the
 
 ### Exploring the scoring surface
 
@@ -68,8 +56,8 @@ Now lets see how the CRPS changes as the mean and standard deviation of the fore
 First, set vectors for the different mean and SD values we want to explore
 
 ```{r}
-sample_mean <- seq(4, 12, 0.1)
-sample_sd <- seq(0.1, 10, 0.1)
+forecast_mean <- seq(4, 12, 0.05)
+forecast_sd <- seq(0.1, 10, 0.05)
 ```
 
 Second, set our observed value to 8 for simplicity
@@ -78,14 +66,13 @@ Second, set our observed value to 8 for simplicity
 y <- 8
 ```
 
-Now calculate the CRPS at each combination of forest mean and SD
+Now calculate the CRPS at each combination of forest mean and SD.  We used `crps_norm` because we know the forecast is normally distributed 
 
 ```{r}
-combined <- array(NA, dim = c(length(sample_mean), length(sample_sd)))
-for(i in 1:length(sample_mean)){
-  for(j in 1:length(sample_sd)){
-    sample <- rnorm(10000, sample_mean[i], sample_sd[j])
-    combined[i, j] <- crps_sample(y = y, dat = sample)
+combined <- array(NA, dim = c(length(forecast_mean), length(forecast_sd)))
+for(i in 1:length(forecast_mean)){
+  for(j in 1:length(forecast_sd)){
+    combined[i, j] <- crps_norm(y = y, mean = forecast_mean[i], forecast_sd[j])
   }
 }
 ```
@@ -95,231 +82,60 @@ Finally, visualize the scoring surface with the observed value represented by th
 ```{r}
 contour(x = sample_mean, y = sample_sd, z = as.matrix(combined),nlevels = 20, xlab = "Mean", ylab = "SD")
 abline(v = y, col = "red")
+abline(v = 6, col = "darkgreen")
 ```
 
-The contour surface highlights the trade-off between the mean and standard deviation.
-
-### CRPS from the Normal Distribution
-
-If the distributional forecast is a normal distribution represented by a mean $\mu$ and standard deviation $\sigma$, an ensemble of predictions is not needed to evaluate CRPS because we can take advantage of the analytic solution to CRPS under the normal assumption (Equation 4 from Gneiting et al. 2005)
-
-Equation 5 from Gneiting et al. (2005) gives
-
-$$\begin{align*}
-CRPS(N(\mu, \sigma^2) | y) = \sigma \left( \frac{y - \mu}{\sigma} \left( 2 \Phi\left(  \frac{y - \mu}{\sigma} \right) - 1 \right)  + 2 \phi \left(  \frac{y - \mu}{\sigma} \right) - \frac{1}{\sqrt{\pi}} \right)
-\end{align*}$$
-
-for $\Phi(\cdot)$ and $\phi(\cdot)$ the standard normal CDF and PDF, respectively. Therefore, if the forecast distribution is **truly** a normal distribution (often this isn't true in forecasts that only report a mean and sd) a simplified score can be applied as follows:
+The contour surface highlights the trade-off between the mean and standard deviation.  Each isocline is the same CRPS score.  Holding the mean constant at the observed value (vertical red line at 8) but increases the uncertainty (increasing SD) results in a higher (worse) score.  However, a mean of 6 (green line) with an SD of 2 has a similar score to a mean of 8 and a standard deviation of 1.  The following figure capture this idea. The two lines are the distribution of the mean = 8, sd = 4 and mean = 6, sd = 2 forecasts.  The red line is the observation of 8.  The forecast distribution with the mean of 6 actually has more density at x = 8 (the observation) and scores slightly better.
 
 ```{r}
-sample_mean <- seq(4, 12, 0.1)
-sample_sd <- seq(0.1, 10, 0.1)
-
-combined_norm <- array(NA, dim = c(length(sample_mean), length(sample_sd)))
-for(i in 1:length(sample_mean)){
-  for(j in 1:length(sample_sd)){
-    combined_norm[i, j] <- crps_norm(y = y, mean = sample_mean[i], sd = sample_sd[j])
-  }
-}
+plot(density(rnorm(10000, mean = 8, sd = 4)), ylim = c(0, 0.2), main = "", xlab = "forecasted value")
+lines(density(rnorm(10000, mean = 6, sd = 2)), col = "darkgreen")
+abline(v = 8, col = "red")
 ```
 
-Finally, visualize the scoring surface with the observed value represented by the red line.
+## Baseline forecasts
+
+It is a best practice in forecasting to compare forecasts generated by more complex models to thus generated by simple "naive" models so that we can understand whether the additional complexity provides any gain in forecast capacity. Two common naive models are persistence and "climatology".  
+
+Persistence forecasts that tomorrow will be the same as today, thus capturing the inertia of the system.  Uncertainty is added to a persistence forecast by simulated it as a random walk where each ensemble member has a random trajectory without any direction (so the mean of the forecast is still previous days mean value).  Persistence models perform well in systems with real-time observations because you actually know the current value and in systems with high inertia (like the water temperatures in the bottom of a large lake). 
 
 ```{r}
-contour(x = sample_mean, y = sample_sd, z = as.matrix(combined_norm), nlevels = 20, xlab = "Mean", ylab = "SD")
-abline(v = y, col = "red")
-```
-
-Note that at a given value of the sd, the lowest score is achieved at $\mu = y$ as shown for each of the blue lines where the minimum value of the score across each blue line is at the red line. This behavior makes sense because the CRPS is a score that rewards accuracy and precision. Thus, for any given level of precision (represented by the standard deviation), CRPS is optimized by producing the most accurate prediction of the distribution's location.
-
-```{r}
-contour(x = sample_mean, y = sample_sd, z = as.matrix(combined_norm), nlevels = 20, xlab = "Mean", ylab = "SD")
-abline(v = y, col = "red")
-abline(h = 2.5, col = "blue")
-abline(h = 4.3, col = "blue")
-abline(h = 6.8, col = "blue")
-```
-
-Interestingly, for a given mean $\mu \neq y$ we find a pattern that makes intuitive sense given the goal of CRPS to produce forecasts that are both accurate and precise. For a given amount of bias in the prediction (i.e., given a $\mu \neq y$), the optimal score is achieved by a standard deviation that slightly larger than the bias.
-
-```{r}
-layout(matrix(1:4, 2, 2, byrow = TRUE))
-## plots for mu = 7
-mu <- 7
-contour(x = sample_mean, y = sample_sd, z = as.matrix(combined_norm), nlevels = 20, xlab = "Mean", ylab = "SD", main = paste0("CRPS contour given mu = ", mu))
-abline(v = mu, col = "red")
-min_sd <- sample_sd[which.min(crps_norm(y, mean = mu, sd = sample_sd))]
-abline(h = min_sd, col = "blue")
-plot(sample_sd, crps_norm(y, mean = mu, sd = sample_sd), type = 'l', main = paste0("CRPS profile given mu = ", mu))
-abline(v = min_sd, col = "blue")
-## plots for mu = 11
-mu <- 11
-contour(x = sample_mean, y = sample_sd, z = as.matrix(combined_norm), nlevels = 20, xlab = "Mean", ylab = "SD", main = paste0("CRPS contour given mu = ", mu))
-abline(v = mu, col = "red")
-min_sd <- sample_sd[which.min(crps_norm(y, mean = mu, sd = sample_sd))]
-abline(h = min_sd, col = "blue")
-plot(sample_sd, crps_norm(y, mean = mu, sd = sample_sd), type = 'l', main = paste0("CRPS profile given mu = ", mu))
-abline(v = min_sd, col = "blue")
-```
-
-Next, we plot the relationship between a given value of $\mu$ and the $\sigma$ that produces the optimal CRPS. This looks like a linear relationship.
-
-```{r}
-optimal_sd <- rep(0, length(sample_mean))
-for (i in 1:length(sample_mean)) {
-  optimal_sd[i] <- sample_sd[which.min(crps_norm(y, mean = sample_mean[i], sd = sample_sd))]
-}
-plot(sample_mean, optimal_sd, type = 'l')
-```
-
-Let's estimate the slope of the relationship. It looks like the optimal $sd$ for a normal distribution forecast that is biased by $|y - \mu|$ is $sd = 1.2|y - \mu|$ which makes sense as this would put the true value in a region of high probability.
-
-```{r}
-coef(lm(optimal_sd[sample_mean > 0] ~ sample_mean[sample_mean > 0]))
-```
-
-## CRPS tutorial
-
-This provide a tutorial for the Continuous Ranked Probability Score (CRPS), a proper scoring rule used to evaluate probabilistic forecasts.
-
-At its core, CRPS presents the difference between a cumulative probability distribution generated from the forecast and the data.
-
-### Set up data
-
-We will start with the calculation of CRPS for a single forecast and observation pair.
-
-```{r}
-obs <- 0
-```
-
-Our forecast is a sample (n = 100) from a normal distribution with mean of 0 and standard deviation of 1
-
-```{r}
-forecast <- rnorm(100, mean = 0, sd = 1)
+all_results <- arrow::open_dataset("s3://anonymous@bio230014-bucket01/challenges/forecasts/summaries/project_id=neon4cast/duration=P1D/variable=temperature/model_id=persistenceRW?endpoint_override=sdsc.osn.xsede.org") |> 
+  filter(site_id == "BARC",
+         reference_date == "2024-01-10") |> 
+  collect()
 ```
 
 ```{r}
-dy <- 0.5
-y <- seq(-3,3, dy)
+all_results |> 
+  ggplot(aes(x = datetime)) +
+  geom_ribbon(aes(ymin = quantile10, ymax = quantile90), color = "lightblue", fill = "lightblue", alpha = 0.7) +
+  geom_line(aes(y = median)) +
+  labs(y = "water temperature", x = "datetime", title = "NEON site: BARC") +
+  theme_bw()
+```
+
+"Climatology" is the historical distribution of observations for the forecast days.  In seasonal system, we often represent this using the mean and standard deviation of historical data from the same day-of-year in the past.  Less seasonal systems, may represent it as the historical mean and standard deviation.  I used climatology in quotes because the meteorological definition of climatology is 30 years but most ecological systems don't have 30-years of observations.  We use the term "day-of-year mean" instead of climatology when forecasting systems with limited historical data.  Climatology forecasts capacity the long-term behavior of the system and capture seasonal patterns.  
+
+```{r}
+all_results <- arrow::open_dataset("s3://anonymous@bio230014-bucket01/challenges/forecasts/summaries/project_id=neon4cast/duration=P1D/variable=temperature/model_id=climatology?endpoint_override=sdsc.osn.xsede.org") |> 
+  filter(site_id == "BARC",
+         reference_date == "2024-01-10") |> 
+  collect()
 ```
 
 ```{r}
-forecast_cdf_function <- ecdf(forecast)
-forecast_cdf <- forecast_cdf_function(y)
-obs_cdf <- as.numeric((y > obs[i]))
+all_results |> 
+  ggplot(aes(x = datetime)) +
+  geom_ribbon(aes(ymin = quantile10, ymax = quantile90), color = "lightblue", fill = "lightblue", alpha = 0.7) +
+  geom_line(aes(y = median)) +
+  labs(y = "water temperature", x = "datetime", title = "NEON site: BARC") +
+  theme_bw()
 ```
 
-```{r}
-df <- tibble(y = y,
-           cdf = forecast_cdf,
-           variable = "forecast")
+Both of these models are simple to calculate and include no "knowledge" of the system that might be embedded in more complex models.  
 
-df <- bind_rows(df, 
-                tibble(y = y,
-           cdf = obs_cdf,
-           variable = "observation"))
-```
+## Reading
 
-```{r}
-#| warning: false
-ggplot(df, aes(x = y, y = cdf, color = variable)) + geom_line()
-```
+Simonis, J. L., White, E. P., & Ernest, S. K. M. (2021). Evaluating probabilistic ecological forecasts. Ecology, 102(8). <https://doi.org/10.1002/ecy.3431>
 
-```{r}
-error <- (forecast_cdf - obs_cdf)^2
-```
-
-```{r}
-tibble(y = y,
-       error = error) |> 
-  ggplot(aes(x = y, y = error)) + geom_line()
-```
-
-```{r}
-cdf_diff_area <- error * dy
-```
-
-```{r}
-#| warning: false
-tibble(y = y,
-       area = cdf_diff_area) |> 
-  ggplot(aes(x = y, y = area)) + geom_line()
-```
-
-```{r}
-crps <- sum(cdf_diff_area)
-```
-
-### Comparing forecasts
-
-```{r}
-calculate_crps <- function(obs, forecast, dy = 0.01) {
-  
-  y <- seq(-10,10, dy)
-  forecast_cdf <- ecdf(forecast)
-  cdf_diff <- (forecast_cdf(y) - as.numeric((y > obs)))^2 * dy
-  crps <- sum(cdf_diff)
-  
-  return(crps)
-}
-```
-
-```{r}
-forecast1 <- rnorm(100, mean = 0, sd = 4)
-forecast2 <- rnorm(100, mean = 1, sd = 2)
-forecast3<- rnorm(100, mean = 0, sd = 0.1)
-forecast4<- rnorm(100, mean = 1, sd = 0.1)
-```
-
-```{r}
-dy <- 0.001
-y <- seq(-10,10, dy)
-
-forecast1_cdf_function <- ecdf(forecast1)
-forecast2_cdf_function <- ecdf(forecast2)
-forecast3_cdf_function <- ecdf(forecast3)
-forecast4_cdf_function <- ecdf(forecast4)
-
-df <- tibble(y1 = c(y,y,y,y),
-             cdf = c(forecast1_cdf_function(y),
-                     forecast2_cdf_function(y),
-                     forecast3_cdf_function(y),
-                     forecast4_cdf_function(y)),
-             variable = c(rep(paste0("mean = 0, sd = 4, CRPS: ",calculate_crps(obs, forecast1)), length(y)),
-                          rep(paste0("mean = 1, sd = 1 CRPS: ",calculate_crps(obs, forecast2)), length(y)), 
-                          rep(paste0("mean = 0, sd = 0.1 CRPS: ",calculate_crps(obs, forecast3)), length(y)),
-                          rep(paste0("mean = 1, sd = 0.1 CRPS: ",calculate_crps(obs, forecast4)), length(y))))
-
-df <- bind_rows(df, 
-                tibble(y1 = y,
-           cdf = as.numeric((y > obs)),
-           variable = "observation"))
-```
-
-```{r}
-#| warning: false
-ggplot(df, aes(x = y1, y = cdf, color = variable)) + geom_line()
-```
-
-```{r}
-c(scoringRules::crps_sample(y = obs, dat = forecast1),scoringRules::logs_sample(y = obs, dat = forecast1)) 
-c(scoringRules::crps_sample(y = obs, dat = forecast2),scoringRules::logs_sample(y = obs, dat = forecast2)) 
-c(scoringRules::crps_sample(y = obs, dat = forecast3),scoringRules::logs_sample(y = obs, dat = forecast3)) 
-c(scoringRules::crps_sample(y = obs, dat = forecast4),scoringRules::logs_sample(y = obs, dat = forecast4)) 
-```
-
-```{r}
-calculate_crps <- function(obs, forecast, dy) {
-  n <- nrow(forecast)
-  crps <- rep(NA, n)
-  y <- seq(-5,5, dy)
-  
-  for (i in 1:n) {
-    forecast_cdf <- ecdf(forecast[i, ])
-    cdf_diff <- (forecast_cdf(y) - as.numeric((y > obs[i])))^2 * dy
-    crps[i] <- sum(cdf_diff)
-  }
-  
-  return(crps)
-}
-```

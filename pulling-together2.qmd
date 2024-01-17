@@ -1,5 +1,11 @@
 # Putting it together: Analyzing forecasts {#sec-analysis}
 
+## Best practices
+
+Add text about how the forecast that we are submitting follows best practices
+
+## Analyzing submitted forecasts
+
 Pending: add code to analyze submissions from the previous chapter.
 
 ```{r}
@@ -9,3 +15,17 @@ df <- all_results |>
   filter(site_id == "OSBS") |> 
   collect()
 ```
+
+## Aggregated scores
+
+## Aggregated compared to baselines
+
+## By horizon
+
+## By reference datetime
+
+## By site
+
+## Reading 
+
+Lewis, A. S. L., Woelmer, W. M., Wander, H. L., Howard, D. W., Smith, J. W., McClure, R. P., et al. (2022). Increased adoption of best practices in ecological forecasting enables comparisons of forecastability. Ecological Applications, 32(2), e02500. <https://doi.org/10.1002/eap.2500>

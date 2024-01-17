@@ -1,0 +1,5 @@
+# Putting it together: Analyzing forecasts {#sec-analysis}
+
+Add text and questions about best practices in forecasting
+
+Lewis, A. S. L., Woelmer, W. M., Wander, H. L., Howard, D. W., Smith, J. W., McClure, R. P., et al. (2022). Increased adoption of best practices in ecological forecasting enables comparisons of forecastability. Ecological Applications, 32(2), e02500. <https://doi.org/10.1002/eap.2500>

@@ -48,6 +48,7 @@ book:
     - part: "Project 2"
       chapters:
         - project2.qmd
+    - best-practices.qmd
     - references.qmd
     - part: "Appendix"
       chapters:
