@@ -87,13 +87,11 @@ $$
 P(model | data) = \frac{P(data | model) \cdot P(model)}{P(data)}
 $$
 
-
-we can multiply the likelihood x the prior. 
+we can multiply the likelihood x the prior.
 
 $$
 P(mean | data) \simeq likelihood \cdot prior
-$$
-Our prior is the following normal distribution
+$$ Our prior is the following normal distribution
 
 ```{r}
 mean_prior <- 0

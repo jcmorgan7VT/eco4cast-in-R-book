@@ -52,6 +52,7 @@ book:
     - part: "Appendix"
       chapters:
       - weather-drivers.qmd
+      - example-schedule.qmd
 
 bibliography: references.bib
 

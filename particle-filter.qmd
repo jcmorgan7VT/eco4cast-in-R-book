@@ -102,7 +102,7 @@ Specifically we refer to the particle filter described above as a bootstrap part
 
 ## Example of Particle Filter
 
-Here is an example of the particle filter applied to the [Google Flu data](https://en.wikipedia.org/wiki/Google_Flu_Trends), project that has been since stopped by Google due to [accuracy issues](https://www.science.org/doi/abs/10.1126/science.1248506).  It is still a good dataset for illustrative purposes here. The exercises from Mike Dietze's Ecological Forecasting book also use Google Flu data. 
+Here is an example of the particle filter applied to the [Google Flu data](https://en.wikipedia.org/wiki/Google_Flu_Trends), project that has been since stopped by Google due to [accuracy issues](https://www.science.org/doi/abs/10.1126/science.1248506). It is still a good dataset for illustrative purposes here. The exercises from Mike Dietze's Ecological Forecasting book also use Google Flu data.
 
 First load in data. We are only going to focus on the first 15 weeks of the data so that you can see the particles more easily
 

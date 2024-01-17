@@ -1,4 +1,4 @@
-# Propogating uncertainty
+# Propogating uncertainty {#sec-prop-unc}
 
 ```{r}
 #| message: FALSE
@@ -8,7 +8,7 @@ source("R/helpers.R")
 source("R/forest_model.R")
 ```
 
-This chapter applies the concepts in [Chapter -@sec-under-unc] to the forest process model.  If you have not reviewed chapter 5 yet, I recommend doing that  as a foundation for this Chapter.
+This chapter applies the concepts in [Chapter -@sec-under-unc] to the forest process model. If you have not reviewed chapter 5 yet, I recommend doing that as a foundation for this Chapter.
 
 ## Setting up simulations
 
@@ -19,7 +19,6 @@ sim_dates <- seq(as_date("2023-11-15"),length.out  = 34, by = "1 day")
 ```{r}
 site <- "TALL"
 ```
-
 
 ### Baseline parameters
 
@@ -48,7 +47,6 @@ params <- as.data.frame(params)
 
 This are the initial conditions that will be used for all the simulations except for the simulation where initial uncertainty is propagated
 
-
 ```{r}
 #Set initial conditions
 output <- array(NA, dim = c(length(sim_dates), ens_members, 12)) #12 is the number of outputs
@@ -59,8 +57,7 @@ output[1, , 3] <- 140
 
 ### Baseline drivers
 
-This are the drivers conditions that will be used for all the simulations except for the simulation where driver uncertainty is propagated.  It uses the mean for  the weather forecast ensemble.
-
+This are the drivers conditions that will be used for all the simulations except for the simulation where driver uncertainty is propagated. It uses the mean for the weather forecast ensemble.
 
 ```{r}
 inputs <- get_forecast_met(site = site, sim_dates, use_mean = TRUE)
@@ -69,11 +66,11 @@ inputs_ensemble <- assign_met_ensembles(inputs, ens_members)
 
 ## Parameter uncertainity
 
-Our model has `r ncol(params)` parameters.  Each of them require a value that is likely not known with perfect uncertainty.  Representing parameter uncertainty involves replacing the single value for each parameter with a distribution.  The distribution can be from literature reviews, a best guess, or the outcome of a calibration exercise.  The the calibration exercise is Bayesian the distribution of the parameter before calibration can be refered to as a prior and after calibration is a posterior.  Sampling from the parameter distribution provides values for the parameter that are assigned to each ensemble member.  
+Our model has `r ncol(params)` parameters. Each of them require a value that is likely not known with perfect uncertainty. Representing parameter uncertainty involves replacing the single value for each parameter with a distribution. The distribution can be from literature reviews, a best guess, or the outcome of a calibration exercise. The the calibration exercise is Bayesian the distribution of the parameter before calibration can be refered to as a prior and after calibration is a posterior. Sampling from the parameter distribution provides values for the parameter that are assigned to each ensemble member.
 
-In many cases a senstivity analysis can be used to determine which parameters to focus uncertainty estimation on.  If a model is not particularly sensitive to parameter then the prediction uncertainty is less likely to be strongly determined by the uncertainty in that parameter.  In practices, the values for the less sensitive parameters are held at a single value.  Other parameters are so well known that they are also held at a single value (e.g., the gravitation constant).
+In many cases a senstivity analysis can be used to determine which parameters to focus uncertainty estimation on. If a model is not particularly sensitive to parameter then the prediction uncertainty is less likely to be strongly determined by the uncertainty in that parameter. In practices, the values for the less sensitive parameters are held at a single value. Other parameters are so well known that they are also held at a single value (e.g., the gravitation constant).
 
-In this example, I focuses only on propogating one parameter (`alpha`) that represents the light use efficiency of photosynthesis.  All other parameters are held at their baseline values.
+In this example, I focuses only on propogating one parameter (`alpha`) that represents the light use efficiency of photosynthesis. All other parameters are held at their baseline values.
 
 ```{r}
 new_params <- params
@@ -88,6 +85,7 @@ This results in `alpha` having the following distribution @fig-alpha:
 #| label: fig-alpha
 hist(new_params$alpha, main = "", xlab = "alpha")
 ```
+
 Use the `new_params` as the parameters in the simulation.
 
 ```{r}
@@ -124,9 +122,9 @@ parameter_df |>
 
 ## Process uncertainty
 
-Process uncertainty is the uncertainty that comes from the model being a simplification of reality.  We can use random noise to capture the dynamics that are missing from the model.  The random noise is added to each state as end model timestep.  The random noise is normally distributed with a mean equal to the model prediction for that time-step and the standard deviation equal to the parameters `sigma.leaf` (or leaves), `sigma.stem` (for wood), and `sigma.soil` (SOM). The result is a random walk that is guided by the mean prediction of the process model. 
+Process uncertainty is the uncertainty that comes from the model being a simplification of reality. We can use random noise to capture the dynamics that are missing from the model. The random noise is added to each state as end model timestep. The random noise is normally distributed with a mean equal to the model prediction for that time-step and the standard deviation equal to the parameters `sigma.leaf` (or leaves), `sigma.stem` (for wood), and `sigma.soil` (SOM). The result is a random walk that is guided by the mean prediction of the process model.
 
-Process uncertainty can be removed by setting the standard deviations equal to 0.  Here we add in process uncertainty by setting the standard deviation to a non-zero value.  The standard deviations can be determined using state-space calibration of the ecosystem model.  You can learn more about state-space modeling in @dietzeEcologicalForecasting2017
+Process uncertainty can be removed by setting the standard deviations equal to 0. Here we add in process uncertainty by setting the standard deviation to a non-zero value. The standard deviations can be determined using state-space calibration of the ecosystem model. You can learn more about state-space modeling in @dietzeEcologicalForecasting2017
 
 ```{r}
 new_params <- params
@@ -178,7 +176,7 @@ process_df |>
 
 ## Initial condition uncertainty
 
-Initial condition uncertainty is the spread in the model states at the first time-step of a forecast.  This spread would be due to a lack of measurements (thus no direct knowledge of the state) or uncertainty in measurements (there is a spread in the possible states because we can't perfectly observe it.).  Here we represent initial condition uncertainty by generating a normal distribution with a mean equal to the observed value (or our best guess) and a standard deviation that represents measurement uncertainty. We update the initial starting point in the forecast with this distribution.
+Initial condition uncertainty is the spread in the model states at the first time-step of a forecast. This spread would be due to a lack of measurements (thus no direct knowledge of the state) or uncertainty in measurements (there is a spread in the possible states because we can't perfectly observe it.). Here we represent initial condition uncertainty by generating a normal distribution with a mean equal to the observed value (or our best guess) and a standard deviation that represents measurement uncertainty. We update the initial starting point in the forecast with this distribution.
 
 ```{r}
 #Set initial conditions
@@ -196,7 +194,6 @@ As an example @fig-init-unc shows the distribution in the noise that is added th
 #| fig-cap: Distribution of intial condition uncertainty for leaf carbon (Mg/ha)
 hist(new_output[1, , 1], main = " ", xlab = "leaf carbon initial condition (Mg/ha)")
 ```
-
 
 ```{r}
 for(t in 2:length(sim_dates)){
@@ -232,7 +229,7 @@ initial_conditions_df |>
 
 ## Driver uncertainty
 
-The uncertainty in the weather forecasts comes directly from the 31 ensembles provided by the NOAA Global Ensemble Forecasting System (GEFS). The ensemble is generated by slightly changing (perturbing) the initial states in the weather model before starting the forecast.  Due to the chaotic nature of the atmosphere, the small differences get amplified over time, resulting in spread that increases further in the future.
+The uncertainty in the weather forecasts comes directly from the 31 ensembles provided by the NOAA Global Ensemble Forecasting System (GEFS). The ensemble is generated by slightly changing (perturbing) the initial states in the weather model before starting the forecast. Due to the chaotic nature of the atmosphere, the small differences get amplified over time, resulting in spread that increases further in the future.
 
 ```{r}
 new_inputs <- get_forecast_met(site = site, sim_dates, use_mean = FALSE)
@@ -240,7 +237,6 @@ new_inputs_ensemble <- assign_met_ensembles(new_inputs, ens_members)
 ```
 
 As an example @fig-driver-unc shows 31 ensemble members from single 35-day forecast generated by NOAA GEFS.
-
 
 ```{r}
 #| echo: false
@@ -307,6 +303,6 @@ Using the code above as a guide, create code to estimate uncertainty based on th
 
 Answer with text, code, and plots the following questions
 
--    Plot the forecast with the combined uncertainty.
+-   Plot the forecast with the combined uncertainty.
 
 -   If you calculate the variance of the combined uncertainty and compared to the sum of the individual variances, do they match? What does it mean if they are different?

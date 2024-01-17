@@ -1,0 +1,37 @@
+# Example semester course schedule {#sec-example-schedule}
+
+Below is an example schedule for a semester (15-week) graduate-level university course. It is based having two 1 hour and 15 minute periods per week.
+
+| Class \#     | Chapter                           |
+|--------------|-----------------------------------|
+| 1            | @sec-intro, @sec-eddiemod5        |
+| 2            | @sec-eddiemod5                    |
+| 3            | @sec-first-forecast               |
+| 4            | @sec-first-forecast               |
+| 5            | @sec-under-unc                    |
+| 6            | @sec-under-unc                    |
+| 7            | @sec-second-forecast              |
+| 8            | @sec-eddiemod7                    |
+| 9            | @sec-eddiemod7                    |
+| 10           | @sec-third-forecast               |
+| 11           | @sec-project1                     |
+| 12           | @sec-project1                     |
+| 13           | @sec-project1                     |
+| 14           | @sec-project1                     |
+| Spring Break |                                   |
+| Spring Break |                                   |
+| 16           | @sec-eddiemod8                    |
+| 17           | @sec-analysis                     |
+| 18           | @sec-process-model, @sec-prop-unc |
+| 19           | @sec-likelihood                   |
+| 20           | @sec-likelihood                   |
+| 21           | @sec-likelihood                   |
+| 22           | @sec-bayes                        |
+| 23           | @sec-bayes                        |
+| 24           | @sec-bayes-process                |
+| 25           | @sec-particle-filter              |
+| 26           | @sec-particle-filter              |
+| 27           | @sec-pf2                          |
+| 28           | @sec-pulling-together             |
+| 29           | @sec-project2                     |
+| 30           | @sec-project2                     |

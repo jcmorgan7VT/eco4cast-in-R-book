@@ -1,4 +1,4 @@
-# Project 1: Create model and submit
+# Project 1: Create model and submit {#sec-project1}
 
 Project is challenges you to build a new model the forecasts NEON water temperature using the foundations that have been taught thus far in the book. You will be automatically submitting forecasts to the NEON Ecological Forecasting Challenge.
 

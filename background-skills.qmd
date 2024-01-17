@@ -33,9 +33,9 @@ If you get an error at this step it is likely due to your computer not having Gi
 
 4.  Set up your GitHub credentials on your computer. Follow the instructions [here](https://happygitwithr.com/https-pat.html#tldr) about using `usethis::create_github_token()` and `gitcreds::gitcreds_set()` functions. Also, save your GitHub PAT to a password manager so that you can find it in the future (in case you need to interact with GitHub from a different computer).
 
-5.  Go to Canvas and get the link to accept the assignment. Copy and paste the link in a web browser. Accept the assignment.
+5.  Go to <https://github.com/frec3044/git-rmd-intro>.  Find the "fork" bottom near the top right.  Click "Fork" and tell it to fork to your personal GitHub account.
 
-6.  Go to your assignment at <https://github.com/frec-3044-Spring2024>. Click on repository.
+6.  Go to the repo on your personal GitHub account.  It will be something like `https://github.com/[your-user-name]/git-rmd-intro`
 
 7.  Under the green "Code" button, select the local tab, and copy the https link.
 
@@ -71,8 +71,7 @@ format:
 17. Click on the "assignment1.html" in your "Files" pane and select "View in Web Browser". Confirm that it looks as expected.
 18. Commit the updated `.qmd` and new `.html` files to git.
 19. Push to your repository on GitHub.
-20. Go to <https://github.com/frec-3044-Spring2024> and click on your repository. You should also see three commits: 2 were committed by you and 1 was committed by the github classroom bot. The Github classroom bot commit is the automatic commit that occurred when you accepted the assignment.
-21. Go to the course on Canvas and upload the .html file to the assignment.
+20. Go to `https://github.com/[your-user-name]/git-rmd-intro` You should also see your two most recent commits.
 
 If you are having issues (i.e., your computer does not seem to have Git installed), [here](https://happygitwithr.com/index.html) is an excellent resource to help you debug your git + Rstudio issues.
 

@@ -584,7 +584,7 @@ bart_2019 <- d  %>%
 #Add Answer
 ```
 
-First create a function called \`pred_logistic' that is your process model. The model is the the logistic curve which ish the equation $$P_1 + P_2 {{exp(P_3 + P_4 x)}\over{1+exp(P_3 + P_4 x)}}$$ 
+First create a function called \`pred_logistic' that is your process model. The model is the the logistic curve which ish the equation $$P_1 + P_2 {{exp(P_3 + P_4 x)}\over{1+exp(P_3 + P_4 x)}}$$
 
 **Question 3:** Is this process model a dynamic model? Why or why not?
 
