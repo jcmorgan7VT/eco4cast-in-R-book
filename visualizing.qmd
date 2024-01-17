@@ -80,7 +80,7 @@ for(i in 1:length(forecast_mean)){
 Finally, visualize the scoring surface with the observed value represented by the red line
 
 ```{r}
-contour(x = sample_mean, y = sample_sd, z = as.matrix(combined),nlevels = 20, xlab = "Mean", ylab = "SD")
+contour(x = forecast_mean, y = forecast_sd, z = as.matrix(combined),nlevels = 20, xlab = "Forecast mean", ylab = "forecast SD", main = "CPRS score at different forecasted mean and sd\nThe observation is at 8")
 abline(v = y, col = "red")
 abline(v = 6, col = "darkgreen")
 ```
