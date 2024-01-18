@@ -1,4 +1,4 @@
-# Putting it together: Analyzing forecasts {#sec-analysis}
+# Best Practices in Ecological Forecasting {#sec-best-practices}
 
 Add text and questions about best practices in forecasting
 
