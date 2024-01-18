@@ -1,9 +1,24 @@
 # Third forecast: automatically updating second forecast {#sec-third-forecast}
 
-The third forecast generation assignment will challenge you to automate the submission of your forecast. By running your forecast code each day, you will be updating your model with the latest data, which is a simple form of data assimilation.
+In the third forecast generation assignment, you will be automating the submission of your forecast. By running your forecast code each day, you will be updating your model with the latest data, which is a simple form of data assimilation.
 
 [**Automation tutorial**](https://github.com/OlssonF/NEON-forecast-challenge-workshop/blob/main/Automate_forecasts/automation_tutorial.Rmd)
 
-You will submit the assignment as an updated GitHub repository that is successfully submitting automated forecasts.
-
 You will be generating forecasts of water temperature at NEON aquatics sites.
+
+## Reading
+
+Thomas, R. Q., Boettiger, C., Carey, C. C., Dietze, M. C., Johnson, L. R., Kenney, M. A., et al. (2023). The NEON Ecological Forecasting Challenge. Frontiers in Ecology and the Environment, 21(3), 112–113. <https://doi.org/10.1002/fee.2616>
+
+## Assignment
+
+Pre-assignment set up: Complete @sec-second-forecast
+
+1.  Convert your template markdown code to a .R script
+2.  Update your repository to include the GitHub Action files
+3.  Commit updated files to GitHub
+4.  Provide instructor with link to GitHub repository that demonstrates multiple successful automated executation of forecasting code.
+
+## Module reference
+
+Olsson, F., C. Boettiger, C.C. Carey, M.E. Lofton, and R.Q. Thomas. Can you predict the future? A tutorial for the National Ecological Observatory Network Ecological Forecasting Challenge. In review at *Journal of Open Source Education*.

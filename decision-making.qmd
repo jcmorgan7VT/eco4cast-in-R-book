@@ -13,7 +13,6 @@ Spiegelhalter, D., Pearson, M., & Short, I. (2011). Visualizing Uncertainty Abou
 ## Problem Set
 
 Complete activities A, B, and C in the [R Shiny application](https://macrosystemseddie.shinyapps.io/module8/).  The answers to the questions will be provided within the Shiny App.  
-
 ## Module references
 
 Woelmer, W.M., T.N. Moore, M.E. Lofton, R.Q. Thomas, and C.C. Carey. 2023. Embedding communication concepts in forecasting training increases students' understanding of ecological uncertainty Ecosphere 14: e4628 <https://doi.org/10.1002/ecs2.4628>

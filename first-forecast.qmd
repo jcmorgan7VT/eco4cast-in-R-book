@@ -24,6 +24,6 @@ Pre-assignment set up: Follow the [instructions for setting up R and the code re
 4. Knit the template Rmd to html.
 5. Commit template to GitHub
 
-## Reference describing the module
+## Module reference
 
 Olsson, F., C. Boettiger, C.C. Carey, M.E. Lofton, and R.Q. Thomas. Can you predict the future? A tutorial for the National Ecological Observatory Network Ecological Forecasting Challenge. In review at *Journal of Open Source Education*.

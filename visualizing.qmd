@@ -139,3 +139,17 @@ Both of these models are simple to calculate and include no "knowledge" of the s
 
 Simonis, J. L., White, E. P., & Ernest, S. K. M. (2021). Evaluating probabilistic ecological forecasts. Ecology, 102(8). <https://doi.org/10.1002/ecy.3431>
 
+## Problem Set
+
+If you have forecast submissions the scores from your submitted forecasts and the climatology and persistence forecasts.  If you do not have submitted forecasts, use the `model_id = XXXX` to answer the questions  
+
+Create a new Rmarkdown document that you use to answer the questions below with a mix of code and text.
+
+1. Plot climatology, persistence, and your model for a single forecast day on the same plot
+2. Based on visual inspection of your plot, how do the medians model each forecasts differ in capacity to represent the observations.
+3. Based on visual inspection of your plot, how does the uncertainty of each model forecasts differ in capacity to represent the observations.
+4. Calculate the mean CRPS for the single day forecast (averaged across all horizons). Which model has the lower score?
+5. Calculate the mean CRPS for climatology, persistence, and your model for all reference datetimes and horizons.  Which model has the lower score when you consider all submissions?
+6. Do you think you have enough important from the mean CRPS score to determine the "best" model?  If not, what is needed to better characterize the best performing model?
+
+Commit your Rmd and knitted html to your GitHub repository that you used in @sec-third-forecast.

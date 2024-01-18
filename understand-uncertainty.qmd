@@ -17,7 +17,7 @@ Dietze, M. C., Fox, A., Beck-Johnson, L. M., Betancourt, J. L., Hooten, M. B., J
 3. Knit the Rmarkdown Rmd to html.
 4. Commit Rmarkdown and html to GitHub
 
-## Reference describing the module
+## Module Reference
 
 Lofton,M., T. Moore, W. Woelmer, R. Q. Thomas, and C.C. Carey. In Prep. Macrosystems EDDIE: A modular curriculum to teach undergraduates ecological forecasting improves student and instructor confidence in their data science skills.
 
