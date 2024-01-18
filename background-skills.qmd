@@ -8,7 +8,7 @@ The R for Data Science book provides instructions for [installing R and Rstudio]
 
 ## R skills
 
-The book uses R as the focal programming language and generate uses the Tidyverse approach when working with and visualizing data. The following functions are commonly used: `read_csv`, `write_csv`, `mutate`, `filter`, `group_by`, `summarize`, `ggplot`, `select`, pipes (`|>` or `%>`), `pivot_wider`, `pivot_longer`, `arrange`, `left_join`). If you are new R and Tidyverse there are many great materials on the internet. The Data Carpentry "Data Analysis and Visualization in R for Ecologists" is an excellent starting point for learning. The [R for Data Science book](https://r4ds.hadley.nz%5D) is an especially useful reference for learning the Tidyverse commands. Finally, I have created an [introductory to tidyverse module](https://github.com/frec-3044/tidyvere-intro-template) for my undergraduate Environmental Data Science class. You can use the module as a "test" of your Tidyverse skills
+The book uses R as the focal programming language and generate uses the Tidyverse approach when working with and visualizing data. The following functions are commonly used: `read_csv`, `write_csv`, `mutate`, `filter`, `group_by`, `summarize`, `ggplot`, `select`, pipes (`|>` or `%>`), `pivot_wider`, `pivot_longer`, `arrange`, `left_join`). If you are new R and Tidyverse there are many great materials on the internet. The Data Carpentry "Data Analysis and Visualization in R for Ecologists" is an excellent starting point for learning. The [R for Data Science book](https://r4ds.hadley.nz) is an especially useful reference for learning the Tidyverse commands. Finally, I have created an [introductory to tidyverse module](https://github.com/frec3044/tidyvere-intro) for my undergraduate Environmental Data Science class. You can use the module as a "test" of your Tidyverse skills
 
 ## Git Skills {#sec-github}
 
@@ -33,9 +33,9 @@ If you get an error at this step it is likely due to your computer not having Gi
 
 4.  Set up your GitHub credentials on your computer. Follow the instructions [here](https://happygitwithr.com/https-pat.html#tldr) about using `usethis::create_github_token()` and `gitcreds::gitcreds_set()` functions. Also, save your GitHub PAT to a password manager so that you can find it in the future (in case you need to interact with GitHub from a different computer).
 
-5.  Go to <https://github.com/frec3044/git-rmd-intro>.  Find the "fork" bottom near the top right.  Click "Fork" and tell it to fork to your personal GitHub account.
+5.  Go to <https://github.com/frec3044/git-rmd-intro>. Find the "fork" bottom near the top right. Click "Fork" and tell it to fork to your personal GitHub account.
 
-6.  Go to the repo on your personal GitHub account.  It will be something like `https://github.com/[your-user-name]/git-rmd-intro`
+6.  Go to the repo on your personal GitHub account. It will be something like `https://github.com/[your-user-name]/git-rmd-intro`
 
 7.  Under the green "Code" button, select the local tab, and copy the https link.
 
