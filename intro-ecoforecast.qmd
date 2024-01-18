@@ -6,8 +6,6 @@ Ecological forecasting is a tool that can be used for understanding and predicti
 
 [**Rshiny App**](https://macrosystemseddie.shinyapps.io/module5/)
 
-This module was developed by Moore, T.N., Lofton, M.E., C.C. Carey, and R.Q. Thomas. 03 July 2023. Macrosystems EDDIE: Introduction to Ecological Forecasting. Macrosystems EDDIE Module 5, Version 2. <http://module5.macrosystemseddie.org>. Module development was supported by NSF grants DEB-1926050 and DBI-1933016.
-
 ## Reading
 
 Dietze, M. C., Fox, A., Beck-Johnson, L. M., Betancourt, J. L., Hooten, M. B., Jarnevich, C. S., et al. (2018). Iterative near-term ecological forecasting: Needs, opportunities, and challenges. Proc Natl Acad Sci U S A, 115(7), 1424–1432. <https://doi.org/10.1073/pnas.1710231115>
@@ -19,3 +17,6 @@ Complete activities A, B, and C in the R Shiny application and submit answers to
 ## Module references
 
 Moore, T.N., R.Q. Thomas, W.M. Woelmer, C.C Carey. 2022. Integrating ecological forecasting into undergraduate ecology curricula with an R Shiny application-based teaching module. *Forecasting* 4:604-633. <https://doi.org/10.3390/forecast4030033>
+
+This module was developed by Moore, T.N., Lofton, M.E., C.C. Carey, and R.Q. Thomas. 03 July 2023. Macrosystems EDDIE: Introduction to Ecological Forecasting. Macrosystems EDDIE Module 5, Version 2. <http://module5.macrosystemseddie.org>. Module development was supported by NSF grants DEB-1926050 and DBI-1933016.
+
