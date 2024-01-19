@@ -17,7 +17,7 @@ sim_dates <- seq(as_date("2023-11-15"),length.out  = 34, by = "1 day")
 ```
 
 ```{r}
-site <- "TALL"
+site <- "OSBS"
 ```
 
 ### Baseline parameters
@@ -66,11 +66,11 @@ inputs_ensemble <- assign_met_ensembles(inputs, ens_members)
 
 ## Parameter uncertainity
 
-Our model has `r ncol(params)` parameters. Each of them require a value that is likely not known with perfect uncertainty. Representing parameter uncertainty involves replacing the single value for each parameter with a distribution. The distribution can be from literature reviews, a best guess, or the outcome of a calibration exercise. The the calibration exercise is Bayesian the distribution of the parameter before calibration can be refered to as a prior and after calibration is a posterior. Sampling from the parameter distribution provides values for the parameter that are assigned to each ensemble member.
+Our model has `r ncol(params)` parameters. Each of them require a value that is likely not known with perfect uncertainty. Representing parameter uncertainty involves replacing the single value for each parameter with a distribution. The distribution can be from literature reviews, a best guess, or the outcome of a calibration exercise. The the calibration exercise is Bayesian the distribution of the parameter before calibration can be refereed to as a prior and after calibration is a posterior. Sampling from the parameter distribution provides values for the parameter that are assigned to each ensemble member.
 
-In many cases a senstivity analysis can be used to determine which parameters to focus uncertainty estimation on. If a model is not particularly sensitive to parameter then the prediction uncertainty is less likely to be strongly determined by the uncertainty in that parameter. In practices, the values for the less sensitive parameters are held at a single value. Other parameters are so well known that they are also held at a single value (e.g., the gravitation constant).
+In many cases a sensitivity analysis can be used to determine which parameters to focus uncertainty estimation on. If a model is not particularly sensitive to parameter then the prediction uncertainty is less likely to be strongly determined by the uncertainty in that parameter. In practices, the values for the less sensitive parameters are held at a single value. Other parameters are so well known that they are also held at a single value (e.g., the gravitation constant).
 
-In this example, I focuses only on propogating one parameter (`alpha`) that represents the light use efficiency of photosynthesis. All other parameters are held at their baseline values.
+In this example, I focuses only on propagating one parameter (`alpha`) that represents the light use efficiency of photosynthesis. All other parameters are held at their baseline values.
 
 ```{r}
 new_params <- params

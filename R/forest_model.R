@@ -50,7 +50,7 @@ forest_model <- function(t, states, parms, inputs){
 
   #Extra variables
   lai <- states[, 1]  * parms$SLA * 0.1
-  nee <- -(gpp - ra - rh)
+  nee <- ra + rh - gpp
 
   return(cbind(state1 = states[, 1],
                state2 = states[, 2],

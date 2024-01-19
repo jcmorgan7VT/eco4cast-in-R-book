@@ -164,7 +164,7 @@ analysis$params <- params
 save(analysis, file = "data/PF_analysis_1.Rdata")
 ```
 
-Convert to the format required by the NEON Ecological Forecasting Challenge
+Convert to the format and units required by the NEON Ecological Forecasting Challenge
 
 ```{r}
 efi_output <- output_df |> 
@@ -177,7 +177,8 @@ efi_output <- output_df |>
          reference_datetime = as_datetime(reference_datetime)) |> 
   rename(parameter = ensemble) |> 
   filter(datetime >= reference_datetime) |> 
-  filter(variable == "nee")
+  filter(variable == "nee") |> 
+  mutate(prediction = prediction  / 0.01) #Convert from MgC/ha/Day to gC/m2/day
 ```
 
 Write the forecast to a csv file
