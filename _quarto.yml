@@ -55,6 +55,7 @@ book:
       chapters:
       - weather-drivers.qmd
       - example-schedule.qmd
+      - nimble.qmd
 
 bibliography: references.bib
 

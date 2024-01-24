@@ -1,0 +1,3 @@
+# Implimenting process model in NIMBLE {#sec-nimble}
+
+An implimentation of the process model in [nimble](https://r-nimble.org) code along with the application to Bayesian parameter estimation and particle filtering is pending
