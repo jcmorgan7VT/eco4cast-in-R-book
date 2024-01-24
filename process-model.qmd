@@ -31,9 +31,37 @@ Finally, net ecosystem exchange (`nee`) is modeled as `ra + rh - gpp` with negat
 
 The model requires inputs of photosynthetic active radiation (`PAR`), air temperature (`temp`), and day-of-year (`doy`).
 
+## Solving the model
+
+At each time-step, the processes that results in the change in the model states are calculate (i.e., photosynthesis, mortality, respiration, etc.). The process rates are then combined to determine the net rate of change for each model state (i.e., the derivatives).  
+
+```
+  dleaves_dt <- leaf_alloc  - litterfall
+  dwood_dt <- wood_alloc  - mortality
+  dSOM_dt <- litterfall + mortality - rh
+```  
+
+The net rate of change for each time-step is added to the value of the state at the previous time-step to calculate the update state. 
+
+```
+  states[, 1] <- states[, 1] + dleaves_dt
+  states[, 2] <- states[, 2] + dwood_dt
+  states[, 3] <- states[, 3] + dSOM_dt
+```
+
+This process is repeated at each time-step to create the time-series model output. This method is called the Euler method for solving ordinary differential equations and assumed a constant change in time (dt = 1 day) in each time-step.
+
 ## Model as a function
 
-The code below describes the model as a R function. The function predicts one time-step at a time. The same function is found in the `R/forecast_model.R` script in the book repository. The inputs to the function are: - `t`: the index of the current model time-step - `states`: a matrix of the states (rows = ensemble member, columns = state) - `parms`: a data frame of parameters (rows = ensemble member, columns = parameter) - `inputs`: a matrix of drivers (rows = ensemble member, columns = driver)
+The code below describes the model as a R function. The function predicts one time-step at a time. The same function is found in the `R/forecast_model.R` script in the book repository. The inputs to the function are:
+
+-    `t`: the index of the current model time-step
+
+-    `states`: a matrix of the states (rows = ensemble member, columns = state)
+
+-   `parms`: a data frame of parameters (rows = ensemble member, columns = parameter)
+
+-    `inputs`: a matrix of drivers (rows = ensemble member, columns = driver)
 
 ```{r}
 forest_model <- function(t, states, parms, inputs){

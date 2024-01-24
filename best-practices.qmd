@@ -1,5 +1,40 @@
 # Best Practices in Ecological Forecasting {#sec-best-practices}
 
-Add text and questions about best practices in forecasting
+Ecological forecasting is an emerging field and a community of practice. A strong community of practice is associated with best practices that provide guidance to how to generate, analyze, and community forecasts that reflects the state-of-the-art knowledge. The term "best practices" is used because "better" practices will always developed by an active research field so the "best" are the best at that time.
+
+Multiple papers have explored best practices in ecological forecasting (e.g., Harris et al. 2018, Lewis et al. 2022), including best practices through an ethics lens (Hobday 2019).
+
+The Lewis et al 2022 best practices of forecasting, as written in the manuscript, are:
+
+-   Include uncertainty
+-   Report forecast accuracy
+-   Identify an end user
+-   Make iterative forecasts
+-   Automate forecasting workflows
+-   Make data available
+-   Archive forecasts
+-   Use null model comparisons
+-   Compare modeling approaches
+
+The Hobday et al 2019 principles of ethical forecasting, as written in the manuscript, are:
+
+-   Be open and transparent
+-   Do not deliver forecasts that would lead to unregulated impacts on the \[environment\]
+-   Undertake best practice skill assessment that tests the true skill of a model with out-of-sample testing.
+-   Do not ignore uncertainty
+-   Plan for and manage stakeholder expectations regarding continued delivery.
+-   Work to improve the literacy of all stakeholders around forecast use and interpretation, particularly on skill and uncertainty.
+-   Proactively explore the impact of loss of a predictor variable in a forecast system, and be able to explain what the loss of performance is when one variable is removed
+-   Be vigilant for inequity in use of forecasts between users, and the creation of winners and losers arising from provision of information
+-   Scope the system context widely, seek deep domain and system knowledge, and consider scenario testing, as happens for \[ecosystem\] management regulations now.
+-   Consider the holistic outcome of forecast system—if it is not achieving the overall goals, suspend delivery and work on improving the interaction of the forecast and the context in which it operates.
+
+## Reading
+
+Hobday, A. J., Hartog, J. R., Manderson, J. P., Mills, K. E., Oliver, M. J., Pershing, A. J., & Siedlecki, S. (2019). Ethical considerations and unanticipated consequences associated with ecological forecasting for marine resources. ICES Journal of Marine Science. <https://doi.org/10.1093/icesjms/fsy210>
 
 Lewis, A. S. L., Woelmer, W. M., Wander, H. L., Howard, D. W., Smith, J. W., McClure, R. P., et al. (2022). Increased adoption of best practices in ecological forecasting enables comparisons of forecastability. Ecological Applications, 32(2), e02500. <https://doi.org/10.1002/eap.2500>
+
+## Assignment
+
+Read the two papers above and discuss how the forecasts developed as part of this book address the best practices and principles described in the papers.
