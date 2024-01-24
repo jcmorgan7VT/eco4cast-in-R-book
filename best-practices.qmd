@@ -2,9 +2,9 @@
 
 Ecological forecasting is an emerging field and a community of practice. A strong community of practice is associated with best practices that provide guidance to how to generate, analyze, and community forecasts that reflects the state-of-the-art knowledge. The term "best practices" is used because "better" practices will always developed by an active research field so the "best" are the best at that time.
 
-Multiple papers have explored best practices in ecological forecasting (e.g., Harris et al. 2018, Lewis et al. 2022), including best practices through an ethics lens (Hobday 2019).
+Multiple papers have explored best practices in ecological forecasting (e.g., @harrisForecastingBiodiversityBreeding2018, @lewisIncreasedAdoptionBest2022), including best practices through an ethics lens (@hobdayEthicalConsiderationsUnanticipated2019).
 
-The Lewis et al 2022 best practices of forecasting, as written in the manuscript, are:
+The @lewisIncreasedAdoptionBest2022 best practices of forecasting, as written in the manuscript, are:
 
 -   Include uncertainty
 -   Report forecast accuracy
@@ -16,7 +16,7 @@ The Lewis et al 2022 best practices of forecasting, as written in the manuscript
 -   Use null model comparisons
 -   Compare modeling approaches
 
-The Hobday et al 2019 principles of ethical forecasting, as written in the manuscript, are:
+The @hobdayEthicalConsiderationsUnanticipated2019 principles of ethical forecasting, as written in the manuscript, are:
 
 -   Be open and transparent
 -   Do not deliver forecasts that would lead to unregulated impacts on the \[environment\]
