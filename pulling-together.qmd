@@ -39,7 +39,7 @@ We will find the first day of our simulation (14 days ago) in the last saved ana
 
 ```{r}
 site <- "OSBS"
-look_back <- 14
+look_back <- 30
 horizon <- 30
 reference_datetime <- Sys.Date()
 sim_dates <- seq(reference_datetime - look_back, length.out = look_back + horizon, by = "1 day")
