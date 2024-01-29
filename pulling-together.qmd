@@ -117,7 +117,7 @@ for(t in 2:length(sim_dates)){
   
   analysis <- particle_filter(t, forecast, obs, sim_dates, wt, fit_params,
                               variables = c("lai", "wood", "som", "nee"), 
-                                             sds = c(0.1, 1, 20, 0.005))
+                              sds = c(0.1, 1, 20, 0.005))
   
   forecast <- analysis$forecast
   fit_params <- analysis$fit_params
@@ -125,13 +125,29 @@ for(t in 2:length(sim_dates)){
 }
 ```
 
-## Step 4: Save forecast and data assimiliation output
+## Step 4: Save forecast and data assimilation output
 
 Convert forecast to a dataframe.
 
 ```{r}
 output_df <- output_to_df(forecast, sim_dates, sim_name = "simple_forest_model")
 ```
+
+```{r}
+forecast_weighted <- array(NA, dim = c(length(sim_dates), ens_members, 12))
+params_weighted <- array(NA, dim = c(length(sim_dates) ,ens_members , num_pars))
+for(t in 1:length(sim_dates)){
+  wt_norm <-  wt[t, ]/sum(wt[t, ])
+  resample_index <- sample(1:ens_members, ens_members, replace = TRUE, prob = wt_norm ) 
+  forecast_weighted[t, , ] <- forecast[t, resample_index, 1:12] 
+  params_weighted[t, , ] <- fit_params[t,resample_index, ] 
+}
+output_df <- output_to_df(forecast_weighted, sim_dates, sim_name = "simple_forest_model")
+parameter_df <- parameters_to_df(params_weighted, sim_dates, sim_name = "simple_forest_model", param_names = c("alpha","Rbasal"))
+
+```
+
+
 
 @fig-step4 is a Visualization of the forecast. The vertical line is where the look back period transitions to the future.
 
