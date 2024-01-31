@@ -12,10 +12,10 @@ Dietze, M. C., Fox, A., Beck-Johnson, L. M., Betancourt, J. L., Hooten, M. B., J
 
 ## Problem set
 
-1. Fork [repository](https://github.com/MacrosystemsEDDIE/module6_R) for the assignment.
-2. Complete activities A, B, and C in the [Rmarkdown document](https://github.com/MacrosystemsEDDIE/module6_R/blob/main/assignment/module6.Rmd).  You will be modifying the Rmarkdown document with the answers to the questions (both text and code).
-3. Knit the Rmarkdown Rmd to html.
-4. Commit Rmarkdown and html to GitHub
+1.  Fork [repository](https://github.com/MacrosystemsEDDIE/module6_R) for the assignment.
+2.  Complete activities A, B, and C in the [Rmarkdown document](https://github.com/MacrosystemsEDDIE/module6_R/blob/main/assignment/module6.Rmd). You will be modifying the Rmarkdown document with the answers to the questions (both text and code).
+3.  Knit the Rmarkdown Rmd to html.
+4.  Commit Rmarkdown and html to GitHub
 
 ## Module Reference
 
