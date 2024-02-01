@@ -6,6 +6,8 @@ Ecological forecasting is a tool that can be used for understanding and predicti
 
 The assignment will require you to create a GitHub repository with your completed code from the NEON Forecasting Challenge workshop. You will build on this repository throughout the rest of section 1 of the book. You can learn more about setting up Git and GitHub in @sec-github.
 
+This chapter sets the foundation for @sec-second-forecast.  In @sec-second-forecast, you will use code and concepts in this chapter to add uncertainty to your forecast from @sec-first-forecast.
+
 ## Reading
 
 Dietze, M. C., Fox, A., Beck-Johnson, L. M., Betancourt, J. L., Hooten, M. B., Jarnevich, C. S., et al. (2018). Iterative near-term ecological forecasting: Needs, opportunities, and challenges. Proc Natl Acad Sci U S A, 115(7), 1424–1432. <https://doi.org/10.1073/pnas.1710231115>
@@ -13,7 +15,7 @@ Dietze, M. C., Fox, A., Beck-Johnson, L. M., Betancourt, J. L., Hooten, M. B., J
 ## Problem set
 
 1.  Fork [repository](https://github.com/MacrosystemsEDDIE/module6_R) for the assignment.
-2.  Complete activities A and B in the [Rmarkdown document](https://github.com/MacrosystemsEDDIE/module6_R/blob/main/assignment/module6.Rmd). You will be modifying the Rmarkdown document with the answers to the questions (both text and code).  Activity C is part of @sec-second-forecast
+2.  Complete activities A, B, and C (through question 16) in the [Rmarkdown document](https://github.com/MacrosystemsEDDIE/module6_R/blob/main/assignment/module6.Rmd). You will be modifying the Rmarkdown document with the answers to the questions (both text and code).
 3.  Knit the Rmarkdown Rmd to html.
 4.  Commit Rmarkdown and html to GitHub
 
