@@ -12,11 +12,10 @@ Thomas, R. Q., Boettiger, C., Carey, C. C., Dietze, M. C., Johnson, L. R., Kenne
 
 Pre-assignment set up: Complete @sec-first-forecast and @sec-under-unc
 
-1. Modify your template code to include the additional sources of uncertainty
-2. Knit the template Rmd to html.
-3. Commit template and html to GitHub
+1.  Modify your template code to include the additional sources of uncertainty
+2.  Knit the template Rmd to html.
+3.  Commit template and html to GitHub
 
 ## Module reference
 
 Olsson, F., C. Boettiger, C.C. Carey, M.E. Lofton, and R.Q. Thomas. Can you predict the future? A tutorial for the National Ecological Observatory Network Ecological Forecasting Challenge. In review at *Journal of Open Source Education*.
-
