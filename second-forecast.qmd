@@ -4,6 +4,8 @@ The forecast you generated in @sec-first-forecast included uncertainty introduce
 
 You will be generating forecasts of water temperature at NEON aquatics sites.
 
+A [version of the template](https://github.com/frec-5174/book-problem-sets/blob/main/forecast_code_template_mod6.Rmd) from @sec-first-forecast is provided that recodes the template to match the approach in @sec-under-unc.  You should add your model from @sec-first-forecast to this template before adding the uncertainty sources from @sec-under-unc.  
+
 ## Reading
 
 Thomas, R. Q., Boettiger, C., Carey, C. C., Dietze, M. C., Johnson, L. R., Kenney, M. A., et al. (2023). The NEON Ecological Forecasting Challenge. Frontiers in Ecology and the Environment, 21(3), 112–113. <https://doi.org/10.1002/fee.2616>
