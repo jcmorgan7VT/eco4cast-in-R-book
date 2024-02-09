@@ -147,8 +147,6 @@ parameter_df <- parameters_to_df(params_weighted, sim_dates, sim_name = "simple_
 
 ```
 
-
-
 @fig-step4 is a Visualization of the forecast. The vertical line is where the look back period transitions to the future.
 
 ```{r}
@@ -172,18 +170,7 @@ output_df |>
   facet_wrap(~variable, scale = "free") +
   theme_bw()
 ```
-```{r}
-parameter_df |> 
-  summarise(median = median(prediction),
-            upper = quantile(prediction, 0.95, na.rm = TRUE),
-            lower = quantile(prediction, 0.05, na.rm = TRUE), .by = c("datetime", "variable")) |> 
-  left_join(obs, by = c("datetime", "variable")) |> 
-  ggplot(aes(x = datetime)) +
-  geom_ribbon(aes(ymin = upper, ymax = lower), alpha = 0.7) +
-  geom_line(aes(y = median)) +
-  facet_wrap(~variable, scale = "free") +
-  theme_bw()
-```
+
 Save the states and weights for use as initial conditions in the next forecast.
 
 ```{r}
