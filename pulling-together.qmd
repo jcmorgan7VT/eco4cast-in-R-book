@@ -31,7 +31,7 @@ obs <- read_csv("data/site_carbon_data.csv", show_col_types = FALSE)
 
 ## Step 3: Generate forecast
 
-This example introduces the concept of a "look back". This is stepping back in the past to restart the particle filter so that it can assimilate any data that has been make avialable since the last time that time period was run through the particle filter. The look back is important because many observations have delays before becoming avialable (called latency). NEON flux data can have a 5 day to 1.5 month latency. MODIS LAI is a 8 day average so has an 8-day latency.
+This example introduces the concept of a "look back". This is stepping back in the past to restart the particle filter so that it can assimilate any data that has been make available since the last time that time period was run through the particle filter. The look back is important because many observations have delays before becoming available (called latency). NEON flux data can have a 5 day to 1.5 month latency. MODIS LAI is a 8 day average so has an 8-day latency.
 
 Here we use a look back of 14-days. Since our forecast horizon is 30-days in the future, the total days of the simulation is 14 + 30. Our reference_datetime is today.
 
@@ -172,7 +172,18 @@ output_df |>
   facet_wrap(~variable, scale = "free") +
   theme_bw()
 ```
-
+```{r}
+parameter_df |> 
+  summarise(median = median(prediction),
+            upper = quantile(prediction, 0.95, na.rm = TRUE),
+            lower = quantile(prediction, 0.05, na.rm = TRUE), .by = c("datetime", "variable")) |> 
+  left_join(obs, by = c("datetime", "variable")) |> 
+  ggplot(aes(x = datetime)) +
+  geom_ribbon(aes(ymin = upper, ymax = lower), alpha = 0.7) +
+  geom_line(aes(y = median)) +
+  facet_wrap(~variable, scale = "free") +
+  theme_bw()
+```
 Save the states and weights for use as initial conditions in the next forecast.
 
 ```{r}

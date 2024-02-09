@@ -22,7 +22,7 @@ sim_dates <- seq(Sys.Date() - 365*2, Sys.Date() - 2, by = "1 day")
 Get the historical weather for the site
 
 ```{r}
-inputs <- get_historical_met(site = site, sim_dates, use_mean = TRUE)
+inputs <- get_historical_met(site = site, sim_dates, use_mean = FALSE)
 inputs_ensemble <- assign_met_ensembles(inputs, ens_members)
 ```
 
@@ -189,7 +189,8 @@ output_df |>
             upper = quantile(prediction, 0.95, na.rm = TRUE),
             lower = quantile(prediction, 0.05, na.rm = TRUE), .by = c("datetime", "variable")) |> 
   left_join(obs, by = c("datetime", "variable")) |> 
-  filter(variable %in% c("nee","wood","som","lai")) |> 
+  filter(variable %in% c("nee","wood","som","lai"),
+         lubridate::year(datetime) > 2023) |> 
   ggplot(aes(x = datetime)) +
   geom_ribbon(aes(ymin = upper, ymax = lower), alpha = 0.7) +
   geom_line(aes(y = median)) +

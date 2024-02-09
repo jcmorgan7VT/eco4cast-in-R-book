@@ -2,7 +2,7 @@ particle_filter <- function(t, forecast, obs, sim_dates, wt, fit_params, variabl
 
   curr_obs <- obs |>
     filter(datetime == sim_dates[t],
-           variable %in% c("lai", "wood", "som", "nee"))
+           variable %in% variables)
 
   if(nrow(curr_obs) > 0){
 
