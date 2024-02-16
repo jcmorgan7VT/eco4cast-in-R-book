@@ -116,7 +116,7 @@ noaa_past_mean <- noaa_past |>
 
 ```{r}
 forecast_date <- Sys.Date() 
-noaa_date <- forecast_date - days(1)
+noaa_date <- forecast_date - days(2)
 
 df_future <- neon4cast::noaa_stage2(start_date = noaa_date)
 
@@ -199,7 +199,7 @@ We will use the following steps:
 Here is our recipe:
 
 ```{r}
-biomass_recipe <- train_data |> 
+our_recipe <- train_data |> 
   recipe(temperature ~ . ) |> 
   step_rm(datetime) |>
   step_naomit(air_temperature, temperature)
@@ -208,7 +208,7 @@ biomass_recipe <- train_data |>
 The recipe should show the steps that will be performed when applying the recipe. Importantly, these steps have not yet been applied, we just have a recipe of what to do.
 
 ```{r}
-biomass_recipe
+our_recipe
 ```
 
 #### Step 3: Specify model, engine, and workflow
@@ -218,15 +218,14 @@ We need to create the model and engine that we will use. In this example, we are
 The engine is `lm` because we are using the standard R function `lm`.  There are a ton of other functions for linear regression modeling that we could use.  They would be specified as a different engine.
 
 ```{r}
-linear_mod <- 
-  linear_reg(mode = "regression") |> 
+our_model <- linear_reg(mode = "regression") |> 
   set_engine("lm")
 ```
 
 You will see the model, mode, and engine in the model object
 
 ```{r}
-linear_mod 
+our_model 
 ```
 
 We now combine the model and the recipe together to make a workflow that can be used to fit the training and testing data. `workflow()` initiates the workflow and `add_model` and `add_recipe` add those components to the workflow.  Importantly, the workflow has not yet been applied, we just have description of what to do.
@@ -234,8 +233,8 @@ We now combine the model and the recipe together to make a workflow that can be 
 ```{r}
 wflow <-
   workflow() |> 
-  add_model(linear_mod) |> 
-  add_recipe(biomass_recipe)
+  add_model(our_model) |> 
+  add_recipe(our_recipe)
 ```
 
 You can see that the workflow object has all the components together
@@ -368,6 +367,22 @@ tidymodels_forecasts_EFI |>
   geom_line() + 
   facet_wrap(~site_id)
 ```
+### Tidymodel extra
+
+#### Changing the model approach
+
+You can easy change the modeling approach by changing the model and engine.  For example the following code replaces the linear regression model with a random forest model from the ranger package.  All other code used fit and predict with the model stays the same.
+
+```{r}
+our_model <- rand_forest(mode = "regression") |> 
+  set_engine("ranger")
+```
+
+A list of models that are avialable for you to use can be found [here](https://parsnip.tidymodels.org/reference/index.html#models).  Not all models are designed for all applications.  For example, forecasting water temperature requires regression models rather than classification models.
+
+#### Tuning hyper-parameters
+
+Some modeling approaches have parameters that govern how the model fitting done.  These  are called hyperparameters.  Hyperparameters are different from the parameters that are optimized using data in the modeling fitting step.  Tidymodels provides tools to also fit hyperparameters.  An example can be found [here](https://github.com/frec3044/machine-learning/blob/main/assignment/example-with-tuning.Rmd).
 
 ## Intro to Fable Models
 
@@ -377,20 +392,29 @@ tidymodels_forecasts_EFI |>
 library(tidyverse)
 library(tsibble)
 library(fable)
-targets <- read_csv('https://data.ecoforecast.org/neon4cast-targets/aquatics/aquatics-targets.csv.gz',
-                    show_col_types = FALSE) 
+```
 
+```{r}
+targets <- read_csv('https://data.ecoforecast.org/neon4cast-targets/aquatics/aquatics-targets.csv.gz',
+                    show_col_types = FALSE)
+```
+
+```{r}
 max_horizon <- 35
 var <- "temperature"
 site <- "BARC"
+```
 
+```{r}
 forecast_starts <- targets |> 
   dplyr::filter(!is.na(observation) & site_id == site & variable == var) |> 
   # Start the day after the most recent non-NA value
   dplyr::summarise(start_date = max(datetime) + lubridate::days(1)) |>  # Date
   dplyr::mutate(h = (Sys.Date() - start_date) + max_horizon) |>  # Horizon value
   dplyr::ungroup()
+```
 
+```{r}
 targets_use <- targets |> 
   dplyr::filter(site_id == site,
                 variable == var) %>%
@@ -400,13 +424,19 @@ targets_use <- targets |>
   # Remove the NA's put at the end, so that the forecast starts from the last day with an observation,
   # rather than today
   dplyr::filter(datetime < forecast_starts$start_date)
+```
 
+```{r}
 RW_model <- targets_use |> 
   fabletools::model(RW = fable::RW(observation))
+```
 
+```{r}
 forecast <- RW_model |>  
   fabletools::generate(h = 35, bootstrap = T, times = 200)
+```
 
+```{r}
 RW_forecasts_EFI <- forecast %>%
   rename(parameter = .rep,
          prediction = .sim) %>%
@@ -417,14 +447,26 @@ RW_forecasts_EFI <- forecast %>%
          family = "ensemble",
          model_id = "persistenceRW") %>%
   select(model_id, datetime, reference_datetime, site_id, family, parameter, variable, prediction)
+```
 
+```{r}
 RW_forecasts_EFI |>
   filter(variable == "temperature") |>
   ggplot(aes(x = datetime, y = prediction, group = parameter)) +
   geom_line() + 
   facet_wrap(~site_id)
 ```
-<https://otexts.com/fpp3/>
+
+### Fable extra
+
+#### Other models
+
+```{r}
+RW_model <- targets_use |> 
+  fabletools::model(ETS = fable::ETS(observation ~ season("A")))
+```
+
+A list of the other models are are: <https://fable.tidyverts.org/reference/index.html>
 
 ## How to submit a forecast
 
