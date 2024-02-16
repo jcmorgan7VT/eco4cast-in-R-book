@@ -12,56 +12,56 @@ You are welcome to use any modeling or statistical framework. Some great resourc
 
 ### Step 1: Obtain data
 
-Read in data to memory.  In the course we have accessed csv, excel, and database forms located in the github repo, on websites, and through an API.
+Read in data to memory. In the course we have accessed csv, excel, and database forms located in the github repo, on websites, and through an API.
 
 ### Step 2: Pre-process data
 
-#### Split data: divide data into the training and test sets. 
+#### Split data: divide data into the training and test sets.
 
-- You will use the training set to fit your model and the testing set to evaluate the model performance.
-- We only want to evaluate our model using data that the model has not used yet.  Otherwise we can only say that the model is good at fitting the data that was used to train it.  This is not helpful for understanding how it would perform as a tool generate new predictions.
-- You want most of your data in the training set because machine learning models can be quite "hungry for data" (e.g, next a large dataset to find a good fit).
-- A typical split is 80% training and 20% testing but there isn't a required split. 
-- Data are randomly assigned to the two splits.
-- Your data may have obvious groupings that you want to be equally represented in both the training and testing sets.  For example, if you have cats and dogs as a variable you are using to predict tail length, you may want to be sure that your training set is not randomly full of dogs because than means it may not predict the cats well in the testing set.  You can prevent this by defining the `strata` used when assigning the training and testing sets. 
+-   You will use the training set to fit your model and the testing set to evaluate the model performance.
+-   We only want to evaluate our model using data that the model has not used yet. Otherwise we can only say that the model is good at fitting the data that was used to train it. This is not helpful for understanding how it would perform as a tool generate new predictions.
+-   You want most of your data in the training set because machine learning models can be quite "hungry for data" (e.g, next a large dataset to find a good fit).
+-   A typical split is 80% training and 20% testing but there isn't a required split.
+-   Data are randomly assigned to the two splits.
+-   Your data may have obvious groupings that you want to be equally represented in both the training and testing sets. For example, if you have cats and dogs as a variable you are using to predict tail length, you may want to be sure that your training set is not randomly full of dogs because than means it may not predict the cats well in the testing set. You can prevent this by defining the `strata` used when assigning the training and testing sets.
 
 #### Recipes: Modify predictors/features/covariates/independent variables for analysis
 
-- Modify data set so that variables are correctly formatted for a particular model. For example, a linear regression requires groups to be dummy variables. Therefore, a column called "ecosystem" with two values: "forest" and "grass" would be converted to two columns: ecosystem_forest with a value of 0 or 1 and ecosystem_grass with a value of 0 and 1)
-- Removing highly correlated predictors
-- Rescaling predictor (e.g., converting to 0 mean and 1 standard deviation)
-- transforming predictors (e.g., log)
+-   Modify data set so that variables are correctly formatted for a particular model. For example, a linear regression requires groups to be dummy variables. Therefore, a column called "ecosystem" with two values: "forest" and "grass" would be converted to two columns: ecosystem_forest with a value of 0 or 1 and ecosystem_grass with a value of 0 and 1)
+-   Removing highly correlated predictors
+-   Rescaling predictor (e.g., converting to 0 mean and 1 standard deviation)
+-   transforming predictors (e.g., log)
 
 ### Step 3: Specify model and workflow
 
 A workflow combines the model and recipe in a single "object" that you can use for training, testing, and predicting new data.
 
-- Define model type: linear regression, regression tree, neutral net, etc.
-- Define model engine: particular R package (`lm`, `ranger`, etc.)
-- Define model mode: regression or classification
-- Define workflow: combine recipe and model definition
+-   Define model type: linear regression, regression tree, neutral net, etc.
+-   Define model engine: particular R package (`lm`, `ranger`, etc.)
+-   Define model mode: regression or classification
+-   Define workflow: combine recipe and model definition
 
 ### Step 4: Train model
 
-- Tune hyper-parameters: hyper-parameters are configuration settings the govern how a particular ML method is fit to data. They are called "hyper" because "regular" parameters are the parameter within the model that are learned by the ML method.  For example, a method called "random forecast" requires a hyper-parameter that controls the minimum size of a regression tree that is allowed.  This parameter (called `min_n`) could be directly provided by you or could be tuned.  The tuning process involves repeatedly fitting the model using different values of the hyper-parameter and using the hyper-parameter values that yield the best fit to the data. Importantly: not all ML methods have hyper-parameter (e.g., linear regression using the `lm` engine does not have hyper-parameters).  We don't tune hyperparameters in this example. See `example-with-tuning.Rmd` for an extension of this application that includes hyperparameter tuning.
+-   Tune hyper-parameters: hyper-parameters are configuration settings the govern how a particular ML method is fit to data. They are called "hyper" because "regular" parameters are the parameter within the model that are learned by the ML method. For example, a method called "random forecast" requires a hyper-parameter that controls the minimum size of a regression tree that is allowed. This parameter (called `min_n`) could be directly provided by you or could be tuned. The tuning process involves repeatedly fitting the model using different values of the hyper-parameter and using the hyper-parameter values that yield the best fit to the data. Importantly: not all ML methods have hyper-parameter (e.g., linear regression using the `lm` engine does not have hyper-parameters). We don't tune hyperparameters in this example. See [`example-with-tuning.Rmd`](https://github.com/frec3044/machine-learning/blob/main/assignment/example-with-tuning.Rmd) for an extension of this application that includes hyperparameter tuning.
 
-- Fit model (using best hyper-parameter if they are tuned).  The model is fit to the training data.
+-   Fit model (using best hyper-parameter if they are tuned). The model is fit to the training data.
 
 ### Step 5: Predict
 
-- Predict testing data using the model that was fit to the training data.  This step is critical because we only want to evaluate our model using data that the model has not used yet.  Otherwise we can only say that the model is good at fitting the data that was used to train it.  This is not helpful for understand how it would perform as a tool generate new predictions. 
-- Predictions are quite easy using the `predict()` function.
+-   Predict testing data using the model that was fit to the training data. This step is critical because we only want to evaluate our model using data that the model has not used yet. Otherwise we can only say that the model is good at fitting the data that was used to train it. This is not helpful for understand how it would perform as a tool generate new predictions.
+-   Predictions are quite easy using the `predict()` function.
 
 ### Step 6: Evaluate model
 
-- It is important to use the appropriate metrics to evaluate how the model performs.  Some metrics only apply to classification problems and other only apply to regression problems. A list of metric types can be found [here](https://yardstick.tidymodels.org/articles/metric-types.html)
-- We will be focusing on root-mean squared error (`rmse`), a metric that subtracts each observation from the predictions, squares it, averages all the squared errors for all the data points, and then takes the square root of the mean squared error.  
-- R-squared (`rsq`) is another metric that we used in the lake ice module.
+-   It is important to use the appropriate metrics to evaluate how the model performs. Some metrics only apply to classification problems and other only apply to regression problems. A list of metric types can be found [here](https://yardstick.tidymodels.org/articles/metric-types.html)
+-   We will be focusing on root-mean squared error (`rmse`), a metric that subtracts each observation from the predictions, squares it, averages all the squared errors for all the data points, and then takes the square root of the mean squared error.\
+-   R-squared (`rsq`) is another metric that we used in the lake ice module.
 
 ### Step 7: Deploy model
 
-- One of main points of using machine learning is to develop a tool that can be used with new predictors to predict data that wasn't involved in the training and testing.  These are data that have all the columns necessary to make predictions but lack data in the column you are trying to predict.  
-- This step is simple because it involve using the `predict()` function with the same trained model but with new data.
+-   One of main points of using machine learning is to develop a tool that can be used with new predictors to predict data that wasn't involved in the training and testing. These are data that have all the columns necessary to make predictions but lack data in the column you are trying to predict.\
+-   This step is simple because it involve using the `predict()` function with the same trained model but with new data.
 
 ### Application: Predicting water temperature at NEON sites
 
@@ -150,12 +150,11 @@ targets_df <- targets |>
   mutate(doy = yday(datetime))
 ```
 
-#### Step 2:  Pre-process data
+#### Step 2: Pre-process data
 
-##### Split data into training/testing sets 
+##### Split data into training/testing sets
 
-We are going to split the data into training and testing sets using the `initial_split` function.  `prop = 0.80` says to use 80% of the data in the training set. 
-
+We are going to split the data into training and testing sets using the `initial_split` function. `prop = 0.80` says to use 80% of the data in the training set.
 
 ```{r}
 split <- initial_split(targets_df, prop = 0.80, strata = site_id)
@@ -182,19 +181,19 @@ train_data
 
 ##### Feature engineering using a recipe
 
-- requires starting with dataset that is used to provide the columns.
-- a formula with the dependent variable and the predictors.  If `.` is used as the predictors, that means use all columns other than the dependent variable.
-- Steps that modify the data
+-   requires starting with dataset that is used to provide the columns.
+-   a formula with the dependent variable and the predictors. If `.` is used as the predictors, that means use all columns other than the dependent variable.
+-   Steps that modify the data
 
 We will use the following steps:
-- `step_rm` because we don't want to use the identifier of the plot in the fitting.
-- `step_other` because there are rare land-use classes that we want to lump together.  This creates an "other" class.
-- `step_dummy` because linear regression requires classes to be dummy variables. For example, a linear regression requires groups to be dummy variables. Therefore, a column called "ecosystem" with two values: "forest" and "grass" would be converted to two columns: ecosystem_forest with a value of 0 or 1 and ecosystem_grass with a value of 0 and 1)
+
+-   `step_rm` because we don't want to use the datetime in the fit.
+
+-   `step_naomit` because there are na values in the temperature and air_temperature columns. This is used here for illustrative purposes and can also be done by filtering the target data before it is split into training and testing groups
 
 [Here are the different recipe steps used above](https://recipes.tidymodels.org/reference/index.html)
 
-- [Add dummy variables](https://recipes.tidymodels.org/reference/index.html#step-functions-dummy-variables-and-encodings)
-- [Filter rows and select columns](https://recipes.tidymodels.org/reference/index.html#step-functions-filters)
+-   [Filter rows and select columns](https://recipes.tidymodels.org/reference/index.html#step-functions-filters)
 
 Here is our recipe:
 
@@ -213,9 +212,9 @@ our_recipe
 
 #### Step 3: Specify model, engine, and workflow
 
-We need to create the model and engine that we will use. In this example, we are using `linear_reg` with the mode of `regression` (as opposed to `classification`). Setting the mode for a linear regression is actually not necessary because it only allows regressions but it is included here for completeness. 
+We need to create the model and engine that we will use. In this example, we are using `linear_reg` with the mode of `regression` (as opposed to `classification`). Setting the mode for a linear regression is actually not necessary because it only allows regressions but it is included here for completeness.
 
-The engine is `lm` because we are using the standard R function `lm`.  There are a ton of other functions for linear regression modeling that we could use.  They would be specified as a different engine.
+The engine is `lm` because we are using the standard R function `lm`. There are a ton of other functions for linear regression modeling that we could use. They would be specified as a different engine.
 
 ```{r}
 our_model <- linear_reg(mode = "regression") |> 
@@ -228,7 +227,7 @@ You will see the model, mode, and engine in the model object
 our_model 
 ```
 
-We now combine the model and the recipe together to make a workflow that can be used to fit the training and testing data. `workflow()` initiates the workflow and `add_model` and `add_recipe` add those components to the workflow.  Importantly, the workflow has not yet been applied, we just have description of what to do.
+We now combine the model and the recipe together to make a workflow that can be used to fit the training and testing data. `workflow()` initiates the workflow and `add_model` and `add_recipe` add those components to the workflow. Importantly, the workflow has not yet been applied, we just have description of what to do.
 
 ```{r}
 wflow <-
@@ -278,7 +277,7 @@ We need to combine the `.pred` column with the testing data using the `bind_cols
 pred_test <- bind_cols(test_data, predictions)
 ```
 
-Now we have a data frame with the prediction and all the predictors used to predict it and other identifying info (like `plotID`)
+Now we have a data frame with the prediction and all the predictors used to predict it.
 
 ```{r}
 pred_test
@@ -286,7 +285,7 @@ pred_test
 
 #### Step 6: Evaluate model
 
-We will evaluate the performance of our predictions of the testing data using two metrics (`rmse` and `rsq`).  The function `metric_set` defines the set of metric we will be using them.  It creates a function called `multi_metric()` that we will use to calculate the metrics.  We pipe in the predicted test data (`pred_test`) and tell the function that our truth (i.e., observed data) is the `plot_kgCm2` column and the predictions (i.e., `estimate`) is the `.pred` column
+We will evaluate the performance of our predictions of the testing data using two metrics (`rmse` and `rsq`). The function `metric_set` defines the set of metric we will be using them. It creates a function called `multi_metric()` that we will use to calculate the metrics. We pipe in the predicted test data (`pred_test`) and tell the function that our truth (i.e., observed data) is the `temperature` column and the predictions (i.e., `estimate`) is the `.pred` column
 
 ```{r}
 multi_metric <- metric_set(rmse, rsq)
@@ -303,9 +302,9 @@ metric_table
 
 #### Step 7: Deploy model
 
-The final step is to apply your model to predict new data. 
+The final step is to apply your model to predict new data.
 
-Now read in the new data.  
+Now read in the new data.
 
 ```{r}
 targets_future <- noaa_future_daily |> 
@@ -315,13 +314,13 @@ targets_future <- noaa_future_daily |>
   select(-parameter)
 ```
 
-You will notice that the plot_kgCm2 is all `NA` because you don't know what the carbon stock is of the plot.
+You will notice that the `temperature` is all `NA` because you don't know what the carbon stock is of the plot.
 
 ```{r}
 targets_future
 ```
 
-As in "Step 5: Predict Test Data", use the model fitting on the training data (`biomass_fit`) to predict the new data.
+As in "Step 5: Predict Test Data", use the model fitting on the training data (`fit`) to predict the new data.
 
 ```{r}
 new_predictions <- predict(fit, new_data = targets_future)
@@ -346,7 +345,6 @@ for(i in unique(targets_future$parameter)){
 }
 ```
 
-
 ```{r}
 tidymodels_forecasts_EFI <- tidymodels_forecast %>%
   rename(prediction = .pred) %>%
@@ -367,22 +365,23 @@ tidymodels_forecasts_EFI |>
   geom_line() + 
   facet_wrap(~site_id)
 ```
+
 ### Tidymodel extra
 
 #### Changing the model approach
 
-You can easy change the modeling approach by changing the model and engine.  For example the following code replaces the linear regression model with a random forest model from the ranger package.  All other code used fit and predict with the model stays the same.
+You can easy change the modeling approach by changing the model and engine. For example the following code replaces the linear regression model with a random forest model from the ranger package. All other code used fit and predict with the model stays the same.
 
 ```{r}
 our_model <- rand_forest(mode = "regression") |> 
   set_engine("ranger")
 ```
 
-A list of models that are avialable for you to use can be found [here](https://parsnip.tidymodels.org/reference/index.html#models).  Not all models are designed for all applications.  For example, forecasting water temperature requires regression models rather than classification models.
+A list of models that are available for you to use can be found [here](https://parsnip.tidymodels.org/reference/index.html#models). Not all models are designed for all applications. For example, forecasting water temperature requires regression models rather than classification models.
 
 #### Tuning hyper-parameters
 
-Some modeling approaches have parameters that govern how the model fitting done.  These  are called hyperparameters.  Hyperparameters are different from the parameters that are optimized using data in the modeling fitting step.  Tidymodels provides tools to also fit hyperparameters.  An example can be found [here](https://github.com/frec3044/machine-learning/blob/main/assignment/example-with-tuning.Rmd).
+Some modeling approaches have parameters that govern how the model fitting done. These are called hyperparameters. Hyperparameters are different from the parameters that are optimized using data in the modeling fitting step. Tidymodels provides tools to also fit hyperparameters. An example can be found [here](https://github.com/frec3044/machine-learning/blob/main/assignment/example-with-tuning.Rmd).
 
 ## Intro to Fable Models
 
@@ -470,4 +469,4 @@ A list of the other models are are: <https://fable.tidyverts.org/reference/index
 
 ## How to submit a forecast
 
-<https://projects.ecoforecast.org/neon4cast-ci/instructions.html>
+The introductions registering your model and submitting it can be found [here](https://projects.ecoforecast.org/neon4cast-ci/instructions.html).
