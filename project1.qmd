@@ -6,9 +6,61 @@ Here is information about generating and submitting forecasts: <https://projects
 
 You are welcome to use any modeling or statistical framework. Some great resources for R packages that open the doors to many modeling frameworks are below.
 
+Expectations for project
+
+1. Code in a GitHub repository that generates a forecast that uses a model that is "substantially" different that the linear model that we developed together.  "Substantially" means you used a different modeling approach or a linear model with different variables.  In the later, you need to justify why you choose those parameters and why you think it is a better model than the one we developed together. Merely adding one more covariate because it is easy to do does not represent a "substantially" different model.
+2. The code in #1 generates real-time forecasts that include uncertainty.
+3. Forecast models is registered with the NEON Ecological Forecasting Challenge. See <neon4cast.org> for the registration form.
+4. Automated forecasted are generated using GitHub actions
+
+## Lags in targets
+
+One issues to consider when working with auto-regression (lagged) models is that data may not be avialable on the date the you start your forecast (e.g., today).  In this case, the forecast needs to start at the most recent observation and run to present day. The model is continued on into the future over the full horizon.  Only the future datetimes are submitted as a true forecast.  Effectively, The output of the model run to the present day is the starting point for the true forecast into the future.
+
+## Lags in inputs
+
+You may want to use linear modeling (like `lm`) but add more covariates.  If you want to explore the use of lag or running sums in the weather inputs, you will need to combine the historial and future weather data tomorrow (otherwise you won't have a value for the lagged variable on the first day of the first).  Here is some code to create a combined weater dataset.
+
+```{r}
+noaa_forecast_start <- Sys.Date() - days(1)
+min_historical_day <- Sys.Date() - days(60)
+variables <- "air_temperature"
+sites <- "BARC"
+
+noaa_past_mean <-  neon4cast::noaa_stage3() |> 
+  dplyr::filter(site_id %in% sites,
+                variable %in% variables,
+                datetime > min_historical_day,
+                datetime < noaa_forecast_start) |> 
+  dplyr::collect() |> 
+  mutate(datetime = as_date(datetime)) |> 
+  summarize(prediction = mean(prediction), .by = c("datetime", "site_id", "parameter", "variable")) |> 
+  pivot_wider(names_from = variable, values_from = prediction) |> 
+  mutate(air_temperature = air_temperature - 273.15)
+
+noaa_future_mean <- neon4cast::noaa_stage2(start_date = noaa_forecast_start) |> 
+  dplyr::filter(datetime >= noaa_forecast_start,
+                site_id %in% sites,
+                variable %in% variables) |> 
+  dplyr::collect() |> 
+  mutate(datetime = as_date(datetime)) |> 
+  summarize(prediction = mean(prediction), .by = c("datetime", "site_id", "parameter", "variable")) |>
+  pivot_wider(names_from = variable, values_from = prediction) |>
+  mutate(air_temperature = air_temperature - 273.15) |> 
+  select(datetime, site_id, air_temperature, parameter)
+
+combined_met_df <- bind_rows(noaa_past_mean, noaa_future_mean)
+```
+
+```{r}
+ggplot(combined_met_df, aes(x = datetime, y = air_temperature, group = parameter)) +
+  geom_line()
+```
+Remember that the lag needs to be calculated **within an ensemble member**.
+
 ## Intro to Tidymodels
 
-<https://github.com/frec-3044/machine-learning-template>
+This brief tutorial builds on the machine learning module in the FREC 3044: Environmental Data Science course at Virginia Tech. <https://github.com/frec-3044/machine-learning-template>.  
 
 ### Step 1: Obtain data
 
@@ -127,7 +179,8 @@ noaa_future <- df_future |>
                 datetime >= forecast_date,
                 site_id %in% lake_sites,
                 variable %in% variables) |> 
-  dplyr::collect()
+  dplyr::collect() |> 
+  
 ```
 
 ```{r}
