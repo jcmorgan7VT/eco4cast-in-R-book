@@ -17,7 +17,7 @@ Pre-assignment set up: Complete @sec-second-forecast
 1.  Convert your template markdown code to a .R script
 2.  Update your repository to include the GitHub Action files
 3.  Commit updated files to GitHub
-4.  Provide instructor with link to GitHub repository that demonstrates multiple successful automated executation of forecasting code.
+4.  Provide instructor with link to GitHub repository that demonstrates multiple successful automated execution of forecasting code.
 
 ## Module reference
 
