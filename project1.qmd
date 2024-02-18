@@ -13,13 +13,17 @@ Expectations for project
 3. Forecast models is registered with the NEON Ecological Forecasting Challenge. See <neon4cast.org> for the registration form.
 4. Automated forecasted are generated using GitHub actions
 
-## Lags in targets
+## Helpful tips
+
+You make want to use lags in your model.  Lags in the target variables are used in autogressive models.  Lags in the inputs may improve your predictions because past weather may be a better predictor than current weather.  Considerations for working with lags are below.
+
+### Lags in targets
 
 One issues to consider when working with auto-regression (lagged) models is that data may not be avialable on the date the you start your forecast (e.g., today).  In this case, the forecast needs to start at the most recent observation and run to present day. The model is continued on into the future over the full horizon.  Only the future datetimes are submitted as a true forecast.  Effectively, The output of the model run to the present day is the starting point for the true forecast into the future.
 
-## Lags in inputs
+### Lags in inputs
 
-You may want to use linear modeling (like `lm`) but add more covariates.  If you want to explore the use of lag or running sums in the weather inputs, you will need to combine the historial and future weather data tomorrow (otherwise you won't have a value for the lagged variable on the first day of the first).  Here is some code to create a combined weater dataset.
+You may want to use linear modeling (like `lm`) but add more covariates.  If you want to explore the use of lag or running sums in the weather inputs, you will need to combine the historial and future weather data tomorrow (otherwise you won't have a value for the lagged variable on the first day of the first).  Here is some code to create a combined weather dataset.
 
 ```{r}
 noaa_forecast_start <- Sys.Date() - days(1)
@@ -54,21 +58,24 @@ combined_met_df <- bind_rows(noaa_past_mean, noaa_future_mean)
 
 ```{r}
 ggplot(combined_met_df, aes(x = datetime, y = air_temperature, group = parameter)) +
-  geom_line()
+  geom_line() + 
+  geom_vline(aes(x_intercept = Sys.Date()), color = "blue")
 ```
 Remember that the lag needs to be calculated **within an ensemble member**.
 
 ## Intro to Tidymodels
 
-This brief tutorial builds on the machine learning module in the FREC 3044: Environmental Data Science course at Virginia Tech. <https://github.com/frec-3044/machine-learning-template>.  
+Tidmodels is a meta-package that provides standardized interface with many machine learning algorithms. This brief tutorial that provides an example application with tidymodels builds on the machine learning module in the FREC 3044: Environmental Data Science course at Virginia Tech. <https://github.com/frec-3044/machine-learning-template>.  
 
-### Step 1: Obtain data
+### Overview of tidymodels steps
+
+**Step 1: Obtain data**
 
 Read in data to memory. In the course we have accessed csv, excel, and database forms located in the github repo, on websites, and through an API.
 
-### Step 2: Pre-process data
+**Step 2: Pre-process data**
 
-#### Split data: divide data into the training and test sets.
+*Split data: divide data into the training and test sets.*
 
 -   You will use the training set to fit your model and the testing set to evaluate the model performance.
 -   We only want to evaluate our model using data that the model has not used yet. Otherwise we can only say that the model is good at fitting the data that was used to train it. This is not helpful for understanding how it would perform as a tool generate new predictions.
@@ -77,14 +84,14 @@ Read in data to memory. In the course we have accessed csv, excel, and database 
 -   Data are randomly assigned to the two splits.
 -   Your data may have obvious groupings that you want to be equally represented in both the training and testing sets. For example, if you have cats and dogs as a variable you are using to predict tail length, you may want to be sure that your training set is not randomly full of dogs because than means it may not predict the cats well in the testing set. You can prevent this by defining the `strata` used when assigning the training and testing sets.
 
-#### Recipes: Modify predictors/features/covariates/independent variables for analysis
+*Recipes: Modify predictors/features/covariates/independent variables for analysis*
 
 -   Modify data set so that variables are correctly formatted for a particular model. For example, a linear regression requires groups to be dummy variables. Therefore, a column called "ecosystem" with two values: "forest" and "grass" would be converted to two columns: ecosystem_forest with a value of 0 or 1 and ecosystem_grass with a value of 0 and 1)
 -   Removing highly correlated predictors
 -   Rescaling predictor (e.g., converting to 0 mean and 1 standard deviation)
 -   transforming predictors (e.g., log)
 
-### Step 3: Specify model and workflow
+**Step 3: Specify model and workflow**
 
 A workflow combines the model and recipe in a single "object" that you can use for training, testing, and predicting new data.
 
@@ -93,24 +100,24 @@ A workflow combines the model and recipe in a single "object" that you can use f
 -   Define model mode: regression or classification
 -   Define workflow: combine recipe and model definition
 
-### Step 4: Train model
+**Step 4: Train model**
 
 -   Tune hyper-parameters: hyper-parameters are configuration settings the govern how a particular ML method is fit to data. They are called "hyper" because "regular" parameters are the parameter within the model that are learned by the ML method. For example, a method called "random forecast" requires a hyper-parameter that controls the minimum size of a regression tree that is allowed. This parameter (called `min_n`) could be directly provided by you or could be tuned. The tuning process involves repeatedly fitting the model using different values of the hyper-parameter and using the hyper-parameter values that yield the best fit to the data. Importantly: not all ML methods have hyper-parameter (e.g., linear regression using the `lm` engine does not have hyper-parameters). We don't tune hyperparameters in this example. See [`example-with-tuning.Rmd`](https://github.com/frec3044/machine-learning/blob/main/assignment/example-with-tuning.Rmd) for an extension of this application that includes hyperparameter tuning.
 
 -   Fit model (using best hyper-parameter if they are tuned). The model is fit to the training data.
 
-### Step 5: Predict
+**Step 5: Predict**
 
 -   Predict testing data using the model that was fit to the training data. This step is critical because we only want to evaluate our model using data that the model has not used yet. Otherwise we can only say that the model is good at fitting the data that was used to train it. This is not helpful for understand how it would perform as a tool generate new predictions.
 -   Predictions are quite easy using the `predict()` function.
 
-### Step 6: Evaluate model
+**Step 6: Evaluate model**
 
 -   It is important to use the appropriate metrics to evaluate how the model performs. Some metrics only apply to classification problems and other only apply to regression problems. A list of metric types can be found [here](https://yardstick.tidymodels.org/articles/metric-types.html)
 -   We will be focusing on root-mean squared error (`rmse`), a metric that subtracts each observation from the predictions, squares it, averages all the squared errors for all the data points, and then takes the square root of the mean squared error.\
 -   R-squared (`rsq`) is another metric that we used in the lake ice module.
 
-### Step 7: Deploy model
+**Step 7: Deploy model**
 
 -   One of main points of using machine learning is to develop a tool that can be used with new predictors to predict data that wasn't involved in the training and testing. These are data that have all the columns necessary to make predictions but lack data in the column you are trying to predict.\
 -   This step is simple because it involve using the `predict()` function with the same trained model but with new data.
@@ -205,7 +212,7 @@ targets_df <- targets |>
 
 #### Step 2: Pre-process data
 
-##### Split data into training/testing sets
+*Split data into training/testing sets*
 
 We are going to split the data into training and testing sets using the `initial_split` function. `prop = 0.80` says to use 80% of the data in the training set.
 
@@ -232,7 +239,7 @@ You can see that `train_data` is a data frame that we can work with.
 train_data
 ```
 
-##### Feature engineering using a recipe
+*Feature engineering using a recipe*
 
 -   requires starting with dataset that is used to provide the columns.
 -   a formula with the dependent variable and the predictors. If `.` is used as the predictors, that means use all columns other than the dependent variable.
@@ -263,7 +270,7 @@ The recipe should show the steps that will be performed when applying the recipe
 our_recipe
 ```
 
-#### Step 3: Specify model, engine, and workflow
+*Step 3: Specify model, engine, and workflow*
 
 We need to create the model and engine that we will use. In this example, we are using `linear_reg` with the mode of `regression` (as opposed to `classification`). Setting the mode for a linear regression is actually not necessary because it only allows regressions but it is included here for completeness.
 
@@ -295,7 +302,7 @@ You can see that the workflow object has all the components together
 wflow
 ```
 
-#### Step 4: Train model on Training Data
+*Step 4: Train model on Training Data*
 
 We will use the workflow object to train the model. We need to provide the workflow object and the dataset to the fit function to fit (i.e., train the model)
 
@@ -310,7 +317,7 @@ You can see that the fit object is the workflow object + the results of the mode
 fit
 ```
 
-#### Step 5: Predict Test Data
+*Step 5: Predict Test Data*
 
 Now we will predict the testing data using the model that was fit to the training data.
 
@@ -336,7 +343,7 @@ Now we have a data frame with the prediction and all the predictors used to pred
 pred_test
 ```
 
-#### Step 6: Evaluate model
+*Step 6: Evaluate model*
 
 We will evaluate the performance of our predictions of the testing data using two metrics (`rmse` and `rsq`). The function `metric_set` defines the set of metric we will be using them. It creates a function called `multi_metric()` that we will use to calculate the metrics. We pipe in the predicted test data (`pred_test`) and tell the function that our truth (i.e., observed data) is the `temperature` column and the predictions (i.e., `estimate`) is the `.pred` column
 
@@ -353,7 +360,7 @@ The resulting table has the metrics for evaluation
 metric_table
 ```
 
-#### Step 7: Deploy model
+*Step 7: Deploy model*
 
 The final step is to apply your model to predict new data.
 
@@ -419,7 +426,7 @@ tidymodels_forecasts_EFI |>
   facet_wrap(~site_id)
 ```
 
-### Tidymodel extra
+### Tidymodel extras
 
 #### Changing the model approach
 
@@ -438,13 +445,16 @@ Some modeling approaches have parameters that govern how the model fitting done.
 
 ## Intro to Fable Models
 
-<https://otexts.com/fpp3/>
+The Fable modeling framework provides an interface for many common models used in forecasting.  The useful thing about Fable is that it is specifically focused on forecasting so uncertainty estimation is a core feature.  Fable also has an associated ebook called ["Forecasting: Principles and Practice"](https://otexts.com/fpp3/) that is an excellent resource to learn empirical methods in time-series forecasting.  Similar to Tidymodels, once you have learned the general structure for how the package works, it opens up many different modeling approaches.
+
 
 ```{r}
 library(tidyverse)
 library(tsibble)
 library(fable)
 ```
+
+### Step 1: Set up targets
 
 ```{r}
 targets <- read_csv('https://data.ecoforecast.org/neon4cast-targets/aquatics/aquatics-targets.csv.gz',
@@ -457,6 +467,9 @@ var <- "temperature"
 site <- "BARC"
 ```
 
+The targets have to be converted into a time-series tibble (called a `tsibble`). 
+WHY IS THIS CODE NEEDED?
+
 ```{r}
 forecast_starts <- targets |> 
   dplyr::filter(!is.na(observation) & site_id == site & variable == var) |> 
@@ -465,6 +478,8 @@ forecast_starts <- targets |>
   dplyr::mutate(h = (Sys.Date() - start_date) + max_horizon) |>  # Horizon value
   dplyr::ungroup()
 ```
+
+To make a `tsibble` you need to defined the grouping variables (`key`) and the common that defines the time-series (`index`).  WHY FILL GAPS?
 
 ```{r}
 targets_use <- targets |> 
@@ -478,15 +493,21 @@ targets_use <- targets |>
   dplyr::filter(datetime < forecast_starts$start_date)
 ```
 
+Once you have a `tsibble`, you combine it with a modeling approach to generate a model that is ready to be used.  In this case the model is a random walk (`RW`) with the target of `observation`. 
+
 ```{r}
 RW_model <- targets_use |> 
   fabletools::model(RW = fable::RW(observation))
 ```
 
+The model is then used to generate a forecast for `h` number of time-steps in the future (`h = 35`).  The uncertainty is calculated using a bootstrap method (`bootstrap= T`) with 200 ensemble members, e.g. samples (`times = 200`).
+
 ```{r}
 forecast <- RW_model |>  
   fabletools::generate(h = 35, bootstrap = T, times = 200)
 ```
+
+The forecast is converted into a standard format
 
 ```{r}
 RW_forecasts_EFI <- forecast %>%
@@ -501,6 +522,8 @@ RW_forecasts_EFI <- forecast %>%
   select(model_id, datetime, reference_datetime, site_id, family, parameter, variable, prediction)
 ```
 
+and plotted 
+
 ```{r}
 RW_forecasts_EFI |>
   filter(variable == "temperature") |>
@@ -509,9 +532,11 @@ RW_forecasts_EFI |>
   facet_wrap(~site_id)
 ```
 
-### Fable extra
+### Fable extras
 
 #### Other models
+
+Other models can be added at the step that the targets are combined with the modeling approach. 
 
 ```{r}
 RW_model <- targets_use |> 
