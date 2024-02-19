@@ -454,6 +454,7 @@ Some modeling approaches have parameters that govern how the model fitting done.
 
 The Fable modeling framework provides an interface for many common models used in forecasting.  The useful thing about Fable is that it is specifically focused on forecasting so uncertainty estimation is a core feature.  Fable also has an associated ebook called ["Forecasting: Principles and Practice"](https://otexts.com/fpp3/) that is an excellent resource to learn empirical methods in time-series forecasting.  Similar to Tidymodels, once you have learned the general structure for how the package works, it opens up many different modeling approaches.
 
+The example below forecasts using a simple random walk. Since the random walk starts at the last observation, it shows how to generate a forecast for variables that have a gap between the last observation and the current day.  
 
 ```{r}
 #| message: false
@@ -474,30 +475,28 @@ var <- "temperature"
 site <- "BARC"
 ```
 
-The targets have to be converted into a time-series tibble (called a `tsibble`). 
-WHY IS THIS CODE NEEDED?
+We want to collect when to start our forecast.  If we have observations from today then our forecast starts today.  But if there is a gap between our last observation and today, our forecast needs to start on the data of the last observation and forecast until today.  Then the forecast needs to extend into the future for our desired horizon.  As a result the horizon that we provide the `fable` model may actually be longer than the horizon that we want to forecast into the future.  The code below calculate the start date of the forecast and the full horizon (the desired horizon in the future + the gap between last observation and today)
 
 ```{r}
 forecast_starts <- targets |> 
   dplyr::filter(!is.na(observation) & site_id == site & variable == var) |> 
   # Start the day after the most recent non-NA value
   dplyr::summarise(start_date = max(datetime) + lubridate::days(1)) |>  # Date
-  dplyr::mutate(h = (Sys.Date() - start_date) + max_horizon) |>  # Horizon value
+  dplyr::mutate(h = (Sys.Date() - start_date) + max_horizon,
+                h = as.numeric(h)) |>  # Horizon value
   dplyr::ungroup()
+
+forecast_starts
 ```
 
-To make a `tsibble` you need to defined the grouping variables (`key`) and the common that defines the time-series (`index`).  WHY FILL GAPS?
+The targets have to be converted into a time-series tibble (called a `tsibble`).  To make a `tsibble` you need to defined the grouping variables (`key`) and the common that defines the time-series (`index`).  Many modeling approaches require the datetime to be continuous (no gaps) but allow na values for values in the gaps.  The `fill_gaps()` function fills the gaps with `NA`s.
 
 ```{r}
 targets_use <- targets |> 
   dplyr::filter(site_id == site,
                 variable == var) %>%
   tsibble::as_tsibble(key = c('variable', 'site_id'), index = 'datetime') |> 
-  # add NA values up to today (index)
-  tsibble::fill_gaps(.end = Sys.Date()) |> 
-  # Remove the NA's put at the end, so that the forecast starts from the last day with an observation,
-  # rather than today
-  dplyr::filter(datetime < forecast_starts$start_date)
+  tsibble::fill_gaps()   # add NA values up to today (index)
 ```
 
 Once you have a `tsibble`, you combine it with a modeling approach to generate a model that is ready to be used.  In this case the model is a random walk (`RW`) with the target of `observation`. 
@@ -507,11 +506,11 @@ RW_model <- targets_use |>
   fabletools::model(RW = fable::RW(observation))
 ```
 
-The model is then used to generate a forecast for `h` number of time-steps in the future (`h = 35`).  The uncertainty is calculated using a bootstrap method (`bootstrap= T`) with 200 ensemble members, e.g. samples (`times = 200`).
+The model is then used to generate a forecast for `h` number of time-steps in the future.  The uncertainty is calculated using a bootstrap method (`bootstrap= T`) with 200 ensemble members, e.g. samples (`times = 200`).
 
 ```{r}
 forecast <- RW_model |>  
-  fabletools::generate(h = 35, bootstrap = T, times = 200)
+  fabletools::generate(h = forecast_starts$h, bootstrap = T, times = 200)
 ```
 
 The forecast is converted into a standard format
@@ -521,21 +520,22 @@ RW_forecasts_EFI <- forecast %>%
   rename(parameter = .rep,
          prediction = .sim) %>%
   # For the EFI challenge we only want the forecast for future
-  filter(datetime > Sys.Date()) %>%
+  #filter(datetime > Sys.Date()) %>%
   group_by(site_id, variable) %>%
-  mutate(reference_datetime = min(datetime) - lubridate::days(1),
+  mutate(reference_datetime = Sys.Date(),
          family = "ensemble",
          model_id = "persistenceRW") %>%
   select(model_id, datetime, reference_datetime, site_id, family, parameter, variable, prediction)
 ```
 
-and plotted 
+and plotted.  The reference_datetime is shown in blue.
 
 ```{r}
 RW_forecasts_EFI |>
   filter(variable == "temperature") |>
   ggplot(aes(x = datetime, y = prediction, group = parameter)) +
   geom_line() + 
+  geom_vline(aes(xintercept = reference_datetime), color = "blue") +
   facet_wrap(~site_id)
 ```
 
@@ -543,12 +543,12 @@ RW_forecasts_EFI |>
 
 #### Other models
 
-Other models can be added at the step that the targets are combined with the modeling approach. 
+Other models can be added at the step that the targets are combined with the modeling approach.   This example is a [time-series linear model](https://otexts.com/fpp3/regression-intro.html) with a trend and seasonal term.
 
 ```{r}
 #| eval: false
 RW_model <- targets_use |> 
-  fabletools::model(ETS = fable::ETS(observation ~ season("A")))
+  fabletools::model(lm = TSLM(observation ~ trend() + season()))
 ```
 
 A list of the other models are are: <https://fable.tidyverts.org/reference/index.html>
