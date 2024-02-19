@@ -12,7 +12,7 @@ GitHub Actions is used to execute the forecast each day in the "cloud".  The "cl
 
 You will use Docker container (`eco4cast/neon4cast-rocker`) to ensure consistent computation environment each day.  The Docker is based on a rocker container that already has R, Rstudio, and many common packages (e.g., tidyverse).  It also contains packages that are specific to the NEON Forecasting Challenge.  
 
-Pulling data include the Docker container and export the results.  Nothing persists in container after it finishes in GitHub Actions.  You will use the `neon4cast::stage2` and `neon4cast::stage3` to read in the meterology data.  You will use read_csv and a weblink to read in the targets.  You will export your forecasts using the `neon4cast::submit` function that uploads your forecast to the NEON Ecological Forecasting Challenge S3 submission bucket.
+Pulling data include the Docker container and export the results.  Nothing persists in container after it finishes in GitHub Actions.  You will use the `neon4cast::stage2` and `neon4cast::stage3` to read in the meteorology data.  You will use read_csv and a weblink to read in the targets.  You will export your forecasts using the `neon4cast::submit` function that uploads your forecast to the NEON Ecological Forecasting Challenge S3 submission bucket.
 
 ## Reading
 
