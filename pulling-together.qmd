@@ -17,7 +17,11 @@ We will start our forecast - analysis cycle by running the model with a particle
 Now we are going to generate a forecast that started from our 1 year spin up completed in [Chapter -@sec-pf2]. First load the analysis data into memory so that we can access the initial conditions and parameters in it.
 
 ```{r}
-load("data/PF_analysis_0.Rdata")
+if(file.exists("data/PF_analysis_1.Rdata")){
+  load("data/PF_analysis_1.Rdata")
+}else{
+  load("data/PF_analysis_0.Rdata")
+}
 ens_members <- dim(analysis$forecast)[2]
 ```
 
@@ -80,7 +84,7 @@ params <- analysis$params
 num_pars <- 2
 fit_params <- array(NA, dim = c(length(sim_dates) ,ens_members , num_pars))
 fit_params[1, , 1] <- analysis$fit_params[index, ,1]
-fit_params[1, , 2] <- analysis$fit_params[index, ,1]
+fit_params[1, , 2] <- analysis$fit_params[index, ,2]
 ```
 
 Initialize the states with the states from the analysis that occurred on the index simulation date in the previous run through the particle filter.
