@@ -6,6 +6,14 @@ In the third forecast generation assignment, you will be automating the submissi
 
 You will be generating forecasts of water temperature at NEON aquatics sites.
 
+## Key concepts
+
+GitHub Actions is used to execute the forecast each day in the "cloud".  The "cloud" are small computers that are run somewhere in a Microsoft data center (Microsoft owns GitHub).  You create a yaml file in the `.github/workflows` in your github repo that defines the time of day that your job is run, the environment (type of operating system and Docker container), and the steps in the job. 
+
+You will use Docker container (`eco4cast/neon4cast-rocker`) to ensure consistent computation environment each day.  The Docker is based on a rocker container that already has R, Rstudio, and many common packages (e.g., tidyverse).  It also contains packages that are specific to the NEON Forecasting Challenge.  
+
+Pulling data include the Docker container and export the results.  Nothing persists in container after it finishes in GitHub Actions.  You will use the `neon4cast::stage2` and `neon4cast::stage3` to read in the meterology data.  You will use read_csv and a weblink to read in the targets.  You will export your forecasts using the `neon4cast::submit` function that uploads your forecast to the NEON Ecological Forecasting Challenge S3 submission bucket.
+
 ## Reading
 
 Thomas, R. Q., Boettiger, C., Carey, C. C., Dietze, M. C., Johnson, L. R., Kenney, M. A., et al. (2023). The NEON Ecological Forecasting Challenge. Frontiers in Ecology and the Environment, 21(3), 112–113. <https://doi.org/10.1002/fee.2616>

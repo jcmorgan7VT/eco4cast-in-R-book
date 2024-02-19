@@ -27,7 +27,7 @@ You may want to use linear modeling (like `lm`) but add more covariates.  If you
 
 ```{r}
 noaa_forecast_start <- Sys.Date() - lubridate::days(1)
-min_historical_day <- Sys.Date() - lubridate:days(60)
+min_historical_day <- Sys.Date() - lubridate::days(60)
 variables <- "air_temperature"
 sites <- "BARC"
 
