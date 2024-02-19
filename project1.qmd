@@ -456,6 +456,7 @@ The Fable modeling framework provides an interface for many common models used i
 
 
 ```{r}
+#| message: false
 library(tsibble)
 library(fable)
 ```
@@ -545,6 +546,7 @@ RW_forecasts_EFI |>
 Other models can be added at the step that the targets are combined with the modeling approach. 
 
 ```{r}
+#| eval: false
 RW_model <- targets_use |> 
   fabletools::model(ETS = fable::ETS(observation ~ season("A")))
 ```
