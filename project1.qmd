@@ -65,7 +65,7 @@ combined_met_df <- bind_rows(noaa_past_mean, noaa_future_mean)
 ```{r}
 ggplot(combined_met_df, aes(x = datetime, y = air_temperature, group = parameter)) +
   geom_line() + 
-  geom_vline(aes(x_intercept = Sys.Date()), color = "blue")
+  geom_vline(aes(xintercept = Sys.Date()), color = "blue")
 ```
 Remember that the lag needs to be calculated **within an ensemble member**.
 
@@ -193,7 +193,7 @@ noaa_future <- df_future |>
                 datetime >= forecast_date,
                 site_id %in% lake_sites,
                 variable %in% variables) |> 
-  dplyr::collect() |> 
+  dplyr::collect()
   
 ```
 
