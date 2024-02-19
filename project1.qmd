@@ -26,8 +26,8 @@ One issues to consider when working with auto-regression (lagged) models is that
 You may want to use linear modeling (like `lm`) but add more covariates.  If you want to explore the use of lag or running sums in the weather inputs, you will need to combine the historial and future weather data tomorrow (otherwise you won't have a value for the lagged variable on the first day of the first).  Here is some code to create a combined weather dataset.
 
 ```{r}
-noaa_forecast_start <- Sys.Date() - days(1)
-min_historical_day <- Sys.Date() - days(60)
+noaa_forecast_start <- Sys.Date() - lubridate::days(1)
+min_historical_day <- Sys.Date() - lubridate:days(60)
 variables <- "air_temperature"
 sites <- "BARC"
 
@@ -66,6 +66,8 @@ Remember that the lag needs to be calculated **within an ensemble member**.
 ## Intro to Tidymodels
 
 Tidmodels is a meta-package that provides standardized interface with many machine learning algorithms. This brief tutorial that provides an example application with tidymodels builds on the machine learning module in the FREC 3044: Environmental Data Science course at Virginia Tech. <https://github.com/frec-3044/machine-learning-template>.  
+
+Tidymodels does not estimate uncertainty so forecast uncertainty needs to be generated output the tidymodels framework.  For example, driver uncertainty can be generated creating tidymodel forecasts for each meterological ensemble member.
 
 ### Overview of tidymodels steps
 
@@ -175,7 +177,7 @@ noaa_past_mean <- noaa_past |>
 
 ```{r}
 forecast_date <- Sys.Date() 
-noaa_date <- forecast_date - days(2)
+noaa_date <- forecast_date - lubridate::days(2)
 
 df_future <- neon4cast::noaa_stage2(start_date = noaa_date)
 
