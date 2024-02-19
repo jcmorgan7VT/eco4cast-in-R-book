@@ -26,27 +26,33 @@ One issues to consider when working with auto-regression (lagged) models is that
 You may want to use linear modeling (like `lm`) but add more covariates.  If you want to explore the use of lag or running sums in the weather inputs, you will need to combine the historial and future weather data tomorrow (otherwise you won't have a value for the lagged variable on the first day of the first).  Here is some code to create a combined weather dataset.
 
 ```{r}
-noaa_forecast_start <- Sys.Date() - lubridate::days(1)
-min_historical_day <- Sys.Date() - lubridate::days(60)
+#| message: false
+library(tidyverse)
+library(lubridate)
+```
+
+```{r}
+noaa_forecast_start <- Sys.Date() - days(1)
+min_historical_day <- Sys.Date() - days(60)
 variables <- "air_temperature"
 sites <- "BARC"
 
 noaa_past_mean <-  neon4cast::noaa_stage3() |> 
-  dplyr::filter(site_id %in% sites,
+  filter(site_id %in% sites,
                 variable %in% variables,
                 datetime > min_historical_day,
                 datetime < noaa_forecast_start) |> 
-  dplyr::collect() |> 
+  collect() |> 
   mutate(datetime = as_date(datetime)) |> 
   summarize(prediction = mean(prediction), .by = c("datetime", "site_id", "parameter", "variable")) |> 
   pivot_wider(names_from = variable, values_from = prediction) |> 
   mutate(air_temperature = air_temperature - 273.15)
 
 noaa_future_mean <- neon4cast::noaa_stage2(start_date = noaa_forecast_start) |> 
-  dplyr::filter(datetime >= noaa_forecast_start,
+  filter(datetime >= noaa_forecast_start,
                 site_id %in% sites,
                 variable %in% variables) |> 
-  dplyr::collect() |> 
+  collect() |> 
   mutate(datetime = as_date(datetime)) |> 
   summarize(prediction = mean(prediction), .by = c("datetime", "site_id", "parameter", "variable")) |>
   pivot_wider(names_from = variable, values_from = prediction) |>
@@ -127,7 +133,6 @@ A workflow combines the model and recipe in a single "object" that you can use f
 ### Application: Predicting water temperature at NEON sites
 
 ```{r message=FALSE}
-library(tidyverse)
 library(tidymodels)
 tidymodels_prefer()
 set.seed(100) #for random number generation
@@ -451,7 +456,6 @@ The Fable modeling framework provides an interface for many common models used i
 
 
 ```{r}
-library(tidyverse)
 library(tsibble)
 library(fable)
 ```
