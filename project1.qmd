@@ -67,7 +67,7 @@ Remember that the lag needs to be calculated **within an ensemble member**.
 
 Tidmodels is a meta-package that provides standardized interface with many machine learning algorithms. This brief tutorial that provides an example application with tidymodels builds on the machine learning module in the FREC 3044: Environmental Data Science course at Virginia Tech. <https://github.com/frec-3044/machine-learning-template>.  
 
-Tidymodels does not estimate uncertainty so forecast uncertainty needs to be generated output the tidymodels framework.  For example, driver uncertainty can be generated creating tidymodel forecasts for each meterological ensemble member.
+Tidymodels does not estimate uncertainty so forecast uncertainty needs to be generated output the tidymodels framework.  For example, driver uncertainty can be generated creating tidymodel forecasts for each meteorological ensemble member.
 
 ### Overview of tidymodels steps
 
