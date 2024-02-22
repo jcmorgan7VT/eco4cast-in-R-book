@@ -8,22 +8,22 @@ You are welcome to use any modeling or statistical framework. Some great resourc
 
 Expectations for project
 
-1. Code in a GitHub repository that generates a forecast that uses a model that is "substantially" different that the linear model that we developed together.  "Substantially" means you used a different modeling approach or a linear model with different variables.  In the later, you need to justify why you choose those parameters and why you think it is a better model than the one we developed together. Merely adding one more covariate because it is easy to do does not represent a "substantially" different model.
-2. The code in #1 generates real-time forecasts that include uncertainty.
-3. Forecast models is registered with the NEON Ecological Forecasting Challenge. See <neon4cast.org> for the registration form.
-4. Automated forecasted are generated using GitHub actions
+1.  Code in a GitHub repository that generates a forecast that uses a model that is "substantially" different that the linear model that we developed together. "Substantially" means you used a different modeling approach or a linear model with different variables. In the later, you need to justify why you choose those parameters and why you think it is a better model than the one we developed together. Merely adding one more covariate because it is easy to do does not represent a "substantially" different model.
+2.  The code in #1 generates real-time forecasts that include uncertainty.
+3.  Forecast models is registered with the NEON Ecological Forecasting Challenge. See \<neon4cast.org\> for the registration form.
+4.  Automated forecasted are generated using GitHub actions
 
 ## Helpful tips
 
-You make want to use lags in your model.  Lags in the target variables are used in autogressive models.  Lags in the inputs may improve your predictions because past weather may be a better predictor than current weather.  Considerations for working with lags are below.
+You make want to use lags in your model. Lags in the target variables are used in autogressive models. Lags in the inputs may improve your predictions because past weather may be a better predictor than current weather. Considerations for working with lags are below.
 
 ### Lags in targets
 
-One issues to consider when working with auto-regression (lagged) models is that data may not be avialable on the date the you start your forecast (e.g., today).  In this case, the forecast needs to start at the most recent observation and run to present day. The model is continued on into the future over the full horizon.  Only the future datetimes are submitted as a true forecast.  Effectively, The output of the model run to the present day is the starting point for the true forecast into the future.
+One issues to consider when working with auto-regression (lagged) models is that data may not be avialable on the date the you start your forecast (e.g., today). In this case, the forecast needs to start at the most recent observation and run to present day. The model is continued on into the future over the full horizon. Only the future datetimes are submitted as a true forecast. Effectively, The output of the model run to the present day is the starting point for the true forecast into the future.
 
 ### Lags in inputs
 
-You may want to use linear modeling (like `lm`) but add more covariates.  If you want to explore the use of lag or running sums in the weather inputs, you will need to combine the historial and future weather data tomorrow (otherwise you won't have a value for the lagged variable on the first day of the first).  Here is some code to create a combined weather dataset.
+You may want to use linear modeling (like `lm`) but add more covariates. If you want to explore the use of lag or running sums in the weather inputs, you will need to combine the historial and future weather data tomorrow (otherwise you won't have a value for the lagged variable on the first day of the first). Here is some code to create a combined weather dataset.
 
 ```{r}
 #| message: false
@@ -67,13 +67,18 @@ ggplot(combined_met_df, aes(x = datetime, y = air_temperature, group = parameter
   geom_line() + 
   geom_vline(aes(xintercept = Sys.Date()), color = "blue")
 ```
+
 Remember that the lag needs to be calculated **within an ensemble member**.
+
+### Reforecasting
+
+A good way to evaluate your forecast model is to generate forecasts for a starting date (e.g., `reference_datetime`) in the past.  These "reforecasts" or "retroactive forecasts" use NOAA forecasts as inputs (or other forecasts) just like it was a real-time forecast so they mimic a genuine forecast of the future.  The key difference is that you can immediately compare the results to observations.  
 
 ## Intro to Tidymodels
 
-Tidmodels is a meta-package that provides standardized interface with many machine learning algorithms. This brief tutorial that provides an example application with tidymodels builds on the machine learning module in the FREC 3044: Environmental Data Science course at Virginia Tech. <https://github.com/frec-3044/machine-learning-template>.  
+Tidmodels is a meta-package that provides standardized interface with many machine learning algorithms. This brief tutorial that provides an example application with tidymodels builds on the machine learning module in the FREC 3044: Environmental Data Science course at Virginia Tech. <https://github.com/frec-3044/machine-learning-template>.
 
-Tidymodels does not estimate uncertainty so forecast uncertainty needs to be generated output the tidymodels framework.  For example, driver uncertainty can be generated creating tidymodel forecasts for each meteorological ensemble member.
+Tidymodels does not estimate uncertainty so forecast uncertainty needs to be generated output the tidymodels framework. For example, driver uncertainty can be generated creating tidymodel forecasts for each meteorological ensemble member.
 
 ### Overview of tidymodels steps
 
@@ -452,9 +457,9 @@ Some modeling approaches have parameters that govern how the model fitting done.
 
 ## Intro to Fable Models
 
-The Fable modeling framework provides an interface for many common models used in forecasting.  The useful thing about Fable is that it is specifically focused on forecasting so uncertainty estimation is a core feature.  Fable also has an associated ebook called ["Forecasting: Principles and Practice"](https://otexts.com/fpp3/) that is an excellent resource to learn empirical methods in time-series forecasting.  Similar to Tidymodels, once you have learned the general structure for how the package works, it opens up many different modeling approaches.
+The Fable modeling framework provides an interface for many common models used in forecasting. The useful thing about Fable is that it is specifically focused on forecasting so uncertainty estimation is a core feature. Fable also has an associated ebook called ["Forecasting: Principles and Practice"](https://otexts.com/fpp3/) that is an excellent resource to learn empirical methods in time-series forecasting. Similar to Tidymodels, once you have learned the general structure for how the package works, it opens up many different modeling approaches.
 
-The example below forecasts using a simple random walk. Since the random walk starts at the last observation, it shows how to generate a forecast for variables that have a gap between the last observation and the current day.  
+The example below forecasts using a simple random walk. Since the random walk starts at the last observation, it shows how to generate a forecast for variables that have a gap between the last observation and the current day.
 
 ```{r}
 #| message: false
@@ -475,7 +480,7 @@ var <- "temperature"
 site <- "BARC"
 ```
 
-We want to collect when to start our forecast.  If we have observations from today then our forecast starts today.  But if there is a gap between our last observation and today, our forecast needs to start on the data of the last observation and forecast until today.  Then the forecast needs to extend into the future for our desired horizon.  As a result the horizon that we provide the `fable` model may actually be longer than the horizon that we want to forecast into the future.  The code below calculate the start date of the forecast and the full horizon (the desired horizon in the future + the gap between last observation and today)
+We want to collect when to start our forecast. If we have observations from today then our forecast starts today. But if there is a gap between our last observation and today, our forecast needs to start on the data of the last observation and forecast until today. Then the forecast needs to extend into the future for our desired horizon. As a result the horizon that we provide the `fable` model may actually be longer than the horizon that we want to forecast into the future. The code below calculate the start date of the forecast and the full horizon (the desired horizon in the future + the gap between last observation and today)
 
 ```{r}
 forecast_starts <- targets |> 
@@ -489,7 +494,7 @@ forecast_starts <- targets |>
 forecast_starts
 ```
 
-The targets have to be converted into a time-series tibble (called a `tsibble`).  To make a `tsibble` you need to defined the grouping variables (`key`) and the common that defines the time-series (`index`).  Many modeling approaches require the datetime to be continuous (no gaps) but allow na values for values in the gaps.  The `fill_gaps()` function fills the gaps with `NA`s.
+The targets have to be converted into a time-series tibble (called a `tsibble`). To make a `tsibble` you need to defined the grouping variables (`key`) and the common that defines the time-series (`index`). Many modeling approaches require the datetime to be continuous (no gaps) but allow na values for values in the gaps. The `fill_gaps()` function fills the gaps with `NA`s.
 
 ```{r}
 targets_use <- targets |> 
@@ -499,14 +504,14 @@ targets_use <- targets |>
   tsibble::fill_gaps()   # add NA values up to today (index)
 ```
 
-Once you have a `tsibble`, you combine it with a modeling approach to generate a model that is ready to be used.  In this case the model is a random walk (`RW`) with the target of `observation`. 
+Once you have a `tsibble`, you combine it with a modeling approach to generate a model that is ready to be used. In this case the model is a random walk (`RW`) with the target of `observation`.
 
 ```{r}
 RW_model <- targets_use |> 
   fabletools::model(RW = fable::RW(observation))
 ```
 
-The model is then used to generate a forecast for `h` number of time-steps in the future.  The uncertainty is calculated using a bootstrap method (`bootstrap= T`) with 200 ensemble members, e.g. samples (`times = 200`).
+The model is then used to generate a forecast for `h` number of time-steps in the future. The uncertainty is calculated using a bootstrap method (`bootstrap= T`) with 200 ensemble members, e.g. samples (`times = 200`).
 
 ```{r}
 forecast <- RW_model |>  
@@ -528,7 +533,7 @@ RW_forecasts_EFI <- forecast %>%
   select(model_id, datetime, reference_datetime, site_id, family, parameter, variable, prediction)
 ```
 
-and plotted.  The reference_datetime is shown in blue.
+and plotted. The reference_datetime is shown in blue.
 
 ```{r}
 RW_forecasts_EFI |>
@@ -543,7 +548,7 @@ RW_forecasts_EFI |>
 
 #### Other models
 
-Other models can be added at the step that the targets are combined with the modeling approach.   This example is a [time-series linear model](https://otexts.com/fpp3/regression-intro.html) with a trend and seasonal term.
+Other models can be added at the step that the targets are combined with the modeling approach. This example is a [time-series linear model](https://otexts.com/fpp3/regression-intro.html) with a trend and seasonal term.
 
 ```{r}
 #| eval: false
