@@ -29,6 +29,7 @@ book:
         - third-forecast.qmd
         - decision-making.qmd
         - visualizing.qmd
+        - best-practices.qmd
     - part: "Project 1"
       chapters:
         - project1.qmd
@@ -47,9 +48,6 @@ book:
     - part: "Project 2"
       chapters:
         - project2.qmd
-    - part: "Best Practices"
-      chapters:
-        - best-practices.qmd
     - references.qmd
     - part: "Appendix"
       chapters:

@@ -4,18 +4,18 @@ Project is challenges you to build a new model the forecasts NEON water temperat
 
 Here is information about generating and submitting forecasts: <https://projects.ecoforecast.org/neon4cast-ci/>
 
-You are welcome to use any modeling or statistical framework. Some great resources for R packages that open the doors to many modeling frameworks are below.
+You are welcome to use any modeling or statistical framework. I provide some great resources for R packages that open the doors to many modeling frameworks are below but you are not require to use them.
 
 Expectations for project
 
 1.  Code in a GitHub repository that generates a forecast that uses a model that is "substantially" different that the linear model that we developed together. "Substantially" means you used a different modeling approach or a linear model with different variables. In the later, you need to justify why you choose those parameters and why you think it is a better model than the one we developed together. Merely adding one more covariate because it is easy to do does not represent a "substantially" different model.
 2.  The code in #1 generates real-time forecasts that include uncertainty.
-3.  Forecast models is registered with the NEON Ecological Forecasting Challenge. See \<neon4cast.org\> for the registration form.
+3.  Forecast models is registered with the NEON Ecological Forecasting Challenge. Information for registering your model and submitting it can be found [here](https://projects.ecoforecast.org/neon4cast-ci/instructions.html).
 4.  Automated forecasted are generated using GitHub actions
 
 ## Helpful tips
 
-You make want to use lags in your model. Lags in the target variables are used in autogressive models. Lags in the inputs may improve your predictions because past weather may be a better predictor than current weather. Considerations for working with lags are below.
+You make want to use lags in your model. Lags in the target variables are used in autoregressive models. Lags in the inputs may improve your predictions because past weather may be a better predictor than current weather. Considerations for working with lags are below.
 
 ### Lags in targets
 
@@ -72,7 +72,7 @@ Remember that the lag needs to be calculated **within an ensemble member**.
 
 ### Reforecasting
 
-A good way to evaluate your forecast model is to generate forecasts for a starting date (e.g., `reference_datetime`) in the past.  These "reforecasts" or "retroactive forecasts" use NOAA forecasts as inputs (or other forecasts) just like it was a real-time forecast so they mimic a genuine forecast of the future.  The key difference is that you can immediately compare the results to observations.  
+A good way to evaluate your forecast model is to generate forecasts for a starting date (e.g., `reference_datetime`) in the past.  These "reforecasts" or "retroactive forecasts" use NOAA forecasts as inputs (or other forecasts) just like it was a real-time forecast so they mimic a genuine forecast of the future.  Importantly, you should only use target data before the reforecast start date to train your forecast model. The key difference is that you can immediately compare the results to observations.  
 
 ## Intro to Tidymodels
 
@@ -557,7 +557,3 @@ RW_model <- targets_use |>
 ```
 
 A list of the other models are are: <https://fable.tidyverts.org/reference/index.html>
-
-## How to submit a forecast
-
-The introductions registering your model and submitting it can be found [here](https://projects.ecoforecast.org/neon4cast-ci/instructions.html).
