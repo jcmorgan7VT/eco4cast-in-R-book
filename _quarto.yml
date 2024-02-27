@@ -3,6 +3,13 @@ project:
 
 book:
   title: "A Practical Guide to Ecosystem Forecasting"
+  navbar:
+    search: true
+    logo: img/VT-CEF.jpg
+    right:
+      - icon: github
+        href: https://github.com/frec-5174/eco4cast-in-R-book
+        aria-label: GitHub
   author:
     - name: "R. Quinn Thomas"
       orcid: 0000-0003-1282-7825
