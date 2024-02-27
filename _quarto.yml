@@ -5,11 +5,8 @@ book:
   title: "A Practical Guide to Ecosystem Forecasting"
   sidebar:
     search: true
-    logo: img/VT-CEF.jpg
+    logo: img/VT-CEF.png
     url: https://frec-5174.github.io/eco4cast-in-R-book/
-  sidebar:
-    logo: img/VT-CEF.jpg
-    search: true
   repo-url: https://github.com/frec-5174/eco4cast-in-R-book
   repo-branch: main
   repo-actions: [issue, source]
