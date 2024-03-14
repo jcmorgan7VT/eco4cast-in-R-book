@@ -80,6 +80,7 @@ assign_met_ensembles <- function(inputs, ens_members, var_order = c("temp", "PAR
 
 get_historical_met <- function(site, sim_dates, use_mean = TRUE){
 
+  #average across ensembles or keep individual ensembles
   if(use_mean){
     groups <- c("datetime", "variable")
   }else{

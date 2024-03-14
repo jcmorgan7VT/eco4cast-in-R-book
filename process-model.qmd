@@ -239,4 +239,7 @@ output_df |>
   geom_point(aes(y = prediction, group = ensemble)) +
   facet_wrap(~variable, scale = "free") +
   theme_bw()
+
+#all units are Mg/ha/timestep
+#nee is a negative term- carbon is accumulating, because it is carbon going from the atmosphere pool to another
 ```
