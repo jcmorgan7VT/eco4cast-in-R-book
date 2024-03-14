@@ -72,7 +72,7 @@ Remember that the lag needs to be calculated **within an ensemble member**.
 
 ### Reforecasting
 
-A good way to evaluate your forecast model is to generate forecasts for a starting date (e.g., `reference_datetime`) in the past.  These "reforecasts" or "retroactive forecasts" use NOAA forecasts as inputs (or other forecasts) just like it was a real-time forecast so they mimic a genuine forecast of the future.  Importantly, you should only use target data before the reforecast start date to train your forecast model. The key difference is that you can immediately compare the results to observations.  
+A good way to evaluate your forecast model is to generate forecasts for a starting date (e.g., `reference_datetime`) in the past. These "reforecasts" or "retroactive forecasts" use NOAA forecasts as inputs (or other forecasts) just like it was a real-time forecast so they mimic a genuine forecast of the future. Importantly, you should only use target data before the reforecast start date to train your forecast model. The key difference is that you can immediately compare the results to observations.
 
 ## Intro to Tidymodels
 
@@ -82,7 +82,7 @@ Tidymodels does not estimate uncertainty so forecast uncertainty needs to be gen
 
 ### Overview of tidymodels steps
 
-**Step 1: Obtain data**
+**Step 1: Obtain data!**
 
 Read in data to memory. In the course we have accessed csv, excel, and database forms located in the github repo, on websites, and through an API.
 
